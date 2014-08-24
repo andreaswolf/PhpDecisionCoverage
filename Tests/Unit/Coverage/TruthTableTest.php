@@ -1,6 +1,6 @@
 <?php
 namespace AndreasWolf\DecisionCoverage\Tests\Unit\Coverage;
-use AndreasWolf\DecisionCoverage\Coverage\DecisionTable;
+use AndreasWolf\DecisionCoverage\Coverage\TruthTable;
 use AndreasWolf\DecisionCoverage\Tests\Unit\ParserBasedTestCase;
 use PhpParser\Lexer;
 use PhpParser\Node\Expr\BinaryOp\Equal;
@@ -13,7 +13,7 @@ use PhpParser\Parser;
  *
  * @author Andreas Wolf <aw@foundata.net>
  */
-class DecisionTableTest extends ParserBasedTestCase {
+class TruthTableTest extends ParserBasedTestCase {
 
 	/**
 	 * @test
@@ -21,7 +21,7 @@ class DecisionTableTest extends ParserBasedTestCase {
 	public function allExpressionsInMultipleConditionIfStatementAreParsed() {
 		$parsedNodes = $this->parseCode('if ($variable == TRUE && $foo == "bar" && !($baz < 10)) {}');
 
-		$decisionTable = new DecisionTable($parsedNodes[0]);
+		$decisionTable = new TruthTable($parsedNodes[0]);
 
 		$testedExpressions = $decisionTable->getExpressions();
 		$this->assertCount(3, $testedExpressions);
@@ -32,7 +32,7 @@ class DecisionTableTest extends ParserBasedTestCase {
 	 */
 	public function expressionsCanBeRetrievedGroupedByVariableName() {
 		$parsedNodes = $this->parseCode('if ($variable == TRUE && $foo == "bar" && !($baz < 10)) {}');
-		$decisionTable = new DecisionTable($parsedNodes[0]);
+		$decisionTable = new TruthTable($parsedNodes[0]);
 
 		$testedExpressions = $decisionTable->getExpressionsByVariableName();
 		$this->assertCount(3, $testedExpressions);
@@ -45,7 +45,7 @@ class DecisionTableTest extends ParserBasedTestCase {
 	public function variableNamesAreCorrectlyExtractedFromConditions() {
 		$parsedNodes = $this->parseCode('if ($variable == TRUE && $foo == "bar" && !($baz < 10)) {}');
 
-		$decisionTable = new DecisionTable($parsedNodes[0]);
+		$decisionTable = new TruthTable($parsedNodes[0]);
 
 		$coveredVariableNames = $decisionTable->getCoveredVariableNames();
 		$this->assertCount(3, $coveredVariableNames);
@@ -58,7 +58,7 @@ class DecisionTableTest extends ParserBasedTestCase {
 	public function variableNamesAreCorrectlyExtractedIfVariablesAreComparedWithEachOther() {
 		$parsedNodes = $this->parseCode('if ($foo == $bar) {}');
 
-		$decisionTable = new DecisionTable($parsedNodes[0]);
+		$decisionTable = new TruthTable($parsedNodes[0]);
 
 		$coveredVariableNames = $decisionTable->getCoveredVariableNames();
 		$this->assertCount(2, $coveredVariableNames);
@@ -71,7 +71,7 @@ class DecisionTableTest extends ParserBasedTestCase {
 	public function variableNameIsOnlyReturnedOnceEvenIfComparedMultipleTimes() {
 		$parsedNodes = $this->parseCode('if ($baz > 10 || $baz < 0) {}');
 
-		$decisionTable = new DecisionTable($parsedNodes[0]);
+		$decisionTable = new TruthTable($parsedNodes[0]);
 
 		$coveredVariableNames = $decisionTable->getCoveredVariableNames();
 		$this->assertCount(1, $coveredVariableNames);

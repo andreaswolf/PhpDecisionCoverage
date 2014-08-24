@@ -12,7 +12,7 @@ use PhpParser\Node\Stmt\If_;
  *
  * @author Andreas Wolf <aw@foundata.net>
  */
-class DecisionTable {
+class TruthTable {
 
 	/**
 	 * @var int
