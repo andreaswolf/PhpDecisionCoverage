@@ -16,7 +16,7 @@ class ComparisonExtractorTest extends ParserBasedTestCase {
 	 * @param $code
 	 * @return \PhpParser\Node\Expr[]
 	 */
-	protected function extractComparisonsFromCode($code) {
+	protected function extractComparisonsFromIfStatementCode($code) {
 		$parsedNode = $this->parseCode($code);
 
 		$comparisonExtractor = new ComparisonExtractor();
@@ -64,7 +64,7 @@ class ComparisonExtractorTest extends ParserBasedTestCase {
 	 * @dataProvider singleConditionDataProvider
 	 */
 	public function singleConditionInIfStatementIsCorrectlyExtract($code) {
-		$comparisons = $this->extractComparisonsFromCode($code);
+		$comparisons = $this->extractComparisonsFromIfStatementCode($code);
 
 		$this->assertCount(1, $comparisons);
 		$this->assertInstanceOf('PhpParser\Node\Expr\BinaryOp', $comparisons[0]);
@@ -74,7 +74,7 @@ class ComparisonExtractorTest extends ParserBasedTestCase {
 	 * @test
 	 */
 	public function twoConditionsConnectedWithAndAreCorrectlyExtracted() {
-		$comparisons = $this->extractComparisonsFromCode('if ($foo == "bar" && $baz < 10) {}');
+		$comparisons = $this->extractComparisonsFromIfStatementCode('if ($foo == "bar" && $baz < 10) {}');
 
 		$this->assertCount(2, $comparisons);
 		$this->assertInstanceOf('PhpParser\Node\Expr\BinaryOp', $comparisons[0]);
@@ -85,7 +85,7 @@ class ComparisonExtractorTest extends ParserBasedTestCase {
 	 * @test
 	 */
 	public function threeOrMoreConditionsConnectedWithAndAreCorrectlyExtracted() {
-		$comparisons = $this->extractComparisonsFromCode('if ($foo == "bar" && $baz < 10 && $baz > 0) {}');
+		$comparisons = $this->extractComparisonsFromIfStatementCode('if ($foo == "bar" && $baz < 10 && $baz > 0) {}');
 
 		$this->assertCount(3, $comparisons);
 		$this->assertInstanceOf('PhpParser\Node\Expr\BinaryOp', $comparisons[0]);
@@ -97,7 +97,7 @@ class ComparisonExtractorTest extends ParserBasedTestCase {
 	 * @test
 	 */
 	public function wordsAsBooleanOperatorsAreCorrectlyExtracted() {
-		$comparisons = $this->extractComparisonsFromCode('if ($foo == "bar" and $baz < 10 or $baz > 0 xor $bar == 10) {}');
+		$comparisons = $this->extractComparisonsFromIfStatementCode('if ($foo == "bar" and $baz < 10 or $baz > 0 xor $bar == 10) {}');
 
 		$this->assertCount(4, $comparisons);
 		$this->assertInstanceOf('PhpParser\Node\Expr\BinaryOp', $comparisons[0]);
@@ -110,7 +110,7 @@ class ComparisonExtractorTest extends ParserBasedTestCase {
 	 * @test
 	 */
 	public function threeConditionsConnectedWithOrAndAndAreCorrectlyExtracted() {
-		$comparisons = $this->extractComparisonsFromCode('if ($foo == "bar" && $baz < 10 || $baz > 20) {}');
+		$comparisons = $this->extractComparisonsFromIfStatementCode('if ($foo == "bar" && $baz < 10 || $baz > 20) {}');
 
 		$this->assertCount(3, $comparisons);
 		$this->assertInstanceOf('PhpParser\Node\Expr\BinaryOp', $comparisons[0]);
@@ -122,7 +122,7 @@ class ComparisonExtractorTest extends ParserBasedTestCase {
 	 * @test
 	 */
 	public function threeConditionsConnectedWithAndAndOrAndSurroundedByParenthesesAreCorrectlyExtracted() {
-		$comparisons = $this->extractComparisonsFromCode('if ($foo == "bar" && ($baz < 10 || $baz > 20)) {}');
+		$comparisons = $this->extractComparisonsFromIfStatementCode('if ($foo == "bar" && ($baz < 10 || $baz > 20)) {}');
 
 		$this->assertCount(3, $comparisons);
 		$this->assertInstanceOf('PhpParser\Node\Expr\BinaryOp', $comparisons[0]);
@@ -156,7 +156,7 @@ class ComparisonExtractorTest extends ParserBasedTestCase {
 	 * @dataProvider equalityComparisonDataProvider
 	 */
 	public function invertedEqualityComparisonIsCorrectlyReturned($code, $expectedClass) {
-		$comparisons = $this->extractComparisonsFromCode($code);
+		$comparisons = $this->extractComparisonsFromIfStatementCode($code);
 
 		$this->assertCount(1, $comparisons);
 		$this->assertInstanceOf($expectedClass, $comparisons[0]);
@@ -188,7 +188,7 @@ class ComparisonExtractorTest extends ParserBasedTestCase {
 	 * @dataProvider inequalityComparisonDataProvider
 	 */
 	public function invertedInequalityComparisonIsCorrectlyReturned($code, $expectedClass) {
-		$comparisons = $this->extractComparisonsFromCode($code);
+		$comparisons = $this->extractComparisonsFromIfStatementCode($code);
 
 		$this->assertCount(1, $comparisons);
 		$this->assertInstanceOf($expectedClass, $comparisons[0]);
