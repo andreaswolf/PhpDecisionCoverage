@@ -2,7 +2,7 @@
 namespace AndreasWolf\DecisionCoverage\Tests\Unit\Coverage;
 use AndreasWolf\DecisionCoverage\Coverage\Comparison;
 use AndreasWolf\DecisionCoverage\Coverage\TestVariable;
-use AndreasWolf\DecisionCoverage\Tests\Unit\ParserBasedTestCase;
+use AndreasWolf\DecisionCoverage\Tests\ParserBasedTestCase;
 use PhpParser\Lexer;
 use PhpParser\Parser;
 

@@ -2,7 +2,7 @@
 namespace AndreasWolf\DecisionCoverage\Tests\Unit\Source;
 
 use AndreasWolf\DecisionCoverage\Source\ComparisonExtractor;
-use AndreasWolf\DecisionCoverage\Tests\Unit\ParserBasedTestCase;
+use AndreasWolf\DecisionCoverage\Tests\ParserBasedTestCase;
 
 
 /**

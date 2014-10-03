@@ -1,5 +1,5 @@
 <?php
-namespace AndreasWolf\DecisionCoverage\Tests\Unit;
+namespace AndreasWolf\DecisionCoverage\Tests;
 
 use PhpParser\Lexer;
 use PhpParser\Parser;

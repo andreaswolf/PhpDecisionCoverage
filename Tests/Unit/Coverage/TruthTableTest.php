@@ -1,7 +1,7 @@
 <?php
 namespace AndreasWolf\DecisionCoverage\Tests\Unit\Coverage;
 use AndreasWolf\DecisionCoverage\Coverage\TruthTable;
-use AndreasWolf\DecisionCoverage\Tests\Unit\ParserBasedTestCase;
+use AndreasWolf\DecisionCoverage\Tests\ParserBasedTestCase;
 use PhpParser\Lexer;
 use PhpParser\Node\Expr\BinaryOp\Equal;
 use PhpParser\Node\Stmt\If_;
