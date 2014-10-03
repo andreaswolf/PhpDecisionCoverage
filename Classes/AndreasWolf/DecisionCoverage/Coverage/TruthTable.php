@@ -1,6 +1,7 @@
 <?php
 namespace AndreasWolf\DecisionCoverage\Coverage;
 
+use AndreasWolf\DecisionCoverage\BooleanLogic\BooleanCondition;
 use AndreasWolf\DecisionCoverage\Source\ComparisonExtractor;
 use PhpParser\Node\Expr;
 use PhpParser\Node\Scalar;
@@ -8,7 +9,7 @@ use PhpParser\Node\Stmt\If_;
 
 
 /**
- * A decision table for an if statement and its else if and else statement(s).
+ * A decision table for a number of conditions.
  *
  * @author Andreas Wolf <aw@foundata.net>
  */
@@ -20,6 +21,16 @@ class TruthTable {
 	protected $dimension;
 
 	/**
+	 * All the conditions that are covered by this decision table, in the order in which they are covered.
+	 *
+	 * The order is important e.g. if a set of input values is covered by both the first and the second condition, the
+	 * first one will always win because they are evaluated in the exact order they are defined.
+	 *
+	 * @var BooleanCondition[]
+	 */
+	protected $conditionBlocks;
+
+	/**
 	 * The expressions used in the conditions.
 	 *
 	 * @var array
@@ -27,26 +38,28 @@ class TruthTable {
 	protected $comparisonExpressions;
 
 	/**
-	 * @param If_ $conditionNode
+	 * @param BooleanCondition[] $conditions
 	 */
-	public function __construct(If_ $conditionNode) {
-		$this->parseConditionsFromIfNode($conditionNode);
+	public function __construct(array $conditions) {
+		$this->conditionBlocks = $conditions;
+
+		$extractor = new ComparisonExtractor();
+		$this->comparisonExpressions = $extractor->extractComparisons($this->conditionBlocks);
 	}
 
 	/**
-	 * Parses all variables from an if node
+	 * @return \AndreasWolf\DecisionCoverage\BooleanLogic\BooleanCondition[]
+	 */
+	public function getConditionBlocks() {
+		return $this->conditionBlocks;
+	}
+
+	/**
+	 * Returns an array of the expressions used in the conditions, without the boolean/logical operators
+	 * (e.g. &&, ||, AND, XOR).
 	 *
-	 * @param If_ $ifNode
-	 */
-	protected function parseConditionsFromIfNode(If_ $ifNode) {
-		$condition = $ifNode->cond;
-
-		$comparisonExtractor = new ComparisonExtractor();
-		$ifComparisons = $comparisonExtractor->extractFromIf($ifNode);
-		$this->comparisonExpressions = $ifComparisons;
-	}
-
-	/**
+	 * These are the expressions that are covered by this table.
+	 *
 	 * @return array
 	 */
 	public function getExpressions() {
@@ -127,4 +140,3 @@ class TruthTable {
 	}
 
 }
- 

@@ -1,5 +1,7 @@
 <?php
 namespace AndreasWolf\DecisionCoverage\Source;
+
+use AndreasWolf\DecisionCoverage\BooleanLogic\BooleanCondition;
 use PhpParser\Node\Expr;
 use PhpParser\Node\Stmt\If_;
 
@@ -31,7 +33,7 @@ class ComparisonExtractor {
 	 * Extracts the conditions from an expression. This can also traverse deeply nested trees of ANDs and ORs and
 	 * removes inversions (boolean NOT) where possible.
 	 *
-	 * @param array|Expr $expression
+	 * @param array|BooleanCondition|Expr $expression
 	 * @return array|void
 	 */
 	public function extractComparisons($expression) {
@@ -42,6 +44,8 @@ class ComparisonExtractor {
 				$comparisons = array_merge($comparisons, $this->extractComparisons($expr));
 			}
 			return $comparisons;
+		} elseif ($expression instanceof BooleanCondition) {
+			return $this->extractComparisons($expression->getExpression());
 		} elseif ($this->isComparison($expression)) {
 			return array($expression);
 		} elseif ($this->isConjunction($expression)) {
