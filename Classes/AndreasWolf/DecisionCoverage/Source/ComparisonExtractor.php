@@ -84,13 +84,16 @@ class ComparisonExtractor {
 	/**
 	 * Removes a boolean "not" by inverting the condition(s) inside it.
 	 *
+	 * This of course only works for comparisons, not things like the instanceof operator
+	 *
 	 * @param Expr\BooleanNot $booleanNot
-	 * @return Expr
+	 * @return Expr Either the converted expression or the original if the inside could not be inverted
 	 */
 	protected function removeBooleanNot(Expr\BooleanNot $booleanNot) {
 		if ($this->isComparison($booleanNot->expr)) {
 			return $this->invertComparison($booleanNot->expr);
 		}
+		return $booleanNot;
 	}
 
 	/**
