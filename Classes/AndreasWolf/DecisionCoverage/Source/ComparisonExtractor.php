@@ -19,30 +19,40 @@ class ComparisonExtractor {
 	 * @return Expr[]
 	 */
 	public function extractFromIf(If_ $ifNode) {
-		$condition = $ifNode->cond;
+		$conditions = array($ifNode->cond);
+		foreach ($ifNode->elseifs as $elseIf) {
+			$conditions[] = $elseIf->cond;
+		}
 
-		return $this->extractCondition($condition);
+		return $this->extractComparisons($conditions);
 	}
 
 	/**
 	 * Extracts the conditions from an expression. This can also traverse deeply nested trees of ANDs and ORs and
 	 * removes inversions (boolean NOT) where possible.
 	 *
-	 * @param Expr $expression
+	 * @param array|Expr $expression
 	 * @return array|void
 	 */
-	protected function extractCondition(Expr $expression) {
-		if ($this->isComparison($expression)) {
+	public function extractComparisons($expression) {
+		if (is_array($expression)) {
+			/** @var Expr\BinaryOp $expression */
+			$comparisons = array();
+			foreach ($expression as $expr) {
+				$comparisons = array_merge($comparisons, $this->extractComparisons($expr));
+			}
+			return $comparisons;
+		} elseif ($this->isComparison($expression)) {
 			return array($expression);
-		} else if ($this->isConjunction($expression)) {
+		} elseif ($this->isConjunction($expression)) {
 			/** @var Expr\BinaryOp $expression */
 			$comparisons = array();
 			foreach (array($expression->left, $expression->right) as $expression) {
-				$comparisons = array_merge($comparisons, $this->extractCondition($expression));
+				$comparisons = array_merge($comparisons, $this->extractComparisons($expression));
 			}
 			return $comparisons;
-		} else if ($expression instanceof Expr\BooleanNot) {
-			return $this->extractCondition($this->removeBooleanNot($expression));
+		} elseif ($expression instanceof Expr\BooleanNot) {
+			return $this->extractComparisons($this->removeBooleanNot($expression));
 		}
 	}
 
