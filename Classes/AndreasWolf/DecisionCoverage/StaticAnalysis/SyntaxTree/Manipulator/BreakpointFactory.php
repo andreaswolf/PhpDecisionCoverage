@@ -3,7 +3,7 @@ namespace AndreasWolf\DecisionCoverage\StaticAnalysis\SyntaxTree\Manipulator;
 
 use AndreasWolf\DecisionCoverage\Source\SyntaxTreeIterator;
 use AndreasWolf\DecisionCoverage\StaticAnalysis\Breakpoint;
-use AndreasWolf\DecisionCoverage\StaticAnalysis\FileAnalysis;
+use AndreasWolf\DecisionCoverage\StaticAnalysis\FileResult;
 use AndreasWolf\DecisionCoverage\StaticAnalysis\SyntaxTree\NodeVisitor;
 use PhpParser\Node;
 
@@ -16,11 +16,11 @@ use PhpParser\Node;
 class BreakpointFactory implements NodeVisitor {
 
 	/**
-	 * @var FileAnalysis
+	 * @var FileResult
 	 */
 	protected $analysis;
 
-	public function __construct(FileAnalysis $analysis) {
+	public function __construct(FileResult $analysis) {
 		$this->analysis = $analysis;
 	}
 

@@ -8,7 +8,7 @@ use PhpParser\Node;
  *
  * @author Andreas Wolf <aw@foundata.net>
  */
-class FileAnalysis {
+class FileResult {
 
 	/**
 	 * @var string
