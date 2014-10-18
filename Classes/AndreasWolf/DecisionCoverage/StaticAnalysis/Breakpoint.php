@@ -20,6 +20,13 @@ class Breakpoint {
 	 */
 	protected $line;
 
+	/**
+	 * The expressions that should be watched
+	 *
+	 * @var Expr[]
+	 */
+	protected $watchedExpressions = array();
+
 
 	/**
 	 * @param int $line
@@ -33,6 +40,20 @@ class Breakpoint {
 	 */
 	public function getLine() {
 		return $this->line;
+	}
+
+	/**
+	 * @param Expr $watcher
+	 */
+	public function addWatchedExpression(Expr $watcher) {
+		$this->watchedExpressions[] = $watcher;
+	}
+
+	/**
+	 * @return Expr[]
+	 */
+	public function getWatchedExpressions() {
+		return $this->watchedExpressions;
 	}
 
 }

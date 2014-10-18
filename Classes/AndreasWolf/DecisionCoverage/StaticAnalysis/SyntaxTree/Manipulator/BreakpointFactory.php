@@ -1,6 +1,7 @@
 <?php
 namespace AndreasWolf\DecisionCoverage\StaticAnalysis\SyntaxTree\Manipulator;
 
+use AndreasWolf\DecisionCoverage\Source\SyntaxTreeIterator;
 use AndreasWolf\DecisionCoverage\StaticAnalysis\Breakpoint;
 use AndreasWolf\DecisionCoverage\StaticAnalysis\FileAnalysis;
 use AndreasWolf\DecisionCoverage\StaticAnalysis\SyntaxTree\NodeVisitor;
@@ -50,15 +51,34 @@ class BreakpointFactory implements NodeVisitor {
 			return;
 		}
 
-		$breakpoint = new Breakpoint($node->getLine());
+		$breakpoint = $this->createBreakpoint($node);
+		$this->addWatchExpressionsToBreakpoint($breakpoint, $node->cond);
+
 		$this->analysis->addBreakpoint($breakpoint);
-		/**
-		 * TODO:
-		 * - check if node is a decision statement (If, ElseIf, …)
-		 * - create breakpoint
-		 * - extract expressions from condition
-		 *   - add watcher to breakpoint for each
-		 */
+	}
+
+	/**
+	 * @param Breakpoint $breakpoint
+	 * @param Node $rootNode
+	 */
+	protected function addWatchExpressionsToBreakpoint(Breakpoint $breakpoint, Node $rootNode) {
+		$nodeIterator = new \RecursiveIteratorIterator(
+			new SyntaxTreeIterator(array($rootNode), TRUE), \RecursiveIteratorIterator::SELF_FIRST
+		);
+
+		foreach ($nodeIterator as $node) {
+			if (in_array($node->getType(), array('Expr_Variable'))) {
+				$breakpoint->addWatchedExpression($node);
+			}
+		}
+	}
+
+	/**
+	 * @param Node $node
+	 * @return Breakpoint
+	 */
+	protected function createBreakpoint(Node $node) {
+		return new Breakpoint($node->getLine());
 	}
 
 }
