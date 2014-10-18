@@ -9,7 +9,7 @@ use PhpParser\Node;
  *
  * @author Andreas Wolf <aw@foundata.net>
  */
-class NodeIdManipulator implements NodeVisitor {
+class NodeIdGenerator implements NodeVisitor {
 
 	protected $currentId;
 
