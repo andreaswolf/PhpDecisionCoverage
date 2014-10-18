@@ -5,8 +5,9 @@ use AndreasWolf\DecisionCoverage\DynamicAnalysis\Data\Breakpoint;
 use AndreasWolf\DecisionCoverage\StaticAnalysis\SyntaxTree\Manipulator\BreakpointFactory;
 use AndreasWolf\DecisionCoverage\Tests\Unit\UnitTestCase;
 use PhpParser\Node\Expr;
+use PhpParser\Node\Name;
 use PhpParser\Node\Scalar\LNumber;
-use PhpParser\Node\Stmt\If_;
+use PhpParser\Node\Stmt;
 
 
 /**
@@ -20,7 +21,21 @@ class BreakpointFactoryTest extends UnitTestCase {
 	 * @test
 	 */
 	public function breakpointIsCreatedForIfStatement() {
-		$ifNode = new If_(new Expr\Variable('foo'));
+		$ifNode = new Stmt\If_(new Expr\Variable('foo'));
+		$mockedAnalysis = $this->mockFileAnalysis();
+		$mockedAnalysis->expects($this->once())->method('addBreakpoint');
+
+		$subject = new BreakpointFactory($mockedAnalysis);
+
+		$subject->startInstrumentation(array($ifNode));
+		$subject->handleNode($ifNode);
+	}
+
+	/**
+	 * @test
+	 */
+	public function breakpointIsCreatedForElseIfStatement() {
+		$ifNode = new Stmt\ElseIf_(new Expr\Variable('foo'));
 		$mockedAnalysis = $this->mockFileAnalysis();
 		$mockedAnalysis->expects($this->once())->method('addBreakpoint');
 
@@ -35,7 +50,7 @@ class BreakpointFactoryTest extends UnitTestCase {
 	 */
 	public function variableExpressionFromConditionIsAddedAsWatcher() {
 		$variable = new Expr\Variable('foo');
-		$ifNode = new If_($variable);
+		$ifNode = new Stmt\If_($variable);
 		$mockedAnalysis = $this->mockFileAnalysis();
 
 		$mockedBreakpoint = $this->mockBreakpoint();
@@ -47,12 +62,42 @@ class BreakpointFactoryTest extends UnitTestCase {
 		$subject->handleNode($ifNode);
 	}
 
+	public function watchableExpressionsProvider() {
+		return array(
+			'local variable access' => array(
+				new Expr\Variable('foo')
+			),
+			'class property access' => array(
+				new Expr\PropertyFetch(
+					new Expr\Variable('this'), 'foo'
+				)
+			),
+			'static class property' => array(
+				new Expr\StaticPropertyFetch(
+					new Name('Foo'), 'bar'
+				)
+			),
+			'object method call' => array(
+				new Expr\MethodCall(
+					new Expr\Variable('this'), 'foo'
+				)
+			),
+			'static method call' => array(
+				new Expr\StaticCall(
+					new Name('Foo'), 'bar'
+				)
+			)
+		);
+	}
+
 	/**
+	 * @param Expr $variable
+	 *
 	 * @test
+	 * @dataProvider watchableExpressionsProvider
 	 */
-	public function variableExpressionFromComparisonIsAddedAsWatcher() {
-		$variable = new Expr\Variable('foo');
-		$ifNode = new If_(new Expr\BinaryOp\Equal($variable, new LNumber(5)));
+	public function expressionFromComparisonIsAddedAsWatcher($variable) {
+		$ifNode = new Stmt\If_(new Expr\BinaryOp\Equal($variable, new LNumber(5)));
 		$mockedAnalysis = $this->mockFileAnalysis();
 
 		$mockedBreakpoint = $this->mockBreakpoint();

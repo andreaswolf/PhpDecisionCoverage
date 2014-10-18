@@ -47,7 +47,7 @@ class BreakpointFactory implements NodeVisitor {
 	 * @return Node
 	 */
 	public function handleNode(Node $node) {
-		if (!in_array($node->getType(), array('Stmt_If'))) {
+		if (!in_array($node->getType(), array('Stmt_If', 'Stmt_ElseIf'))) {
 			return;
 		}
 
@@ -67,7 +67,10 @@ class BreakpointFactory implements NodeVisitor {
 		);
 
 		foreach ($nodeIterator as $node) {
-			if (in_array($node->getType(), array('Expr_Variable'))) {
+			if (in_array($node->getType(), array('Expr_Variable', 'Expr_PropertyFetch', 'Expr_StaticPropertyFetch',
+				'Expr_MethodCall', 'Expr_StaticCall'))
+			) {
+
 				$breakpoint->addWatchedExpression($node);
 			}
 		}
