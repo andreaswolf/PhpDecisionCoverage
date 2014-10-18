@@ -42,4 +42,13 @@ class FileResult {
 		return $this->breakpoints;
 	}
 
+	/**
+	 * Serializes this object and returns the representation.
+	 *
+	 * @return string
+	 */
+	public function serialize() {
+		return serialize($this);
+	}
+
 }
