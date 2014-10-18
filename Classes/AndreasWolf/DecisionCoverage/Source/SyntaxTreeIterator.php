@@ -12,7 +12,7 @@ use RecursiveIterator;
  * When used in combination with a RecursiveIteratorIterator instance, this can be used to traverse the complete AST in
  * one go:
  *
- * new \RecursiveIteratorIterator(new SyntaxTreeIterator($nodes), RecursiveIteratorIterator::SELF_FIRST);
+ * new \RecursiveIteratorIterator(new SyntaxTreeIterator($nodes), \RecursiveIteratorIterator::SELF_FIRST);
  *
  * @author Andreas Wolf <aw@foundata.net>
  */
@@ -29,10 +29,24 @@ class SyntaxTreeIterator implements \RecursiveIterator {
 	protected $nodes;
 
 	/**
-	 * @param Node[] $nodes
+	 * @var bool
 	 */
-	public function __construct(array $nodes) {
+	protected $includeAllSubNodes;
+
+	protected $subnodeInclusionOrder = array(
+		'Stmt_If' => array('cond', 'stmts', 'elseifs', 'else'),
+		'Stmt_ElseIf' => array('cond', 'stmts'),
+		'Stmt_Echo' => array('exprs'),
+		'Expr_BinaryOp' => array('left', 'right'),
+	);
+
+	/**
+	 * @param Node[] $nodes
+	 * @param bool $includeAllSubNodes If TRUE, all sub nodes (e.g. conditions, elseifs and else for the if-statement) will be included
+	 */
+	public function __construct(array $nodes, $includeAllSubNodes = FALSE) {
 		$this->nodes = $nodes;
+		$this->includeAllSubNodes = $includeAllSubNodes;
 	}
 
 	/**
@@ -97,8 +111,12 @@ class SyntaxTreeIterator implements \RecursiveIterator {
 			return FALSE;
 		}
 
-		$subNodeNames = $this->current()->getSubNodeNames();
-		return in_array('stmts', $subNodeNames);
+		if ($this->includeAllSubNodes === TRUE) {
+			return TRUE;
+		} else {
+			$subNodeNames = $this->current()->getSubNodeNames();
+			return in_array('stmts', $subNodeNames);
+		}
 	}
 
 	/**
@@ -108,7 +126,7 @@ class SyntaxTreeIterator implements \RecursiveIterator {
 	 * @return RecursiveIterator An iterator for the current entry.
 	 */
 	public function getChildren() {
-		return new self($this->getCurrentNodeSubnodes());
+		return new self($this->getCurrentNodeSubnodes(), $this->includeAllSubNodes);
 	}
 
 	/**
@@ -119,11 +137,66 @@ class SyntaxTreeIterator implements \RecursiveIterator {
 			return array();
 		}
 		$subnodeNames = $this->current()->getSubNodeNames();
-		if (in_array('stmts', $subnodeNames)) {
-			return $this->current()->stmts;
+
+		$subnodes = array();
+		if ($this->includeAllSubNodes === TRUE) {
+			$this->addCurrentNodeSubnodes($subnodes);
 		} else {
-			return array();
+			if (in_array('stmts', $subnodeNames)) {
+				$subnodes = $this->current()->stmts;
+			}
 		}
+
+		return $subnodes;
+	}
+
+	/**
+	 * @param array $subnodes
+	 */
+	protected function addCurrentNodeSubnodes(&$subnodes) {
+		$currentNode = $this->current();
+		$currentNodeType = $currentNode->getType();
+		$subnodeInclusionOrder = $this->getSubnodeInclusionOrderForType($currentNodeType);
+
+		if (count($subnodeInclusionOrder) == 0) {
+			// include statements and expressions if no specific order is defined
+			$subNodeNames = $currentNode->getSubNodeNames();
+			$subnodeInclusionOrder = array_intersect($subNodeNames, array('stmts', 'exprs'));
+		}
+		foreach ($subnodeInclusionOrder as $subnodeType) {
+			$currentSubnodes = $currentNode->$subnodeType;
+			if (!$currentSubnodes) {
+				continue;
+			}
+			if (is_array($currentSubnodes)) {
+				$subnodes = array_merge($subnodes, $currentSubnodes);
+			} else {
+				$subnodes[] = $currentSubnodes;
+			}
+		}
+	}
+
+	/**
+	 * Returns the order in which the subnodes of th specified type should be traversed
+	 *
+	 * @param string $type
+	 * @return array
+	 */
+	protected function getSubnodeInclusionOrderForType($type) {
+		// direct hit
+		if (isset($this->subnodeInclusionOrder[$type])) {
+			return $this->subnodeInclusionOrder[$type];
+		}
+
+		// try to find a shorter super-type, e.g. Expr_Binary for Expr_Binary_Equal
+		while (substr_count($type, '_') >= 2) {
+			$type = substr($type, 0, strrpos($type, '_'));
+			if (isset($this->subnodeInclusionOrder[$type])) {
+				return $this->subnodeInclusionOrder[$type];
+			}
+		}
+
+		return array();
 	}
 
 
