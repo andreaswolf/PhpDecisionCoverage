@@ -2,4 +2,5 @@
 *.bak
 *.orig
 vendor/
+.idea/
 composer.lock
