@@ -1,7 +1,6 @@
 <?php
 namespace AndreasWolf\DecisionCoverage\StaticAnalysis;
 
-use AndreasWolf\DecisionCoverage\DynamicAnalysis\Data\WatchedValue;
 use PhpParser\Node\Expr;
 use PhpParser\Node\Stmt;
 
