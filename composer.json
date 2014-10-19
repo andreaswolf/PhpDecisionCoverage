@@ -15,7 +15,8 @@
 		"symfony/dependency-injection": "*",
 		"symfony/config": "*",
 		"symfony/event-dispatcher": "*",
-		"andreaswolf/php-debugger-client": "dev-master"
+		"andreaswolf/php-debugger-client": "dev-master",
+		"symfony/console": "~2.6@dev"
 	},
 	"require-dev": {
 		"phpunit/phpunit": "*",

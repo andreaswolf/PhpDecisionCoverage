@@ -28,6 +28,17 @@ class ClientEventSubscriber implements EventSubscriberInterface {
 	 */
 	protected $fifoFile;
 
+	/**
+	 * @var string
+	 */
+	protected $staticAnalysisFile;
+
+	/**
+	 * @var string
+	 */
+	protected $phpUnitArguments;
+
+
 	public function __construct(Client $client) {
 		$this->client = $client;
 
@@ -35,14 +46,28 @@ class ClientEventSubscriber implements EventSubscriberInterface {
 	}
 
 	/**
+	 * @param string $staticAnalysisFile
+	 */
+	public function setStaticAnalysisFile($staticAnalysisFile) {
+		$this->staticAnalysisFile = $staticAnalysisFile;
+	}
+
+	/**
+	 * @param string $phpUnitArguments
+	 */
+	public function setPhpUnitArguments($phpUnitArguments) {
+		$this->phpUnitArguments = str_replace('\\', '', $phpUnitArguments);
+	}
+
+	/**
 	 * @param Event $event
 	 */
-	public function listenerReadyEventHandler(Event $event) {
+	public function listenerReadyHandler(Event $event) {
 		echo "Client ready\n";
-		$arguments = $this->getTestScriptArguments();
+		$arguments = $this->getTestRunArguments();
 		$this->prepareAndAttachFifoStream();
 
-		$command = '/usr/bin/env php ' . implode(' ', $arguments);
+		$command = '/usr/bin/env php ' . $arguments;
 
 		$pipes = array();
 		proc_open($command, array(
@@ -71,20 +96,14 @@ class ClientEventSubscriber implements EventSubscriberInterface {
 	/**
 	 * @return array
 	 */
-	protected function getTestScriptArguments() {
-		$arguments = $_SERVER['argv'];
-		// remove the original called file from the array
-		array_shift($arguments);
-
-		$arguments = array_merge(
-			array(
-				// re-add the file we want to run
-				realpath(__DIR__ . '/../../../../../Scripts/RunTest.php'),
-				// add the fifo file name (this is not recognized by PHPUnit, but by our test script)
-				'--fifo', $this->fifoFile
-			),
-			$arguments
-		);
+	protected function getTestRunArguments() {
+		$arguments = implode(' ', array(
+			// re-add the file we want to run
+			realpath(__DIR__ . '/../../../../../Scripts/RunTest.php'),
+			// add the fifo file name (this is not recognized by PHPUnit, but by our test script)
+			'--fifo', $this->fifoFile,
+			$this->phpUnitArguments
+		));
 
 		return $arguments;
 	}
@@ -111,7 +130,7 @@ class ClientEventSubscriber implements EventSubscriberInterface {
 	 */
 	public static function getSubscribedEvents() {
 		return array(
-			'listener.ready' => 'listenerReadyEventHandler'
+			'listener.ready' => 'listenerReadyHandler',
 		);
 	}
 
