@@ -113,7 +113,7 @@ class BreakpointFactoryTest extends UnitTestCase {
 	 * @return \PHPUnit_Framework_MockObject_MockObject
 	 */
 	protected function mockFileAnalysis() {
-		$mockedAnalysis = $this->getMockBuilder('AndreasWolf\DecisionCoverage\StaticAnalysis\FileAnalysis')
+		$mockedAnalysis = $this->getMockBuilder('AndreasWolf\DecisionCoverage\StaticAnalysis\FileResult')
 			->disableOriginalConstructor()->getMock();
 
 		return $mockedAnalysis;
