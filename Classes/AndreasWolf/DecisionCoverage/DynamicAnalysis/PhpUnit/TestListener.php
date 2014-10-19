@@ -10,6 +10,7 @@ use PHPUnit_Framework_AssertionFailedError;
 /**
  * Listener for PHPUnit tests.
  *
+ * This runs in the PHPUnit process that is spawned by the ClientEventSubscriber instance.
  * Reports test progress back to the data collector process via the FIFO queue.
  *
  * @author Andreas Wolf <aw@foundata.net>
