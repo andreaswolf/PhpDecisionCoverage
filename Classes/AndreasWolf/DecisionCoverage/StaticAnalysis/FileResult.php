@@ -31,6 +31,13 @@ class FileResult {
 		$this->syntaxTree = $syntaxTree;
 	}
 
+	/**
+	 * @return string
+	 */
+	public function getFilePath() {
+		return $this->filePath;
+	}
+
 	public function addBreakpoint(Breakpoint $breakpoint) {
 		$this->breakpoints[] = $breakpoint;
 	}

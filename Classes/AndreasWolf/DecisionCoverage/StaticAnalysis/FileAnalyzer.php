@@ -9,6 +9,10 @@ use AndreasWolf\DecisionCoverage\StaticAnalysis\SyntaxTree\Manipulator\NodeIdGen
 
 class FileAnalyzer {
 
+	/**
+	 * @param SourceFile $file
+	 * @return FileResult
+	 */
 	public function analyzeFile(SourceFile $file) {
 		$nodes = $file->getTopLevelStatements();
 		$result = new FileResult($file->getFilePath(), $nodes);
@@ -19,6 +23,20 @@ class FileAnalyzer {
 		$instrumenter->instrument($nodes);
 
 		return $result;
+	}
+
+	/**
+	 * Writes the results to the given file.
+	 *
+	 * @param string $file
+	 * @param ResultSet $result
+	 */
+	public function writeAnalysisResultsToFile($file, ResultSet $result) {
+		$result = file_put_contents($file, $result->serialize());
+
+		if ($result === FALSE) {
+			throw new \RuntimeException('Could not write results to file', 1413653932);
+		}
 	}
 
 }
