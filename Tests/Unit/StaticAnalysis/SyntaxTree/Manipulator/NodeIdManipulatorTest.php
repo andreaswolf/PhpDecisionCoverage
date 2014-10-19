@@ -1,5 +1,6 @@
 <?php
-namespace AndreasWolf\PhpDecisionCoverage\Tests\Unit\StaticAnalysis\SyntaxTree\Manipulator;
+namespace AndreasWolf\DecisionCoverage\Tests\Unit\StaticAnalysis\SyntaxTree\Manipulator;
+
 use AndreasWolf\DecisionCoverage\Tests\Unit\UnitTestCase;
 use AndreasWolf\DecisionCoverage\StaticAnalysis\SyntaxTree\Manipulator\NodeIdManipulator;
 

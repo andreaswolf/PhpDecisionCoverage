@@ -1,5 +1,5 @@
 <?php
-namespace AndreasWolf\PhpDecisionCoverage\Tests\Unit\StaticAnalysis\SyntaxTree;
+namespace AndreasWolf\DecisionCoverage\Tests\Unit\StaticAnalysis\SyntaxTree;
 
 use AndreasWolf\DebuggerClient\Tests\Unit\UnitTestCase;
 use AndreasWolf\DecisionCoverage\StaticAnalysis\SyntaxTree\Instrumenter;
