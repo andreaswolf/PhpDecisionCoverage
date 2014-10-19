@@ -18,7 +18,8 @@
 		"andreaswolf/php-debugger-client": "dev-master"
 	},
 	"require-dev": {
-		"phpunit/phpunit": "*"
+		"phpunit/phpunit": "*",
+		"php-vfs/php-vfs": "*@stable"
 	},
 	"autoload": {
 		"psr-0": {
