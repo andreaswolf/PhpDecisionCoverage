@@ -18,15 +18,15 @@ use PHPUnit_Framework_AssertionFailedError;
 class TestListener extends \PHPUnit_Framework_BaseTestListener {
 
 	/**
-	 * @var resource
+	 * @var FifoMessageChannel
 	 */
-	protected $fifoHandle;
+	protected $messageChannel;
 
 	/**
-	 * @param $file
+	 * @param FifoMessageChannel $messageChannel
 	 */
-	public function __construct($file) {
-		$this->fifoHandle = fopen($file, 'a');
+	public function __construct($messageChannel) {
+		$this->messageChannel = $messageChannel;
 	}
 
 	/**
@@ -36,8 +36,8 @@ class TestListener extends \PHPUnit_Framework_BaseTestListener {
 	 * @since  Method available since Release 2.2.0
 	 */
 	public function startTestSuite(PHPUnit_Framework_TestSuite $suite) {
-		//$this->sendToDataCollector("[TEST] Starting test suite " . $suite->getName() . "\n");
-		$this->sendToDataCollector(array(
+		//$this->messageChannel->sendToDataCollector("[TEST] Starting test suite " . $suite->getName() . "\n");
+		$this->messageChannel->sendToDataCollector(array(
 			'event' => 'testsuite.start',
 			'suiteClass' => get_class($suite),
 			'suiteName' => $suite->getName(),
@@ -51,7 +51,7 @@ class TestListener extends \PHPUnit_Framework_BaseTestListener {
 	 * @since  Method available since Release 2.2.0
 	 */
 	public function endTestSuite(PHPUnit_Framework_TestSuite $suite) {
-		$this->sendToDataCollector(array(
+		$this->messageChannel->sendToDataCollector(array(
 			'event' => 'testsuite.end',
 			'suiteClass' => get_class($suite),
 			'suiteName' => $suite->getName(),
@@ -65,7 +65,7 @@ class TestListener extends \PHPUnit_Framework_BaseTestListener {
 	 */
 	public function startTest(PHPUnit_Framework_Test $test) {
 		if ($test instanceof \PHPUnit_Framework_TestCase) {
-			$this->sendToDataCollector(array(
+			$this->messageChannel->sendToDataCollector(array(
 				'event' => 'test.start',
 				'testClass' => get_class($test),
 				'testName' => $test->getName(),
@@ -82,24 +82,13 @@ class TestListener extends \PHPUnit_Framework_BaseTestListener {
 	 */
 	public function endTest(PHPUnit_Framework_Test $test, $time) {
 		if ($test instanceof \PHPUnit_Framework_TestCase) {
-			$this->sendToDataCollector(array(
+			$this->messageChannel->sendToDataCollector(array(
 				'event' => 'test.end',
 				'testClass' => get_class($test),
 				'testName' => $test->getName(),
 				'testNameWithoutDataSet' => $test->getName(FALSE),
 			));
 		}
-	}
-
-	/**
-	 * @param array $data
-	 */
-	protected function sendToDataCollector(array $data) {
-		$encodedData = json_encode($data);
-		$length = strlen($encodedData);
-
-		fwrite($this->fifoHandle, $length . "\0" . $encodedData . "\0\n");
-		echo "Wrote data: $length - $encodedData\n";
 	}
 
 }
