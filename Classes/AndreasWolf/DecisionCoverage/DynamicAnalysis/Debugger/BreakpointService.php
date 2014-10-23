@@ -3,8 +3,12 @@ namespace AndreasWolf\DecisionCoverage\DynamicAnalysis\Debugger;
 
 use AndreasWolf\DebuggerClient\Event\BreakpointEvent;
 use AndreasWolf\DebuggerClient\Protocol\Breakpoint\LineBreakpoint;
+use AndreasWolf\DebuggerClient\Protocol\Breakpoint\Breakpoint as DebuggerBreakpoint;
 use AndreasWolf\DebuggerClient\Protocol\Command\BreakpointSet;
 use AndreasWolf\DebuggerClient\Session\DebugSession;
+use AndreasWolf\DecisionCoverage\DynamicAnalysis\Data\DebuggerEngineDataFetcher;
+use AndreasWolf\DecisionCoverage\DynamicAnalysis\Data\PropertyValueFetcher;
+use AndreasWolf\DecisionCoverage\DynamicAnalysis\Data\ValueFetch;
 use AndreasWolf\DecisionCoverage\StaticAnalysis\Breakpoint;
 use React\Promise;
 use Symfony\Component\EventDispatcher\EventSubscriberInterface;
@@ -27,6 +31,11 @@ class BreakpointService implements EventSubscriberInterface {
 	 */
 	protected $session;
 
+	/**
+	 * @var [Breakpoint,DebuggerBreakpoint]
+	 */
+	protected $breakpoints = array();
+
 
 	public function __construct(DebugSession $session) {
 		$this->session = $session;
@@ -41,8 +50,9 @@ class BreakpointService implements EventSubscriberInterface {
 		$promises = array();
 		$breakpointCollection = $this->session->getBreakpointCollection();
 
-		foreach ($breakpoints as $breakpoint) {
-			$debuggerBreakpoint = new LineBreakpoint($filePath, $breakpoint->getLine());
+		foreach ($breakpoints as $analysisBreakpoint) {
+			$debuggerBreakpoint = new LineBreakpoint($filePath, $analysisBreakpoint->getLine());
+			$this->breakpoints[] = array($analysisBreakpoint, $debuggerBreakpoint);
 
 			// TODO this turns the process of adding the breakpoints in DebuggingSession kind of upside-down
 			// we should find a better way to get the promises
@@ -56,8 +66,38 @@ class BreakpointService implements EventSubscriberInterface {
 	}
 
 	public function breakpointHitHandler(BreakpointEvent $event) {
-		// TODO fetch data
-		$event->getSession()->run();
+		$debuggerBreakpoint = $event->getBreakpoint();
+		/** @var Breakpoint $analysisBreakpoint */
+		$analysisBreakpoint = NULL;
+		foreach ($this->breakpoints as $registeredBreakpoint) {
+			if ($registeredBreakpoint[1] === $debuggerBreakpoint) {
+				$analysisBreakpoint = $registeredBreakpoint[0];
+			}
+		}
+		if ($analysisBreakpoint === NULL) {
+			throw new \RuntimeException('Could not find breakpoint.');
+		}
+
+		if ($analysisBreakpoint->hasWatchedExpressions()) {
+			$fetcher = $this->getDataFetcher();
+			$promises = $fetcher->fetchValuesForExpressions($analysisBreakpoint->getWatchedExpressions());
+
+			$promises->then(function() use ($event) {
+				// all data was fetched, proceed with session…
+				$event->getSession()->run();
+			});
+		} else {
+			$event->getSession()->run();
+		}
+	}
+
+	protected function getDataFetcher() {
+		static $fetcher;
+
+		if (!$fetcher) {
+			$fetcher = new DebuggerEngineDataFetcher($this->session);
+		}
+		return $fetcher;
 	}
 
 	/**
