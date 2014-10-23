@@ -2,6 +2,9 @@
 namespace AndreasWolf\DecisionCoverage\DynamicAnalysis\Debugger;
 
 use AndreasWolf\DebuggerClient\Core\Client;
+use AndreasWolf\DebuggerClient\Event\BreakpointEvent;
+use AndreasWolf\DebuggerClient\Event\SessionEvent;
+use AndreasWolf\DebuggerClient\Session\DebugSession;
 use AndreasWolf\DecisionCoverage\DynamicAnalysis\PhpUnit\TestListenerOutputStream;
 use Symfony\Component\EventDispatcher\Event;
 use Symfony\Component\EventDispatcher\EventSubscriberInterface;
@@ -32,6 +35,11 @@ class ClientEventSubscriber implements EventSubscriberInterface {
 	 * @var string
 	 */
 	protected $staticAnalysisFile;
+
+	/**
+	 * @var ResultSet
+	 */
+	protected $staticAnalysisData;
 
 	/**
 	 * @var string
@@ -66,7 +74,7 @@ class ClientEventSubscriber implements EventSubscriberInterface {
 		echo "Client ready\n";
 		$arguments = $this->getTestRunArguments();
 		$this->prepareAndAttachFifoStream();
-		$this->loadStaticAnalysisData();
+		$this->staticAnalysisData = $this->loadStaticAnalysisData();
 
 		$command = '/usr/bin/env php ' . $arguments;
 
@@ -77,6 +85,39 @@ class ClientEventSubscriber implements EventSubscriberInterface {
 		), $pipes, NULL, array('XDEBUG_CONFIG' => 'IDEKEY=DecisionCoverage'));
 
 		echo "Started running tests\n";
+	}
+
+	/**
+	 * @param SessionEvent $event
+	 * @return void
+	 */
+	public function sessionInitializedHandler(SessionEvent $event) {
+		$session = $event->getSession();
+		$breakpointService = new BreakpointService($session);
+		$this->client->addSubscriber($breakpointService);
+
+		$promises = array();
+		foreach ($this->staticAnalysisData->getFileResults() as $fileResult) {
+			$promises[] = $breakpointService->addBreakpointsForFile($fileResult->getFilePath(), $fileResult->getBreakpoints());
+		}
+
+		\React\Promise\all($promises)->then(function() use ($session) {
+			echo "All breakpoints set\n";
+		}, function() {
+			echo "Setting breakpoints failed\n";
+		});
+
+		$this->client->addListener('session.status.changed', function(SessionEvent $e) use ($session, $breakpointService) {
+			echo "session.status.changed\n";
+			if ($e->getSession() != $session) {
+				return;
+			}
+
+			// session has ended, so remove breakpoint service
+			if ($session->getStatus() == DebugSession::STATUS_STOPPED) {
+				$this->client->removeSubscriber($breakpointService);
+			}
+		});
 	}
 
 	/**
@@ -96,6 +137,8 @@ class ClientEventSubscriber implements EventSubscriberInterface {
 
 	/**
 	 * Loads the static analysis data gathered before.
+	 *
+	 * @return ResultSet
 	 */
 	protected function loadStaticAnalysisData() {
 		$fileContents = file_get_contents($this->staticAnalysisFile);
@@ -143,6 +186,7 @@ class ClientEventSubscriber implements EventSubscriberInterface {
 	public static function getSubscribedEvents() {
 		return array(
 			'listener.ready' => 'listenerReadyHandler',
+			'session.initialized' => 'sessionInitializedHandler',
 		);
 	}
 
