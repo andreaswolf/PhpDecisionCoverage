@@ -2,6 +2,9 @@
 namespace AndreasWolf\DecisionCoverage\DynamicAnalysis\Debugger;
 
 use AndreasWolf\DebuggerClient\Core\Client;
+use AndreasWolf\DebuggerClient\Event\BreakpointEvent;
+use AndreasWolf\DebuggerClient\Event\SessionEvent;
+use AndreasWolf\DebuggerClient\Session\DebugSession;
 use AndreasWolf\DecisionCoverage\DynamicAnalysis\PhpUnit\TestListenerOutputStream;
 use Symfony\Component\EventDispatcher\Event;
 use Symfony\Component\EventDispatcher\EventSubscriberInterface;
@@ -28,6 +31,22 @@ class ClientEventSubscriber implements EventSubscriberInterface {
 	 */
 	protected $fifoFile;
 
+	/**
+	 * @var string
+	 */
+	protected $staticAnalysisFile;
+
+	/**
+	 * @var ResultSet
+	 */
+	protected $staticAnalysisData;
+
+	/**
+	 * @var string
+	 */
+	protected $phpUnitArguments;
+
+
 	public function __construct(Client $client) {
 		$this->client = $client;
 
@@ -35,14 +54,29 @@ class ClientEventSubscriber implements EventSubscriberInterface {
 	}
 
 	/**
+	 * @param string $staticAnalysisFile
+	 */
+	public function setStaticAnalysisFile($staticAnalysisFile) {
+		$this->staticAnalysisFile = $staticAnalysisFile;
+	}
+
+	/**
+	 * @param string $phpUnitArguments
+	 */
+	public function setPhpUnitArguments($phpUnitArguments) {
+		$this->phpUnitArguments = str_replace('\\', '', $phpUnitArguments);
+	}
+
+	/**
 	 * @param Event $event
 	 */
-	public function listenerReadyEventHandler(Event $event) {
+	public function listenerReadyHandler(Event $event) {
 		echo "Client ready\n";
-		$arguments = $this->getTestScriptArguments();
+		$arguments = $this->getTestRunArguments();
 		$this->prepareAndAttachFifoStream();
+		$this->staticAnalysisData = $this->loadStaticAnalysisData();
 
-		$command = '/usr/bin/env php ' . implode(' ', $arguments);
+		$command = '/usr/bin/env php ' . $arguments;
 
 		$pipes = array();
 		proc_open($command, array(
@@ -51,6 +85,39 @@ class ClientEventSubscriber implements EventSubscriberInterface {
 		), $pipes, NULL, array('XDEBUG_CONFIG' => 'IDEKEY=DecisionCoverage'));
 
 		echo "Started running tests\n";
+	}
+
+	/**
+	 * @param SessionEvent $event
+	 * @return void
+	 */
+	public function sessionInitializedHandler(SessionEvent $event) {
+		$session = $event->getSession();
+		$breakpointService = new BreakpointService($session);
+		$this->client->addSubscriber($breakpointService);
+
+		$promises = array();
+		foreach ($this->staticAnalysisData->getFileResults() as $fileResult) {
+			$promises[] = $breakpointService->addBreakpointsForFile($fileResult->getFilePath(), $fileResult->getBreakpoints());
+		}
+
+		\React\Promise\all($promises)->then(function() use ($session) {
+			echo "All breakpoints set\n";
+		}, function() {
+			echo "Setting breakpoints failed\n";
+		});
+
+		$this->client->addListener('session.status.changed', function(SessionEvent $e) use ($session, $breakpointService) {
+			echo "session.status.changed\n";
+			if ($e->getSession() != $session) {
+				return;
+			}
+
+			// session has ended, so remove breakpoint service
+			if ($session->getStatus() == DebugSession::STATUS_STOPPED) {
+				$this->client->removeSubscriber($breakpointService);
+			}
+		});
 	}
 
 	/**
@@ -69,22 +136,29 @@ class ClientEventSubscriber implements EventSubscriberInterface {
 	}
 
 	/**
+	 * Loads the static analysis data gathered before.
+	 *
+	 * @return ResultSet
+	 */
+	protected function loadStaticAnalysisData() {
+		$fileContents = file_get_contents($this->staticAnalysisFile);
+
+		$analysisObject = unserialize($fileContents);
+
+		return $analysisObject;
+	}
+
+	/**
 	 * @return array
 	 */
-	protected function getTestScriptArguments() {
-		$arguments = $_SERVER['argv'];
-		// remove the original called file from the array
-		array_shift($arguments);
-
-		$arguments = array_merge(
-			array(
-				// re-add the file we want to run
-				realpath(__DIR__ . '/../../../../../Scripts/RunTest.php'),
-				// add the fifo file name (this is not recognized by PHPUnit, but by our test script)
-				'--fifo', $this->fifoFile
-			),
-			$arguments
-		);
+	protected function getTestRunArguments() {
+		$arguments = implode(' ', array(
+			// re-add the file we want to run
+			realpath(__DIR__ . '/../../../../../Scripts/RunTest.php'),
+			// add the fifo file name (this is not recognized by PHPUnit, but by our test script)
+			'--fifo', $this->fifoFile,
+			$this->phpUnitArguments
+		));
 
 		return $arguments;
 	}
@@ -111,7 +185,8 @@ class ClientEventSubscriber implements EventSubscriberInterface {
 	 */
 	public static function getSubscribedEvents() {
 		return array(
-			'listener.ready' => 'listenerReadyEventHandler'
+			'listener.ready' => 'listenerReadyHandler',
+			'session.initialized' => 'sessionInitializedHandler',
 		);
 	}
 

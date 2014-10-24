@@ -25,6 +25,42 @@ class FileAnalyzer {
 		return $result;
 	}
 
+	public function analyzeFolder($folder) {
+		if (!file_exists($folder) || !is_dir($folder)) {
+			throw new \InvalidArgumentException($folder . ' does not exist or is no folder.', 1413747411);
+		}
+
+		$directoryIterator = new \RecursiveDirectoryIterator(realpath($folder));
+		$fileIterator = new \RecursiveIteratorIterator(new \RecursiveCallbackFilterIterator($directoryIterator,
+			function ($current, $key, $iterator) {
+				/** @var $iterator \RecursiveIterator */
+				/** @var $current \DirectoryIterator */
+				// Allow recursion
+				if ($iterator->hasChildren()) {
+					return TRUE;
+				}
+				// Check for large file
+				if ($current->isFile() && substr($current->getFilename(), -4) == '.php') {
+					return TRUE;
+				}
+
+				return FALSE;
+			}
+		));
+
+		$parser = new \PhpParser\Parser(new \PhpParser\Lexer());
+		$resultSet = new ResultSet();
+		foreach ($fileIterator as $file) {
+			$sourceFile = new SourceFile($file->getPathname());
+			$sourceFile->setParser($parser);
+			$fileResult = $this->analyzeFile($sourceFile);
+
+			$resultSet->addFileResult($fileResult);
+		}
+
+		return $resultSet;
+	}
+
 	/**
 	 * Writes the results to the given file.
 	 *

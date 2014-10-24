@@ -18,9 +18,17 @@ class TestCommand extends \PHPUnit_TextUI_Command {
 	 */
 	protected $fifoFile;
 
+	/**
+	 * @var FifoMessageChannel
+	 */
+	protected $messageChannel;
+
 
 	function __construct($fifoFile) {
 		$this->fifoFile = $fifoFile;
+
+		$fifoHandle = fopen($this->fifoFile, 'a');
+		$this->messageChannel = new FifoMessageChannel($fifoHandle);
 	}
 
 	/**
@@ -32,7 +40,30 @@ class TestCommand extends \PHPUnit_TextUI_Command {
 		parent::handleArguments($argv);
 
 		// the original command we extend here does not set the listeners, so we can safely set them here
-		$this->arguments['listeners'] = array(new TestListener($this->fifoFile));
+		$this->arguments['listeners'] = array(new TestListener($this->messageChannel));
+	}
+
+	/**
+	 * @param array $argv
+	 * @param bool $exit
+	 * @return int
+	 */
+	public function run(array $argv, $exit = TRUE) {
+		$this->messageChannel->sendToDataCollector(array(
+			'event' => 'testrun.start',
+		));
+
+		$result = parent::run($argv, FALSE);
+
+		$this->messageChannel->sendToDataCollector(array(
+			'event' => 'testrun.end',
+		));
+
+		if ($exit) {
+			exit($result);
+		} else {
+			return $result;
+		}
 	}
 
 }

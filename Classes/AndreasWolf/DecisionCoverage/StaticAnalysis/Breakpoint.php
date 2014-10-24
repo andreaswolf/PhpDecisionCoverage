@@ -49,6 +49,13 @@ class Breakpoint {
 	}
 
 	/**
+	 * @return bool
+	 */
+	public function hasWatchedExpressions() {
+		return count($this->watchedExpressions) > 0;
+	}
+
+	/**
 	 * @return Expr[]
 	 */
 	public function getWatchedExpressions() {

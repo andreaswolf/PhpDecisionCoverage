@@ -1,0 +1,12 @@
+# Configuration file for Symfony’s dependency injection package
+
+services:
+  php_parser:
+    class: 'PhpParser\Parser'
+    arguments: ["@php_lexer"]
+  php_lexer:
+    class: 'PhpParser\Lexer'
+  source_file:
+    class: 'AndreasWolf\DecisionCoverage\\Coverage\\SourceFile'
+    calls:
+      - [setParser, ["@php_parser"]]
