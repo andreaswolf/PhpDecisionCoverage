@@ -1,6 +1,7 @@
 <?php
 namespace AndreasWolf\DecisionCoverage\DynamicAnalysis\Data;
 use AndreasWolf\DebuggerClient\Protocol\Response\ExpressionValue;
+use AndreasWolf\DecisionCoverage\DynamicAnalysis\PhpUnit\Test;
 use AndreasWolf\DecisionCoverage\StaticAnalysis\Breakpoint;
 use PhpParser\Node\Expr;
 
@@ -27,9 +28,28 @@ class BreakpointDataSet {
 	 */
 	protected $values = array();
 
+	/**
+	 * @var Test
+	 */
+	protected $test;
+
 
 	public function __construct(Breakpoint $breakpoint) {
 		$this->breakpoint = $breakpoint;
+	}
+
+	/**
+	 * @return Test
+	 */
+	public function getTest() {
+		return $this->test;
+	}
+
+	/**
+	 * @param Test $test
+	 */
+	public function setTest($test) {
+		$this->test = $test;
 	}
 
 	/**

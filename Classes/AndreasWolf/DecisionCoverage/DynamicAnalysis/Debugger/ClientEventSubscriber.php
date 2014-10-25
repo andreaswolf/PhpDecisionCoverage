@@ -6,7 +6,10 @@ use AndreasWolf\DebuggerClient\Event\BreakpointEvent;
 use AndreasWolf\DebuggerClient\Event\SessionEvent;
 use AndreasWolf\DebuggerClient\Session\DebugSession;
 use AndreasWolf\DecisionCoverage\DynamicAnalysis\Data\CoverageDataSet;
+use AndreasWolf\DecisionCoverage\DynamicAnalysis\PhpUnit\TestEventHandler;
 use AndreasWolf\DecisionCoverage\DynamicAnalysis\PhpUnit\TestListenerOutputStream;
+use AndreasWolf\DecisionCoverage\Event\TestEvent;
+use AndreasWolf\DecisionCoverage\StaticAnalysis\ResultSet;
 use Symfony\Component\EventDispatcher\Event;
 use Symfony\Component\EventDispatcher\EventSubscriberInterface;
 
@@ -95,8 +98,12 @@ class ClientEventSubscriber implements EventSubscriberInterface {
 	public function sessionInitializedHandler(SessionEvent $event) {
 		$session = $event->getSession();
 		$coverageDataSet = new CoverageDataSet();
+
 		$breakpointService = new BreakpointService($session, $coverageDataSet);
 		$this->client->addSubscriber($breakpointService);
+
+		$testEventHandler = new TestEventHandler($coverageDataSet);
+		$this->client->addSubscriber($testEventHandler);
 
 		$promises = array();
 		foreach ($this->staticAnalysisData->getFileResults() as $fileResult) {
@@ -133,7 +140,9 @@ class ClientEventSubscriber implements EventSubscriberInterface {
 		$fifo = posix_mkfifo($this->fifoFile, 0600);
 
 		$fifoHandle = fopen($this->fifoFile, 'r+');
-		$this->client->attachStream(new TestListenerOutputStream($fifoHandle));
+		$listenerOutputStream = new TestListenerOutputStream($fifoHandle, $this->client);
+
+		$this->client->attachStream($listenerOutputStream);
 	}
 
 	/**
