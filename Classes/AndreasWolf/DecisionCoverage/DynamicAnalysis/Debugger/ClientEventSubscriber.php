@@ -5,6 +5,7 @@ use AndreasWolf\DebuggerClient\Core\Client;
 use AndreasWolf\DebuggerClient\Event\BreakpointEvent;
 use AndreasWolf\DebuggerClient\Event\SessionEvent;
 use AndreasWolf\DebuggerClient\Session\DebugSession;
+use AndreasWolf\DecisionCoverage\DynamicAnalysis\Data\CoverageDataSet;
 use AndreasWolf\DecisionCoverage\DynamicAnalysis\PhpUnit\TestListenerOutputStream;
 use Symfony\Component\EventDispatcher\Event;
 use Symfony\Component\EventDispatcher\EventSubscriberInterface;
@@ -93,7 +94,8 @@ class ClientEventSubscriber implements EventSubscriberInterface {
 	 */
 	public function sessionInitializedHandler(SessionEvent $event) {
 		$session = $event->getSession();
-		$breakpointService = new BreakpointService($session);
+		$coverageDataSet = new CoverageDataSet();
+		$breakpointService = new BreakpointService($session, $coverageDataSet);
 		$this->client->addSubscriber($breakpointService);
 
 		$promises = array();
@@ -108,7 +110,6 @@ class ClientEventSubscriber implements EventSubscriberInterface {
 		});
 
 		$this->client->addListener('session.status.changed', function(SessionEvent $e) use ($session, $breakpointService) {
-			echo "session.status.changed\n";
 			if ($e->getSession() != $session) {
 				return;
 			}

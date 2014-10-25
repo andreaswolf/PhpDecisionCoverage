@@ -1,13 +1,14 @@
 <?php
 namespace AndreasWolf\DecisionCoverage\DynamicAnalysis\Data;
 
+use AndreasWolf\DebuggerClient\Protocol\Response\ExpressionValue;
 use AndreasWolf\DebuggerClient\Session\DebugSession;
 use PhpParser\Node\Expr;
 use React\Promise;
 
 
 /**
- *
+ * Handles fetching data from the debugger engine (sends the respective commands, sets return value handling)
  *
  * @author Andreas Wolf <aw@foundata.net>
  */
@@ -30,10 +31,13 @@ class DebuggerEngineDataFetcher {
 	/**
 	 * Sends commands to fetch all given expressions.
 	 *
-	 * @param Expr[]
+	 * The data is added to the given data set as soon as it was returned by the debugger engine.
+	 *
+	 * @param Expr[] $expressions
+	 * @param BreakpointDataSet $dataSet The data set to store the fetched values in
 	 * @return Promise\Promise
 	 */
-	public function fetchValuesForExpressions($expressions) {
+	public function fetchValuesForExpressions($expressions, BreakpointDataSet $dataSet) {
 		$promises = array();
 
 		/** @var Expr $expression */
@@ -46,8 +50,9 @@ class DebuggerEngineDataFetcher {
 			}
 
 			$promise = $fetcher->fetch($fetch);
-			$promise->then(function($value) use ($fetch) {
-				echo "Fetched value ", $value, " for ", $fetch->getExpressionAsString(), "\n";
+			$promise->then(function(ExpressionValue $value) use ($expression, $fetch, $dataSet) {
+				// add the value to the data set when it was returned by the debugger engine
+				$dataSet->addValue($expression, $value);
 			});
 			$promises[] = $promise;
 		}

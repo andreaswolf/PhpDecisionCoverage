@@ -6,8 +6,10 @@ use AndreasWolf\DebuggerClient\Protocol\Breakpoint\LineBreakpoint;
 use AndreasWolf\DebuggerClient\Protocol\Breakpoint\Breakpoint as DebuggerBreakpoint;
 use AndreasWolf\DebuggerClient\Protocol\Command\BreakpointSet;
 use AndreasWolf\DebuggerClient\Session\DebugSession;
+use AndreasWolf\DecisionCoverage\DynamicAnalysis\Data\BreakpointDataSet;
 use AndreasWolf\DecisionCoverage\DynamicAnalysis\Data\DebuggerEngineDataFetcher;
 use AndreasWolf\DecisionCoverage\DynamicAnalysis\Data\PropertyValueFetcher;
+use AndreasWolf\DecisionCoverage\DynamicAnalysis\Data\CoverageDataSet;
 use AndreasWolf\DecisionCoverage\DynamicAnalysis\Data\ValueFetch;
 use AndreasWolf\DecisionCoverage\StaticAnalysis\Breakpoint;
 use React\Promise;
@@ -36,12 +38,22 @@ class BreakpointService implements EventSubscriberInterface {
 	 */
 	protected $breakpoints = array();
 
+	/**
+	 * @var CoverageDataSet
+	 */
+	protected $coverageData;
 
-	public function __construct(DebugSession $session) {
+
+	public function __construct(DebugSession $session, CoverageDataSet $dataSet) {
 		$this->session = $session;
+		$this->coverageData = $dataSet;
 	}
 
 	/**
+	 * Sends commands to the debugger engine to set all given breakpoints.
+	 *
+	 * The returned promise is resolved as soon as all breakpoints have been confirmed by the debugger engine.
+	 *
 	 * @param string $filePath
 	 * @param Breakpoint[] $breakpoints
 	 * @return Promise\Promise
@@ -80,9 +92,12 @@ class BreakpointService implements EventSubscriberInterface {
 
 		if ($analysisBreakpoint->hasWatchedExpressions()) {
 			$fetcher = $this->getDataFetcher();
-			$promises = $fetcher->fetchValuesForExpressions($analysisBreakpoint->getWatchedExpressions());
+			$dataSet = new BreakpointDataSet($analysisBreakpoint);
+			$fetchPromise = $fetcher->fetchValuesForExpressions($analysisBreakpoint->getWatchedExpressions(), $dataSet);
 
-			$promises->then(function() use ($event) {
+			$fetchPromise->then(function() use ($dataSet, $event) {
+				$this->coverageData->addBreakpointDataSet($dataSet);
+
 				// all data was fetched, proceed with session…
 				$event->getSession()->run();
 			});
