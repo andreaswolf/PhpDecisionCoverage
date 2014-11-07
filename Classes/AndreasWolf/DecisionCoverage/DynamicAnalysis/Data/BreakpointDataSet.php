@@ -1,5 +1,6 @@
 <?php
 namespace AndreasWolf\DecisionCoverage\DynamicAnalysis\Data;
+
 use AndreasWolf\DebuggerClient\Protocol\Response\ExpressionValue;
 use AndreasWolf\DecisionCoverage\DynamicAnalysis\PhpUnit\Test;
 use AndreasWolf\DecisionCoverage\StaticAnalysis\Breakpoint;
