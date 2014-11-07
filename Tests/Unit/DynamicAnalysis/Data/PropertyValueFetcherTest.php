@@ -29,7 +29,7 @@ class PropertyValueFetcherTest extends UnitTestCase {
 	 * @dataProvider fetchableExpressionsProvider
 	 */
 	public function canFetchReturnsTrueForFetchableExpressions(Expr $expression) {
-		$subject = new PropertyValueFetcher($this->getMock('AndreasWolf\DebuggerClient\Session\DebugSession'));
+		$subject = new PropertyValueFetcher($this->getDebugSession());
 
 		$this->assertTrue($subject->canFetch($expression));
 	}
@@ -52,9 +52,17 @@ class PropertyValueFetcherTest extends UnitTestCase {
 	 * @dataProvider notFetchableExpressionsProvider
 	 */
 	public function canFetchReturnsFalseForNotFetchableExpressions(Expr $expression) {
-		$subject = new PropertyValueFetcher($this->getMock('AndreasWolf\DebuggerClient\Session\DebugSession'));
+		$subject = new PropertyValueFetcher($this->getDebugSession());
 
 		$this->assertFalse($subject->canFetch($expression));
+	}
+
+	/**
+	 * @return \PHPUnit_Framework_MockObject_MockObject
+	 */
+	protected function getDebugSession() {
+		return $this->getMockBuilder('AndreasWolf\DebuggerClient\Session\DebugSession')
+			->disableOriginalConstructor()->getMock();
 	}
 
 }
