@@ -130,7 +130,7 @@ class LogicalOrCoverageTest extends UnitTestCase {
 	 */
 	protected function getDataSetForMockedBreakpoint() {
 		return new DataSample(
-			$this->getMockBuilder('AndreasWolf\DecisionCoverage\StaticAnalysis\Breakpoint')->disableOriginalConstructor()->getMock()
+			$this->getMockBuilder('AndreasWolf\DecisionCoverage\StaticAnalysis\Probe')->disableOriginalConstructor()->getMock()
 		);
 	}
 

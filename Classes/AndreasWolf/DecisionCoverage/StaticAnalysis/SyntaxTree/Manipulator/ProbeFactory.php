@@ -2,7 +2,7 @@
 namespace AndreasWolf\DecisionCoverage\StaticAnalysis\SyntaxTree\Manipulator;
 
 use AndreasWolf\DecisionCoverage\Source\SyntaxTreeIterator;
-use AndreasWolf\DecisionCoverage\StaticAnalysis\Breakpoint;
+use AndreasWolf\DecisionCoverage\StaticAnalysis\Probe;
 use AndreasWolf\DecisionCoverage\StaticAnalysis\FileResult;
 use AndreasWolf\DecisionCoverage\StaticAnalysis\SyntaxTree\NodeVisitor;
 use PhpParser\Node;
@@ -13,7 +13,7 @@ use PhpParser\Node;
  *
  * @author Andreas Wolf <aw@foundata.net>
  */
-class BreakpointFactory implements NodeVisitor {
+class ProbeFactory implements NodeVisitor {
 
 	/**
 	 * @var FileResult
@@ -58,10 +58,10 @@ class BreakpointFactory implements NodeVisitor {
 	}
 
 	/**
-	 * @param Breakpoint $breakpoint
+	 * @param Probe $breakpoint
 	 * @param Node $rootNode
 	 */
-	protected function addWatchExpressionsToBreakpoint(Breakpoint $breakpoint, Node $rootNode) {
+	protected function addWatchExpressionsToBreakpoint(Probe $breakpoint, Node $rootNode) {
 		$nodeIterator = new \RecursiveIteratorIterator(
 			new SyntaxTreeIterator(array($rootNode), TRUE), \RecursiveIteratorIterator::SELF_FIRST
 		);
@@ -78,10 +78,10 @@ class BreakpointFactory implements NodeVisitor {
 
 	/**
 	 * @param Node $node
-	 * @return Breakpoint
+	 * @return Probe
 	 */
 	protected function createBreakpoint(Node $node) {
-		return new Breakpoint($node->getLine());
+		return new Probe($node->getLine());
 	}
 
 }

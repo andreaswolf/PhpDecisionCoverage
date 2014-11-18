@@ -12,7 +12,7 @@ use PhpParser\Node\Stmt;
  *
  * @author Andreas Wolf <aw@foundata.net>
  */
-class Breakpoint {
+class Probe {
 
 	/**
 	 * @var int

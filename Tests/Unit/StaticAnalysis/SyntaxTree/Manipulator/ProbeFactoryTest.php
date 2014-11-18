@@ -1,8 +1,8 @@
 <?php
 namespace AndreasWolf\DecisionCoverage\Tests\Unit\StaticAnalysis\SyntaxTree\Manipulator;
 
-use AndreasWolf\DecisionCoverage\DynamicAnalysis\Data\Breakpoint;
-use AndreasWolf\DecisionCoverage\StaticAnalysis\SyntaxTree\Manipulator\BreakpointFactory;
+use AndreasWolf\DecisionCoverage\StaticAnalysis\Probe;
+use AndreasWolf\DecisionCoverage\StaticAnalysis\SyntaxTree\Manipulator\ProbeFactory;
 use AndreasWolf\DecisionCoverage\Tests\Unit\UnitTestCase;
 use PhpParser\Node\Expr;
 use PhpParser\Node\Name;
@@ -15,7 +15,7 @@ use PhpParser\Node\Stmt;
  *
  * @author Andreas Wolf <aw@foundata.net>
  */
-class BreakpointFactoryTest extends UnitTestCase {
+class ProbeFactoryTest extends UnitTestCase {
 
 	/**
 	 * @test
@@ -25,7 +25,7 @@ class BreakpointFactoryTest extends UnitTestCase {
 		$mockedAnalysis = $this->mockFileAnalysis();
 		$mockedAnalysis->expects($this->once())->method('addBreakpoint');
 
-		$subject = new BreakpointFactory($mockedAnalysis);
+		$subject = new ProbeFactory($mockedAnalysis);
 
 		$subject->startInstrumentation(array($ifNode));
 		$subject->handleNode($ifNode);
@@ -39,7 +39,7 @@ class BreakpointFactoryTest extends UnitTestCase {
 		$mockedAnalysis = $this->mockFileAnalysis();
 		$mockedAnalysis->expects($this->once())->method('addBreakpoint');
 
-		$subject = new BreakpointFactory($mockedAnalysis);
+		$subject = new ProbeFactory($mockedAnalysis);
 
 		$subject->startInstrumentation(array($ifNode));
 		$subject->handleNode($ifNode);
@@ -53,11 +53,11 @@ class BreakpointFactoryTest extends UnitTestCase {
 		$ifNode = new Stmt\If_($variable);
 		$mockedAnalysis = $this->mockFileAnalysis();
 
-		$mockedBreakpoint = $this->mockBreakpoint();
+		$mockedBreakpoint = $this->mockProbe();
 		$mockedBreakpoint->expects($this->once())->method('addWatchedExpression')->with($this->identicalTo($variable));
-		$subject = $this->mockBreakpointFactory($mockedAnalysis, array($mockedBreakpoint));
+		$subject = $this->mockProbeFactory($mockedAnalysis, array($mockedBreakpoint));
 
-		/** @var $subject BreakpointFactory */
+		/** @var $subject ProbeFactory */
 		$subject->startInstrumentation(array($ifNode));
 		$subject->handleNode($ifNode);
 	}
@@ -100,11 +100,11 @@ class BreakpointFactoryTest extends UnitTestCase {
 		$ifNode = new Stmt\If_(new Expr\BinaryOp\Equal($variable, new LNumber(5)));
 		$mockedAnalysis = $this->mockFileAnalysis();
 
-		$mockedBreakpoint = $this->mockBreakpoint();
+		$mockedBreakpoint = $this->mockProbe();
 		$mockedBreakpoint->expects($this->once())->method('addWatchedExpression')->with($this->identicalTo($variable));
-		$subject = $this->mockBreakpointFactory($mockedAnalysis, array($mockedBreakpoint));
+		$subject = $this->mockProbeFactory($mockedAnalysis, array($mockedBreakpoint));
 
-		/** @var $subject BreakpointFactory */
+		/** @var $subject ProbeFactory */
 		$subject->startInstrumentation(array($ifNode));
 		$subject->handleNode($ifNode);
 	}
@@ -124,11 +124,11 @@ class BreakpointFactoryTest extends UnitTestCase {
 	 * uses the ones given as parameter to this method.
 	 *
 	 * @param $mockedAnalysis
-	 * @param Breakpoint[] $breakpoints
+	 * @param Probe[] $breakpoints
 	 * @return \PHPUnit_Framework_MockObject_MockObject
 	 */
-	protected function mockBreakpointFactory($mockedAnalysis, $breakpoints) {
-		$subject = $this->getMockBuilder('AndreasWolf\DecisionCoverage\StaticAnalysis\SyntaxTree\Manipulator\BreakpointFactory')
+	protected function mockProbeFactory($mockedAnalysis, $breakpoints) {
+		$subject = $this->getMockBuilder('AndreasWolf\DecisionCoverage\StaticAnalysis\SyntaxTree\Manipulator\ProbeFactory')
 			->setConstructorArgs(array($mockedAnalysis))
 			->setMethods(array('createBreakpoint'))
 			->getMock();
@@ -146,8 +146,8 @@ class BreakpointFactoryTest extends UnitTestCase {
 	/**
 	 * @return \PHPUnit_Framework_MockObject_MockObject
 	 */
-	protected function mockBreakpoint() {
-		$mockedBreakpoint = $this->getMockBuilder('AndreasWolf\DecisionCoverage\StaticAnalysis\Breakpoint')
+	protected function mockProbe() {
+		$mockedBreakpoint = $this->getMockBuilder('AndreasWolf\DecisionCoverage\StaticAnalysis\Probe')
 			->disableOriginalConstructor()->getMock();
 
 		return $mockedBreakpoint;
