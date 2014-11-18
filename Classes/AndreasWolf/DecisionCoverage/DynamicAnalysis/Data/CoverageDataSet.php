@@ -6,16 +6,16 @@ use AndreasWolf\DecisionCoverage\DynamicAnalysis\PhpUnit\Test;
 /**
  * A set of data collected at program runtime.
  *
- * This consists of many breakpoint data sets that were triggered
+ * This consists of many breakpoint data sets that were collected when the respective breakpoints were hit.
  *
  * @author Andreas Wolf <aw@foundata.net>
  */
 class CoverageDataSet {
 
 	/**
-	 * @var BreakpointDataSet[]
+	 * @var DataSample[]
 	 */
-	protected $breakpointData = array();
+	protected $samples = array();
 
 	/**
 	 * @var Test
@@ -23,8 +23,8 @@ class CoverageDataSet {
 	protected $currentTest;
 
 
-	public function addBreakpointDataSet(BreakpointDataSet $dataSet) {
-		$this->breakpointData[] = $dataSet;
+	public function addSample(DataSample $dataSet) {
+		$this->samples[] = $dataSet;
 		$dataSet->setTest($this->currentTest);
 	}
 

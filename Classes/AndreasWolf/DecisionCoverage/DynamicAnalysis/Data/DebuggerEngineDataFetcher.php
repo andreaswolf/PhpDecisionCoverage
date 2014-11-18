@@ -34,10 +34,10 @@ class DebuggerEngineDataFetcher {
 	 * The data is added to the given data set as soon as it was returned by the debugger engine.
 	 *
 	 * @param Expr[] $expressions
-	 * @param BreakpointDataSet $dataSet The data set to store the fetched values in
+	 * @param DataSample $dataSet The data set to store the fetched values in
 	 * @return Promise\Promise
 	 */
-	public function fetchValuesForExpressions($expressions, BreakpointDataSet $dataSet) {
+	public function fetchValuesForExpressions($expressions, DataSample $dataSet) {
 		$promises = array();
 
 		/** @var Expr $expression */

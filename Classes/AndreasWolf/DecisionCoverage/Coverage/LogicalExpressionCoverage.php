@@ -2,7 +2,7 @@
 namespace AndreasWolf\DecisionCoverage\Coverage;
 
 use AndreasWolf\DebuggerClient\Protocol\Response\ExpressionValue;
-use AndreasWolf\DecisionCoverage\DynamicAnalysis\Data\BreakpointDataSet;
+use AndreasWolf\DecisionCoverage\DynamicAnalysis\Data\DataSample;
 use PhpParser\Node\Expr;
 
 
@@ -48,9 +48,9 @@ abstract class LogicalExpressionCoverage implements CompoundConditionCoverage {
 	}
 
 	/**
-	 * @param BreakpointDataSet $dataSet
+	 * @param DataSample $dataSet
 	 */
-	public function recordCoveredInput(BreakpointDataSet $dataSet) {
+	public function recordCoveredInput(DataSample $dataSet) {
 		$valueCombination = array(
 			$dataSet->getValue($this->leftExpressionId), $dataSet->getValue($this->rightExpressionId)
 		);

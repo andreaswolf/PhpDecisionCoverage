@@ -8,11 +8,11 @@ use PhpParser\Node\Expr;
 
 
 /**
- * A set of values collected for one breakpoint hit.
+ * A set of values collected for one measurement.
  *
  * @author Andreas Wolf <aw@foundata.net>
  */
-class BreakpointDataSet {
+class DataSample {
 
 	/**
 	 * @var Breakpoint
@@ -25,6 +25,8 @@ class BreakpointDataSet {
 	protected $expressions = array();
 
 	/**
+	 * The expression values fetched from the debugger engine, indexed by expression node id.
+	 *
 	 * @var ExpressionValue[]
 	 */
 	protected $values = array();
@@ -73,10 +75,11 @@ class BreakpointDataSet {
 		if (!$nodeId) {
 			throw new \RuntimeException('Coverage node ID not found.');
 		}
-
-		if (!array_key_exists($nodeId, $this->expressions)) {
-			$this->expressions[$nodeId] = $expression;
+		if (array_key_exists($nodeId, $this->expressions)) {
+			throw new \InvalidArgumentException('Value for node id ' . $nodeId . ' already added.', 1415299394);
 		}
+
+		$this->expressions[$nodeId] = $expression;
 		$this->values[$nodeId] = $value;
 	}
 

@@ -1,7 +1,7 @@
 <?php
 namespace AndreasWolf\DecisionCoverage\Coverage;
 
-use AndreasWolf\DecisionCoverage\DynamicAnalysis\Data\BreakpointDataSet;
+use AndreasWolf\DecisionCoverage\DynamicAnalysis\Data\DataSample;
 
 
 /**
@@ -14,10 +14,10 @@ interface CompoundConditionCoverage {
 	/**
 	 * Records an input set for this condition.
 	 *
-	 * @param BreakpointDataSet $dataSet
+	 * @param DataSample $dataSet
 	 * @return void
 	 */
-	public function recordCoveredInput(BreakpointDataSet $dataSet);
+	public function recordCoveredInput(DataSample $dataSet);
 
 	/**
 	 * Returns the coverage for this condition as a float.

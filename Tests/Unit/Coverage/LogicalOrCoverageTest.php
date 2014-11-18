@@ -3,7 +3,7 @@ namespace AndreasWolf\DecisionCoverage\Tests\Unit\Coverage;
 
 use AndreasWolf\DebuggerClient\Protocol\Response\ExpressionValue;
 use AndreasWolf\DecisionCoverage\Coverage\LogicalOrCoverage;
-use AndreasWolf\DecisionCoverage\DynamicAnalysis\Data\BreakpointDataSet;
+use AndreasWolf\DecisionCoverage\DynamicAnalysis\Data\DataSample;
 use AndreasWolf\DecisionCoverage\Tests\Unit\UnitTestCase;
 use PhpParser\Node\Expr;
 use PhpParser\Node\Expr\BinaryOp\LogicalOr;
@@ -97,7 +97,7 @@ class LogicalOrCoverageTest extends UnitTestCase {
 	 *
 	 * @param boolean $leftValue
 	 * @param boolean $rightValue
-	 * @return BreakpointDataSet
+	 * @return DataSample
 	 */
 	protected function createExpressionDataSet($leftValue, $rightValue) {
 		$dataSet = $this->getDataSetForMockedBreakpoint();
@@ -126,10 +126,10 @@ class LogicalOrCoverageTest extends UnitTestCase {
 	}
 
 	/**
-	 * @return BreakpointDataSet
+	 * @return DataSample
 	 */
 	protected function getDataSetForMockedBreakpoint() {
-		return new BreakpointDataSet(
+		return new DataSample(
 			$this->getMockBuilder('AndreasWolf\DecisionCoverage\StaticAnalysis\Breakpoint')->disableOriginalConstructor()->getMock()
 		);
 	}

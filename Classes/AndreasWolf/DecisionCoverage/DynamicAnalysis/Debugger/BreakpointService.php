@@ -6,7 +6,7 @@ use AndreasWolf\DebuggerClient\Protocol\Breakpoint\LineBreakpoint;
 use AndreasWolf\DebuggerClient\Protocol\Breakpoint\Breakpoint as DebuggerBreakpoint;
 use AndreasWolf\DebuggerClient\Protocol\Command\BreakpointSet;
 use AndreasWolf\DebuggerClient\Session\DebugSession;
-use AndreasWolf\DecisionCoverage\DynamicAnalysis\Data\BreakpointDataSet;
+use AndreasWolf\DecisionCoverage\DynamicAnalysis\Data\DataSample;
 use AndreasWolf\DecisionCoverage\DynamicAnalysis\Data\DebuggerEngineDataFetcher;
 use AndreasWolf\DecisionCoverage\DynamicAnalysis\Data\PropertyValueFetcher;
 use AndreasWolf\DecisionCoverage\DynamicAnalysis\Data\CoverageDataSet;
@@ -92,11 +92,11 @@ class BreakpointService implements EventSubscriberInterface {
 
 		if ($analysisBreakpoint->hasWatchedExpressions()) {
 			$fetcher = $this->getDataFetcher();
-			$dataSet = new BreakpointDataSet($analysisBreakpoint);
+			$dataSet = new DataSample($analysisBreakpoint);
 			$fetchPromise = $fetcher->fetchValuesForExpressions($analysisBreakpoint->getWatchedExpressions(), $dataSet);
 
 			$fetchPromise->then(function() use ($dataSet, $event) {
-				$this->coverageData->addBreakpointDataSet($dataSet);
+				$this->coverageData->addSample($dataSet);
 
 				// all data was fetched, proceed with session…
 				$event->getSession()->run();
