@@ -8,6 +8,7 @@ use AndreasWolf\DecisionCoverage\DynamicAnalysis\Debugger\ClientEventSubscriber;
 use Symfony\Component\Console\Command\Command;
 use Symfony\Component\Console\Input\InputArgument;
 use Symfony\Component\Console\Input\InputInterface;
+use Symfony\Component\Console\Input\InputOption;
 use Symfony\Component\Console\Output\OutputInterface;
 
 
@@ -26,7 +27,7 @@ class RunTestsCommand extends Command {
 		$this->setName('run')
 			->setDescription('Runs PHPUnit tests.')
 			->addArgument('analysis-file', InputArgument::REQUIRED, 'The analysis file to use.')
-			->addArgument('phpunit-arguments', InputArgument::REQUIRED, 'Options for invoking PHPUnit.');
+			->addOption('phpunit-arguments', null, InputOption::VALUE_REQUIRED, 'Options for invoking PHPUnit.');
 	}
 
 	/**
@@ -35,15 +36,27 @@ class RunTestsCommand extends Command {
 	 * @return null|int
 	 */
 	protected function execute(InputInterface $input, OutputInterface $output) {
+		$this->assertOptionHasValue($input, 'phpunit-arguments');
+
 		$debuggerClient = new Client();
 		$dataSet = new CoverageDataSet();
 		$clientEventSubscriber = new ClientEventSubscriber($debuggerClient, $dataSet);
 		$clientEventSubscriber->setStaticAnalysisFile($input->getArgument('analysis-file'));
-		$clientEventSubscriber->setPhpUnitArguments($input->getArgument('phpunit-arguments'));
+		$clientEventSubscriber->setPhpUnitArguments($input->getOption('phpunit-arguments'));
 		$debuggerClient->addSubscriber($clientEventSubscriber);
 		$debuggerClient->run();
 
 		return NULL;
+	}
+
+	/**
+	 * @param InputInterface $input
+	 * @param string $optionName
+	 */
+	protected function assertOptionHasValue(InputInterface $input, $optionName) {
+		if ($input->getOption($optionName) === NULL) {
+			throw new \InvalidArgumentException('Option ' . $optionName . ' has to be set!');
+		}
 	}
 
 }
