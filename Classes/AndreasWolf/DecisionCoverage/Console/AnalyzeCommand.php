@@ -68,10 +68,12 @@ class AnalyzeCommand extends Command {
 			// default output dir
 			$outputPath = realpath(__DIR__ . '/../../../../Output');
 		}
-		$outputPath = rtrim($outputPath, '/') . '/';
-
 		if (is_dir($outputPath)) {
-			$outputPath .= sprintf('%s_%s.out', date('Y-m-d_H-i'), $this->project);
+			$outputPath = rtrim($outputPath, '/') . '/';
+
+			if (is_dir($outputPath)) {
+				$outputPath .= sprintf('%s_%s.out', date('Y-m-d_H-i'), $this->project);
+			}
 		}
 
 		return $outputPath;
