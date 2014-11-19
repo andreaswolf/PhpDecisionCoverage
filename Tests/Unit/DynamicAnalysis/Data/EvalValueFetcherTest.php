@@ -8,8 +8,14 @@ use PhpParser\Node\Expr;
 
 class EvalValueFetcherTest extends UnitTestCase {
 
-	public function notFetchableExpressionsProvider() {
+	public function fetchableExpressionsProvider() {
 		return array(
+			'local object method call' => array(
+				new Expr\MethodCall(new Expr\Variable('this'), 'foo'),
+			),
+			'local object method call with property fetch on result' => array(
+				new Expr\PropertyFetch(new Expr\MethodCall(new Expr\Variable('this'), 'foo'), 'bar'),
+			),
 			'simple variable' => array(
 				new Expr\Variable('foo')
 			),
@@ -18,29 +24,6 @@ class EvalValueFetcherTest extends UnitTestCase {
 			),
 			'different object property' => array(
 				new Expr\PropertyFetch(new Expr\Variable('foo'), 'bar'),
-			),
-		);
-	}
-
-	/**
-	 * @param Expr $expression
-	 *
-	 * @test
-	 * @dataProvider notFetchableExpressionsProvider
-	 */
-	public function canFetchReturnsFalseForNotFetchableExpressions(Expr $expression) {
-		$subject = new EvalValueFetcher($this->getMock('AndreasWolf\DebuggerClient\Session\DebugSession'));
-
-		$this->assertFalse($subject->canFetch($expression));
-	}
-
-	public function fetchableExpressionsProvider() {
-		return array(
-			'local object method call' => array(
-				new Expr\MethodCall(new Expr\Variable('this'), 'foo'),
-			),
-			'local object method call with property fetch on result' => array(
-				new Expr\PropertyFetch(new Expr\MethodCall(new Expr\Variable('this'), 'foo'), 'bar'),
 			),
 		);
 	}

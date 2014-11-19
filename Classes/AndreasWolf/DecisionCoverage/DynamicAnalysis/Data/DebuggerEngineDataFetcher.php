@@ -23,7 +23,7 @@ class DebuggerEngineDataFetcher {
 
 	public function __construct(DebugSession $session) {
 		$this->valueFetchers = array(
-			new EvalValueFetcher(),
+			new EvalValueFetcher($session),
 			new PropertyValueFetcher($session)
 		);
 	}
