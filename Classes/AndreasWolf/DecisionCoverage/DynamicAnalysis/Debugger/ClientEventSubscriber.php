@@ -46,13 +46,19 @@ class ClientEventSubscriber implements EventSubscriberInterface {
 	protected $staticAnalysisData;
 
 	/**
+	 * @var CoverageDataSet
+	 */
+	protected $dataSet;
+
+	/**
 	 * @var string
 	 */
 	protected $phpUnitArguments;
 
 
-	public function __construct(Client $client) {
+	public function __construct(Client $client, CoverageDataSet $coverageDataSet) {
 		$this->client = $client;
+		$this->dataSet = $coverageDataSet;
 
 		$this->fifoFile = sys_get_temp_dir() . '/fifo-' . uniqid();
 	}
@@ -97,12 +103,11 @@ class ClientEventSubscriber implements EventSubscriberInterface {
 	 */
 	public function sessionInitializedHandler(SessionEvent $event) {
 		$session = $event->getSession();
-		$coverageDataSet = new CoverageDataSet();
 
-		$breakpointService = new BreakpointService($session, $coverageDataSet);
+		$breakpointService = new BreakpointService($session, $this->dataSet);
 		$this->client->addSubscriber($breakpointService);
 
-		$testEventHandler = new TestEventHandler($coverageDataSet);
+		$testEventHandler = new TestEventHandler($this->dataSet);
 		$this->client->addSubscriber($testEventHandler);
 
 		$promises = array();

@@ -3,6 +3,7 @@ namespace AndreasWolf\DecisionCoverage\Console;
 
 use AndreasWolf\DebuggerClient\Core\Bootstrap;
 use AndreasWolf\DebuggerClient\Core\Client;
+use AndreasWolf\DecisionCoverage\DynamicAnalysis\Data\CoverageDataSet;
 use AndreasWolf\DecisionCoverage\DynamicAnalysis\Debugger\ClientEventSubscriber;
 use Symfony\Component\Console\Command\Command;
 use Symfony\Component\Console\Input\InputArgument;
@@ -35,7 +36,8 @@ class RunTestsCommand extends Command {
 	 */
 	protected function execute(InputInterface $input, OutputInterface $output) {
 		$debuggerClient = new Client();
-		$clientEventSubscriber = new ClientEventSubscriber($debuggerClient);
+		$dataSet = new CoverageDataSet();
+		$clientEventSubscriber = new ClientEventSubscriber($debuggerClient, $dataSet);
 		$clientEventSubscriber->setStaticAnalysisFile($input->getArgument('analysis-file'));
 		$clientEventSubscriber->setPhpUnitArguments($input->getArgument('phpunit-arguments'));
 		$debuggerClient->addSubscriber($clientEventSubscriber);
