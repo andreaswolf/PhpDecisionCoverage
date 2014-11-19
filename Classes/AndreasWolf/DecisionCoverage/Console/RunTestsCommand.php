@@ -44,6 +44,7 @@ class RunTestsCommand extends Command {
 		$clientEventSubscriber->setStaticAnalysisFile($input->getArgument('analysis-file'));
 		$clientEventSubscriber->setPhpUnitArguments($input->getOption('phpunit-arguments'));
 		$debuggerClient->addSubscriber($clientEventSubscriber);
+		$debuggerClient->quitAfterCurrentSession();
 		$debuggerClient->run();
 
 		return NULL;
