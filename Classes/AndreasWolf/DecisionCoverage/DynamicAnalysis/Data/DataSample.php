@@ -87,12 +87,32 @@ class DataSample {
 	 * @param Expr|int $nodeIdOrExpression The expression or its syntax tree node ID
 	 * @return ExpressionValue
 	 */
-	public function getValue($nodeIdOrExpression) {
+	public function getValueFor($nodeIdOrExpression) {
+		$this->ensureNodeId($nodeIdOrExpression);
+
+		return $this->values[$nodeIdOrExpression];
+	}
+
+	/**
+	 * Returns TRUE if a value for the given node exists in this sample.
+	 *
+	 * @param Expr|int $nodeIdOrExpression
+	 * @return bool
+	 */
+	public function hasValueFor($nodeIdOrExpression) {
+		$this->ensureNodeId($nodeIdOrExpression);
+
+		return array_key_exists($nodeIdOrExpression, $this->values);
+	}
+
+	/**
+	 * @param Expr|int &$nodeIdOrExpression
+	 * @return void
+	 */
+	protected function ensureNodeId(&$nodeIdOrExpression) {
 		if ($nodeIdOrExpression instanceof Expr) {
 			$nodeIdOrExpression = $nodeIdOrExpression->getAttribute('coverage__nodeId');
 		}
-
-		return $this->values[$nodeIdOrExpression];
 	}
 
 }

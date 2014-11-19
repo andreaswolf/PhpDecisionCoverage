@@ -52,7 +52,7 @@ abstract class LogicalExpressionCoverage implements CompoundConditionCoverage {
 	 */
 	public function recordCoveredInput(DataSample $dataSet) {
 		$valueCombination = array(
-			$dataSet->getValue($this->leftExpressionId), $dataSet->getValue($this->rightExpressionId)
+			$dataSet->getValueFor($this->leftExpressionId), $dataSet->getValueFor($this->rightExpressionId)
 		);
 
 		$this->dataSets[] = $valueCombination;
