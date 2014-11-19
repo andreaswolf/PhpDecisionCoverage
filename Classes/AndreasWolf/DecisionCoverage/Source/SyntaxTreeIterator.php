@@ -41,10 +41,13 @@ class SyntaxTreeIterator implements \RecursiveIterator {
 	);
 
 	/**
-	 * @param Node[] $nodes
+	 * @param Node[]|Node $nodes
 	 * @param bool $includeAllSubNodes If TRUE, all sub nodes (e.g. conditions, elseifs and else for the if-statement) will be included
 	 */
-	public function __construct(array $nodes, $includeAllSubNodes = FALSE) {
+	public function __construct($nodes, $includeAllSubNodes = FALSE) {
+		if (!is_array($nodes)) {
+			$nodes = array($nodes);
+		}
 		$this->nodes = $nodes;
 		$this->includeAllSubNodes = $includeAllSubNodes;
 	}
