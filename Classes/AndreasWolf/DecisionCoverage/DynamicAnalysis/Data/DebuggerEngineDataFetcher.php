@@ -23,8 +23,8 @@ class DebuggerEngineDataFetcher {
 
 	public function __construct(DebugSession $session) {
 		$this->valueFetchers = array(
+			new PropertyValueFetcher($session),
 			new EvalValueFetcher($session),
-			new PropertyValueFetcher($session)
 		);
 	}
 
@@ -42,12 +42,8 @@ class DebuggerEngineDataFetcher {
 
 		/** @var Expr $expression */
 		foreach ($expressions as $expression) {
-			$fetcher = $this->getFetcherForExpression($expression);
 			$fetch = new ValueFetch($expression);
-
-			if (!$fetcher) {
-				throw new \RuntimeException('No fetcher found for ' . $fetch->getExpressionAsString());
-			}
+			$fetcher = $this->getFetcherForExpression($expression);
 
 			$promise = $fetcher->fetch($fetch);
 			$promise->then(function(ExpressionValue $value) use ($expression, $fetch, $dataSet) {
@@ -65,6 +61,7 @@ class DebuggerEngineDataFetcher {
 	 *
 	 * @param Expr $expression
 	 * @return ValueFetchStrategy
+	 * @throw \RuntimeException If no fetcher can be found
 	 */
 	protected function getFetcherForExpression(Expr $expression) {
 		foreach ($this->valueFetchers as $fetcher) {
@@ -72,6 +69,7 @@ class DebuggerEngineDataFetcher {
 				return $fetcher;
 			}
 		}
+		throw new \RuntimeException('No fetcher found for expression of type ' . $expression->getType());
 	}
 
 }
