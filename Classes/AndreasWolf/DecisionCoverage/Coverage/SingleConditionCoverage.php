@@ -1,6 +1,7 @@
 <?php
 namespace AndreasWolf\DecisionCoverage\Coverage;
 
+use AndreasWolf\DebuggerClient\Protocol\Response\ExpressionValue;
 use PhpParser\Node\Expr;
 
 
@@ -11,7 +12,7 @@ use PhpParser\Node\Expr;
  *
  * @author Andreas Wolf <aw@foundata.net>
  */
-class SingleConditionCoverage {
+class SingleConditionCoverage implements Coverage {
 
 	/**
 	 * @var Expr
@@ -31,10 +32,11 @@ class SingleConditionCoverage {
 	}
 
 	/**
-	 * @param boolean $value
+	 * @param ExpressionValue $value
+	 * @return void
 	 */
-	public function recordCoveredValue($value) {
-		$this->coveredValues[] = $value;
+	public function recordCoveredValue(ExpressionValue $value) {
+		$this->coveredValues[] = $value->getRawValue();
 	}
 
 	/**

@@ -1,6 +1,7 @@
 <?php
 namespace AndreasWolf\DecisionCoverage\Tests\Unit\Coverage;
 
+use AndreasWolf\DebuggerClient\Protocol\Response\ExpressionValue;
 use AndreasWolf\DecisionCoverage\Coverage\SingleConditionCoverage;
 use AndreasWolf\DecisionCoverage\Tests\Unit\UnitTestCase;
 
@@ -23,7 +24,7 @@ class SingleConditionCoverageTest extends UnitTestCase {
 	public function conditionIsHalfCoveredForASingleTrueValue() {
 		$subject = new SingleConditionCoverage($this->getMock('PhpParser\Node\Expr'));
 
-		$subject->recordCoveredValue(TRUE);
+		$subject->recordCoveredValue($this->getBooleanExpressionValue(TRUE));
 
 		// also make sure we get back a float
 		$this->assertSame(0.5, $subject->getCoverage());
@@ -35,7 +36,7 @@ class SingleConditionCoverageTest extends UnitTestCase {
 	public function conditionIsHalfCoveredForASingleFalseValue() {
 		$subject = new SingleConditionCoverage($this->getMock('PhpParser\Node\Expr'));
 
-		$subject->recordCoveredValue(FALSE);
+		$subject->recordCoveredValue($this->getBooleanExpressionValue(FALSE));
 
 		// also make sure we get back a float
 		$this->assertSame(0.5, $subject->getCoverage());
@@ -47,8 +48,8 @@ class SingleConditionCoverageTest extends UnitTestCase {
 	public function conditionIsFullyCoveredIfTrueAndFalseHaveBeenCoveredOnceEach() {
 		$subject = new SingleConditionCoverage($this->getMock('PhpParser\Node\Expr'));
 
-		$subject->recordCoveredValue(TRUE);
-		$subject->recordCoveredValue(FALSE);
+		$subject->recordCoveredValue($this->getBooleanExpressionValue(TRUE));
+		$subject->recordCoveredValue($this->getBooleanExpressionValue(FALSE));
 
 		// also make sure we get back a float
 		$this->assertSame(1.0, $subject->getCoverage());
@@ -60,13 +61,20 @@ class SingleConditionCoverageTest extends UnitTestCase {
 	public function coverageDoesNotChangeIfOneValueIsCoveredMultipleTimes() {
 		$subject = new SingleConditionCoverage($this->getMock('PhpParser\Node\Expr'));
 
-		$subject->recordCoveredValue(FALSE);
-		$subject->recordCoveredValue(FALSE);
-		$subject->recordCoveredValue(TRUE);
-		$subject->recordCoveredValue(TRUE);
+		$subject->recordCoveredValue($this->getBooleanExpressionValue(FALSE));
+		$subject->recordCoveredValue($this->getBooleanExpressionValue(FALSE));
+		$subject->recordCoveredValue($this->getBooleanExpressionValue(TRUE));
+		$subject->recordCoveredValue($this->getBooleanExpressionValue(TRUE));
 
 		// also make sure we get back a float
 		$this->assertSame(1.0, $subject->getCoverage());
+	}
+
+	/**
+	 * @return ExpressionValue
+	 */
+	protected function getBooleanExpressionValue($value) {
+		return new ExpressionValue(ExpressionValue::TYPE_BOOLEAN, $value);
 	}
 
 }
