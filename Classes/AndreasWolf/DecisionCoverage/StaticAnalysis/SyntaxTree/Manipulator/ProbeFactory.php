@@ -58,20 +58,21 @@ class ProbeFactory implements NodeVisitor {
 	}
 
 	/**
-	 * @param Probe $breakpoint
+	 * @param Probe $probe
 	 * @param Node $rootNode
 	 */
-	protected function addWatchExpressionsToBreakpoint(Probe $breakpoint, Node $rootNode) {
+	protected function addWatchExpressionsToBreakpoint(Probe $probe, Node $rootNode) {
 		$nodeIterator = new \RecursiveIteratorIterator(
 			new SyntaxTreeIterator(array($rootNode), TRUE), \RecursiveIteratorIterator::SELF_FIRST
 		);
 
+		/** @var Node $node */
 		foreach ($nodeIterator as $node) {
 			if (in_array($node->getType(), array('Expr_Variable', 'Expr_PropertyFetch', 'Expr_StaticPropertyFetch',
 				'Expr_MethodCall', 'Expr_StaticCall'))
 			) {
 
-				$breakpoint->addWatchedExpression($node);
+				$probe->addWatchedExpression($node);
 			}
 		}
 	}
@@ -81,7 +82,10 @@ class ProbeFactory implements NodeVisitor {
 	 * @return Probe
 	 */
 	protected function createBreakpoint(Node $node) {
-		return new Probe($node->getLine());
+		$probe = new Probe($node->getLine());
+		$node->setAttribute('coverage__probe', $probe);
+
+		return $probe;
 	}
 
 }
