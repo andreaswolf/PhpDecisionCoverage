@@ -35,9 +35,17 @@ class EvalValueFetcherTest extends UnitTestCase {
 	 * @dataProvider fetchableExpressionsProvider
 	 */
 	public function canFetchReturnsTrueForFetchableExpressions(Expr $expression) {
-		$subject = new EvalValueFetcher($this->getMock('AndreasWolf\DebuggerClient\Session\DebugSession'));
+		$subject = new EvalValueFetcher($this->mockSession());
 
 		$this->assertTrue($subject->canFetch($expression));
+	}
+
+	/**
+	 * @return \PHPUnit_Framework_MockObject_MockBuilder
+	 */
+	protected function mockSession() {
+		return $this->getMockBuilder('AndreasWolf\DebuggerClient\Session\DebugSession')
+			->disableOriginalConstructor()->getMock();
 	}
 
 }
