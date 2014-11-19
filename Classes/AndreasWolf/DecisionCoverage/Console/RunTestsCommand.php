@@ -27,7 +27,8 @@ class RunTestsCommand extends Command {
 		$this->setName('run')
 			->setDescription('Runs PHPUnit tests.')
 			->addArgument('analysis-file', InputArgument::REQUIRED, 'The analysis file to use.')
-			->addOption('phpunit-arguments', null, InputOption::VALUE_REQUIRED, 'Options for invoking PHPUnit.');
+			->addOption('phpunit-arguments', null, InputOption::VALUE_REQUIRED, 'Options for invoking PHPUnit.')
+			->addOption('output', null, InputOption::VALUE_REQUIRED, 'The file to use for data gathered from the tests.');
 	}
 
 	/**
@@ -37,6 +38,7 @@ class RunTestsCommand extends Command {
 	 */
 	protected function execute(InputInterface $input, OutputInterface $output) {
 		$this->assertOptionHasValue($input, 'phpunit-arguments');
+		$this->assertOptionHasValue($input, 'output');
 
 		$debuggerClient = new Client();
 		$dataSet = new CoverageDataSet();
@@ -46,6 +48,8 @@ class RunTestsCommand extends Command {
 		$debuggerClient->addSubscriber($clientEventSubscriber);
 		$debuggerClient->quitAfterCurrentSession();
 		$debuggerClient->run();
+
+		file_put_contents($input->getOption('output'), serialize($dataSet));
 
 		return NULL;
 	}
