@@ -2,6 +2,7 @@
 namespace AndreasWolf\DecisionCoverage\StaticAnalysis;
 
 use AndreasWolf\DecisionCoverage\Source\SourceFile;
+use AndreasWolf\DecisionCoverage\StaticAnalysis\Persistence\SerializedObjectMapper;
 use AndreasWolf\DecisionCoverage\StaticAnalysis\SyntaxTree\Instrumenter;
 use AndreasWolf\DecisionCoverage\StaticAnalysis\SyntaxTree\Manipulator\ProbeFactory;
 use AndreasWolf\DecisionCoverage\StaticAnalysis\SyntaxTree\Manipulator\NodeIdGenerator;
@@ -66,13 +67,12 @@ class FileAnalyzer {
 	 *
 	 * @param string $file
 	 * @param ResultSet $result
+	 * @deprecated Directly use a DataMapper instance
 	 */
 	public function writeAnalysisResultsToFile($file, ResultSet $result) {
-		$result = file_put_contents($file, $result->serialize());
+		$mapper = new SerializedObjectMapper();
 
-		if ($result === FALSE) {
-			throw new \RuntimeException('Could not write results to file', 1413653932);
-		}
+		$mapper->saveToFile($file, $result);
 	}
 
 }

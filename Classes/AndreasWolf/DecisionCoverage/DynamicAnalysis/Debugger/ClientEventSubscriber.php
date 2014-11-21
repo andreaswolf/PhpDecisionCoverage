@@ -36,11 +36,6 @@ class ClientEventSubscriber implements EventSubscriberInterface {
 	protected $fifoFile;
 
 	/**
-	 * @var string
-	 */
-	protected $staticAnalysisFile;
-
-	/**
 	 * @var ResultSet
 	 */
 	protected $staticAnalysisData;
@@ -64,10 +59,10 @@ class ClientEventSubscriber implements EventSubscriberInterface {
 	}
 
 	/**
-	 * @param string $staticAnalysisFile
+	 * @param ResultSet $results
 	 */
-	public function setStaticAnalysisFile($staticAnalysisFile) {
-		$this->staticAnalysisFile = $staticAnalysisFile;
+	public function setStaticAnalysisResults(ResultSet $results) {
+		$this->staticAnalysisData = $results;
 	}
 
 	/**
@@ -84,7 +79,6 @@ class ClientEventSubscriber implements EventSubscriberInterface {
 		echo "Client ready\n";
 		$arguments = $this->getTestRunArguments();
 		$this->prepareAndAttachFifoStream();
-		$this->staticAnalysisData = $this->loadStaticAnalysisData();
 
 		$command = '/usr/bin/env php ' . $arguments;
 
@@ -148,19 +142,6 @@ class ClientEventSubscriber implements EventSubscriberInterface {
 		$listenerOutputStream = new TestListenerOutputStream($fifoHandle, $this->client);
 
 		$this->client->attachStream($listenerOutputStream);
-	}
-
-	/**
-	 * Loads the static analysis data gathered before.
-	 *
-	 * @return ResultSet
-	 */
-	protected function loadStaticAnalysisData() {
-		$fileContents = file_get_contents($this->staticAnalysisFile);
-
-		$analysisObject = unserialize($fileContents);
-
-		return $analysisObject;
 	}
 
 	/**
