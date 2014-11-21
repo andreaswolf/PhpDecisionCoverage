@@ -32,11 +32,6 @@ class ClientEventSubscriber implements EventSubscriberInterface {
 	protected $client;
 
 	/**
-	 * @var string
-	 */
-	protected $staticAnalysisFile;
-
-	/**
 	 * @var ResultSet
 	 */
 	protected $staticAnalysisData;
@@ -60,10 +55,10 @@ class ClientEventSubscriber implements EventSubscriberInterface {
 	}
 
 	/**
-	 * @param string $staticAnalysisFile
+	 * @param ResultSet $results
 	 */
-	public function setStaticAnalysisFile($staticAnalysisFile) {
-		$this->staticAnalysisFile = $staticAnalysisFile;
+	public function setStaticAnalysisResults(ResultSet $results) {
+		$this->staticAnalysisData = $results;
 	}
 
 	/**
@@ -78,7 +73,6 @@ class ClientEventSubscriber implements EventSubscriberInterface {
 	 */
 	public function listenerReadyHandler(Event $event) {
 		echo "Client ready\n";
-		$this->staticAnalysisData = $this->loadStaticAnalysisData();
 
 		$this->testRunner->run($this->client);
 
@@ -119,19 +113,7 @@ class ClientEventSubscriber implements EventSubscriberInterface {
 				$this->client->removeSubscriber($breakpointService);
 			}
 		});
-	}
 
-	/**
-	 * Loads the static analysis data gathered before.
-	 *
-	 * @return ResultSet
-	 */
-	protected function loadStaticAnalysisData() {
-		$fileContents = file_get_contents($this->staticAnalysisFile);
-
-		$analysisObject = unserialize($fileContents);
-
-		return $analysisObject;
 	}
 
 	/**

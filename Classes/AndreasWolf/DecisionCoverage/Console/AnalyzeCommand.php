@@ -53,7 +53,6 @@ class AnalyzeCommand extends Command {
 		$analyzer = new FileAnalyzer();
 		$analysisResult = $analyzer->analyzeFolder($this->basePath);
 
-		$this->getOutputFilePath();
 		$analyzer->writeAnalysisResultsToFile($this->getOutputFilePath(), $analysisResult);
 	}
 

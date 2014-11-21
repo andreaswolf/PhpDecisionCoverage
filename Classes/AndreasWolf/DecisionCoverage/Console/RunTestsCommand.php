@@ -5,6 +5,7 @@ use AndreasWolf\DebuggerClient\Core\Bootstrap;
 use AndreasWolf\DebuggerClient\Core\Client;
 use AndreasWolf\DecisionCoverage\DynamicAnalysis\Data\CoverageDataSet;
 use AndreasWolf\DecisionCoverage\DynamicAnalysis\Debugger\ClientEventSubscriber;
+use AndreasWolf\DecisionCoverage\StaticAnalysis\Persistence\SerializedObjectMapper;
 use Symfony\Component\Console\Command\Command;
 use Symfony\Component\Console\Input\InputArgument;
 use Symfony\Component\Console\Input\InputInterface;
@@ -43,7 +44,11 @@ class RunTestsCommand extends Command {
 		$debuggerClient = new Client();
 		$dataSet = new CoverageDataSet();
 		$clientEventSubscriber = new ClientEventSubscriber($debuggerClient, $dataSet);
-		$clientEventSubscriber->setStaticAnalysisFile($input->getArgument('analysis-file'));
+
+		$analysisDataMapper = new SerializedObjectMapper();
+		$staticAnalysisResults = $analysisDataMapper->loadFromFile($input->getArgument('analysis-file'));
+
+		$clientEventSubscriber->setStaticAnalysisResults($staticAnalysisResults);
 		$clientEventSubscriber->setPhpUnitArguments($input->getOption('phpunit-arguments'));
 		$debuggerClient->addSubscriber($clientEventSubscriber);
 		$debuggerClient->quitAfterCurrentSession();
