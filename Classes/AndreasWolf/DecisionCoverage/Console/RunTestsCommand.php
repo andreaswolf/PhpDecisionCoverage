@@ -47,7 +47,7 @@ class RunTestsCommand extends Command {
 		$debuggerClient->quitAfterCurrentSession();
 
 		$staticAnalysisResults = $this->loadStaticAnalysisData($input->getArgument('analysis-file'));
-		$dataSet = new CoverageDataSet();
+		$dataSet = new CoverageDataSet($staticAnalysisResults);
 		$this->createAndAttachEventSubscriber($input, $debuggerClient, $dataSet, $staticAnalysisResults);
 
 		$debuggerClient->run();
