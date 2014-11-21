@@ -36,9 +36,12 @@ $communicationFifoArgumentPosition = array_search('--fifo', $arguments);
 if ($communicationFifoArgumentPosition === FALSE) {
 	throw new RuntimeException('Parameter --fifo not given');
 }
+// filter out arguments not necessary
 list(, $fifoFile) = array_splice($arguments, $communicationFifoArgumentPosition, 2);
 
-echo "Running tests\n";
+// Symfony\Process wraps all of PHPUnit’s arguments in one big string; we need to explode it here again
+$arguments = array_merge(array($arguments[0]), explode(' ', $arguments[1]));
+
 
 $command = new \AndreasWolf\DecisionCoverage\DynamicAnalysis\PhpUnit\TestCommand($fifoFile);
 $command->run($arguments, TRUE);
