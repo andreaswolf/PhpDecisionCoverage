@@ -2,14 +2,11 @@
 namespace AndreasWolf\DecisionCoverage\DynamicAnalysis\Debugger;
 
 use AndreasWolf\DebuggerClient\Core\Client;
-use AndreasWolf\DebuggerClient\Event\BreakpointEvent;
 use AndreasWolf\DebuggerClient\Event\SessionEvent;
 use AndreasWolf\DebuggerClient\Session\DebugSession;
 use AndreasWolf\DecisionCoverage\DynamicAnalysis\Data\CoverageDataSet;
 use AndreasWolf\DecisionCoverage\DynamicAnalysis\PhpUnit\ProcessTestRunner;
 use AndreasWolf\DecisionCoverage\DynamicAnalysis\PhpUnit\TestEventHandler;
-use AndreasWolf\DecisionCoverage\DynamicAnalysis\PhpUnit\TestListenerOutputStream;
-use AndreasWolf\DecisionCoverage\Event\TestEvent;
 use AndreasWolf\DecisionCoverage\StaticAnalysis\ResultSet;
 use Symfony\Component\EventDispatcher\Event;
 use Symfony\Component\EventDispatcher\EventSubscriberInterface;

@@ -6,6 +6,7 @@ use AndreasWolf\DebuggerClient\Core\Client;
 use AndreasWolf\DecisionCoverage\DynamicAnalysis\Data\CoverageDataSet;
 use AndreasWolf\DecisionCoverage\DynamicAnalysis\Debugger\ClientEventSubscriber;
 use AndreasWolf\DecisionCoverage\StaticAnalysis\Persistence\SerializedObjectMapper;
+use AndreasWolf\DecisionCoverage\StaticAnalysis\ResultSet;
 use Symfony\Component\Console\Command\Command;
 use Symfony\Component\Console\Input\InputArgument;
 use Symfony\Component\Console\Input\InputInterface;
@@ -42,16 +43,13 @@ class RunTestsCommand extends Command {
 		$this->assertOptionHasValue($input, 'output');
 
 		$debuggerClient = new Client();
-		$dataSet = new CoverageDataSet();
-		$clientEventSubscriber = new ClientEventSubscriber($debuggerClient, $dataSet);
-
-		$analysisDataMapper = new SerializedObjectMapper();
-		$staticAnalysisResults = $analysisDataMapper->loadFromFile($input->getArgument('analysis-file'));
-
-		$clientEventSubscriber->setStaticAnalysisResults($staticAnalysisResults);
-		$clientEventSubscriber->setPhpUnitArguments($input->getOption('phpunit-arguments'));
-		$debuggerClient->addSubscriber($clientEventSubscriber);
+		// we only need one session, not continuous listening
 		$debuggerClient->quitAfterCurrentSession();
+
+		$staticAnalysisResults = $this->loadStaticAnalysisData($input->getArgument('analysis-file'));
+		$dataSet = new CoverageDataSet();
+		$this->createAndAttachEventSubscriber($input, $debuggerClient, $dataSet, $staticAnalysisResults);
+
 		$debuggerClient->run();
 
 		file_put_contents($input->getOption('output'), serialize($dataSet));
@@ -67,6 +65,32 @@ class RunTestsCommand extends Command {
 		if ($input->getOption($optionName) === NULL) {
 			throw new \InvalidArgumentException('Option ' . $optionName . ' has to be set!');
 		}
+	}
+
+	/**
+	 * @param string $analysisFile
+	 * @return \AndreasWolf\DecisionCoverage\StaticAnalysis\ResultSet
+	 */
+	protected function loadStaticAnalysisData($analysisFile) {
+		$analysisDataMapper = new SerializedObjectMapper();
+		$staticAnalysisResults = $analysisDataMapper->loadFromFile($analysisFile);
+
+		return $staticAnalysisResults;
+	}
+
+	/**
+	 * @param InputInterface $input
+	 * @param Client $debuggerClient
+	 * @param CoverageDataSet $dataSet
+	 * @param ResultSet $staticAnalysisResults
+	 */
+	protected function createAndAttachEventSubscriber(InputInterface $input, Client $debuggerClient,
+	                                                  CoverageDataSet $dataSet, ResultSet $staticAnalysisResults) {
+		$clientEventSubscriber = new ClientEventSubscriber($debuggerClient, $dataSet);
+		$clientEventSubscriber->setStaticAnalysisResults($staticAnalysisResults);
+		$clientEventSubscriber->setPhpUnitArguments($input->getOption('phpunit-arguments'));
+
+		$debuggerClient->addSubscriber($clientEventSubscriber);
 	}
 
 }
