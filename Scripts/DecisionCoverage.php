@@ -10,5 +10,6 @@ $application->setVersion('1.0.0');
 $application->addCommands(array(
 	new \AndreasWolf\DecisionCoverage\Console\RunTestsCommand(),
 	new \AndreasWolf\DecisionCoverage\Console\AnalyzeCommand(),
+	new \AndreasWolf\DecisionCoverage\Console\BuildCoverageCommand(),
 ));
 $application->run();

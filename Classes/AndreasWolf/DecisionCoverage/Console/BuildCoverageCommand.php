@@ -2,6 +2,8 @@
 namespace AndreasWolf\DecisionCoverage\Console;
 use AndreasWolf\DecisionCoverage\Core\Bootstrap;
 use AndreasWolf\DecisionCoverage\Coverage\Builder\CoverageBuilder;
+use AndreasWolf\DecisionCoverage\DynamicAnalysis\Data\CoverageDataSet;
+use AndreasWolf\DecisionCoverage\DynamicAnalysis\Persistence\SerializedObjectMapper;
 use Symfony\Component\Console\Command\Command;
 use Symfony\Component\Console\Input\InputArgument;
 use Symfony\Component\Console\Input\InputInterface;
@@ -28,12 +30,23 @@ class BuildCoverageCommand extends Command {
 	}
 
 	protected function execute(InputInterface $input, OutputInterface $output) {
-		$coverageDataSet = unserialize(file_get_contents($input->getArgument('coverage-file')));
+		$coverageDataSet = $this->loadCoverageData($input->getArgument('coverage-file'));
 
-		$factory = new CoverageBuilder();
-		$coverageData = $factory->buildFromDataSet($coverageDataSet);
+		$builder = new CoverageBuilder();
+		$coverageData = $builder->buildFromDataSet($coverageDataSet);
 
-		print_r($coverageData);
+		echo var_export($coverageData);
+	}
+
+	/**
+	 * @param string $fileName
+	 * @return CoverageDataSet
+	 */
+	protected function loadCoverageData($fileName) {
+		$dataMapper = new SerializedObjectMapper();
+		$coverageDataSet = $dataMapper->readFromFile($fileName);
+
+		return $coverageDataSet;
 	}
 
 
