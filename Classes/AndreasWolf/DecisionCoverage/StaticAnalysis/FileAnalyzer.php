@@ -6,6 +6,7 @@ use AndreasWolf\DecisionCoverage\StaticAnalysis\Persistence\SerializedObjectMapp
 use AndreasWolf\DecisionCoverage\StaticAnalysis\SyntaxTree\Instrumenter;
 use AndreasWolf\DecisionCoverage\StaticAnalysis\SyntaxTree\Manipulator\ProbeFactory;
 use AndreasWolf\DecisionCoverage\StaticAnalysis\SyntaxTree\Manipulator\NodeIdGenerator;
+use AndreasWolf\DecisionCoverage\StaticAnalysis\SyntaxTree\SyntaxTree;
 
 
 class FileAnalyzer {
@@ -16,7 +17,7 @@ class FileAnalyzer {
 	 */
 	public function analyzeFile(SourceFile $file) {
 		$nodes = $file->getTopLevelStatements();
-		$result = new FileResult($file->getFilePath(), $nodes);
+		$result = new FileResult($file->getFilePath(), new SyntaxTree($nodes));
 
 		$instrumenter = new Instrumenter();
 		$instrumenter->addVisitor(new NodeIdGenerator(), 0);
