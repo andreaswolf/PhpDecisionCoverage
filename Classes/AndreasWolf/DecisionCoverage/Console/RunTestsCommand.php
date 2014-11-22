@@ -5,7 +5,8 @@ use AndreasWolf\DebuggerClient\Core\Bootstrap;
 use AndreasWolf\DebuggerClient\Core\Client;
 use AndreasWolf\DecisionCoverage\DynamicAnalysis\Data\CoverageDataSet;
 use AndreasWolf\DecisionCoverage\DynamicAnalysis\Debugger\ClientEventSubscriber;
-use AndreasWolf\DecisionCoverage\StaticAnalysis\Persistence\SerializedObjectMapper;
+use AndreasWolf\DecisionCoverage\DynamicAnalysis\Persistence\SerializedObjectMapper as DynamicSerializedObjectMapper;
+use AndreasWolf\DecisionCoverage\StaticAnalysis\Persistence\SerializedObjectMapper as StaticSerializedObjectMapper;
 use AndreasWolf\DecisionCoverage\StaticAnalysis\ResultSet;
 use Symfony\Component\Console\Command\Command;
 use Symfony\Component\Console\Input\InputArgument;
@@ -52,7 +53,7 @@ class RunTestsCommand extends Command {
 
 		$debuggerClient->run();
 
-		file_put_contents($input->getOption('output'), serialize($dataSet));
+		$this->storeCoverageDataSet($input->getOption('output'), $dataSet);
 
 		return NULL;
 	}
@@ -72,10 +73,20 @@ class RunTestsCommand extends Command {
 	 * @return \AndreasWolf\DecisionCoverage\StaticAnalysis\ResultSet
 	 */
 	protected function loadStaticAnalysisData($analysisFile) {
-		$analysisDataMapper = new SerializedObjectMapper();
+		$analysisDataMapper = new StaticSerializedObjectMapper();
 		$staticAnalysisResults = $analysisDataMapper->loadFromFile($analysisFile);
 
 		return $staticAnalysisResults;
+	}
+
+	/**
+	 * @param string $filePath
+	 * @param CoverageDataSet $results
+	 */
+	protected function storeCoverageDataSet($filePath, CoverageDataSet $results) {
+		$dynamicDataMapper = new DynamicSerializedObjectMapper();
+
+		$dynamicDataMapper->writeToFile($filePath, $results);
 	}
 
 	/**
