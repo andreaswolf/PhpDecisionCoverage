@@ -17,7 +17,8 @@
 		"symfony/event-dispatcher": "*",
 		"andreaswolf/php-debugger-client": "dev-master",
 		"symfony/console": "~2.6@dev",
-		"symfony/process": "~3.0@dev"
+		"symfony/process": "~3.0@dev",
+		"rhumsaa/uuid": "~2.8@dev"
 	},
 	"require-dev": {
 		"phpunit/phpunit": "*",

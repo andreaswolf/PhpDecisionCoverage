@@ -10,7 +10,11 @@ use AndreasWolf\DecisionCoverage\StaticAnalysis\SyntaxTree\Manipulator\NodeIdGen
  *
  * @author Andreas Wolf <aw@foundata.net>
  */
-class NodeIdManipulatorTest extends UnitTestCase {
+class NodeIdGeneratorTest extends UnitTestCase {
+
+	protected function mockUuidService() {
+		return $this->getMockBuilder('AndreasWolf\DecisionCoverage\Service\UuidService')->getMock();
+	}
 
 	/**
 	 * @test
@@ -19,7 +23,7 @@ class NodeIdManipulatorTest extends UnitTestCase {
 		$manipulator = new NodeIdGenerator();
 
 		$node = $this->getMock('PhpParser\Node');
-		$node->expects($this->once())->method('setAttribute')->with($this->equalTo('coverage__nodeId'), $this->equalTo(1));
+		$node->expects($this->once())->method('setAttribute')->with($this->equalTo('coverage__nodeId'), $this->logicalNot($this->isEmpty()));
 
 		$manipulator->startInstrumentation($node);
 		$manipulator->handleNode($node);
@@ -29,12 +33,17 @@ class NodeIdManipulatorTest extends UnitTestCase {
 	 * @test
 	 */
 	public function consecutiveIdsAreAddedToConsecutiveNodes() {
-		$manipulator = new NodeIdGenerator();
+		$uuidService = $this->mockUuidService();
+		$uuidService->expects($this->exactly(2))->method('uuid4')->will($this->onConsecutiveCalls(
+			$this->returnValue('A'),
+			$this->returnValue('B')
+		));
+		$manipulator = new NodeIdGenerator($uuidService);
 
 		$node1 = $this->getMock('PhpParser\Node');
-		$node1->expects($this->once())->method('setAttribute')->with($this->equalTo('coverage__nodeId'), $this->equalTo(1));
+		$node1->expects($this->once())->method('setAttribute')->with($this->equalTo('coverage__nodeId'), $this->equalTo('A'));
 		$node2 = $this->getMock('PhpParser\Node');
-		$node2->expects($this->once())->method('setAttribute')->with($this->equalTo('coverage__nodeId'), $this->equalTo(2));
+		$node2->expects($this->once())->method('setAttribute')->with($this->equalTo('coverage__nodeId'), $this->equalTo('B'));
 
 		$manipulator->startInstrumentation($node1);
 		$manipulator->handleNode($node1);
