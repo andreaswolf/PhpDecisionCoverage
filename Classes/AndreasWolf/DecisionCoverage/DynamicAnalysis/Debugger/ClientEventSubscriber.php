@@ -2,14 +2,11 @@
 namespace AndreasWolf\DecisionCoverage\DynamicAnalysis\Debugger;
 
 use AndreasWolf\DebuggerClient\Core\Client;
-use AndreasWolf\DebuggerClient\Event\BreakpointEvent;
 use AndreasWolf\DebuggerClient\Event\SessionEvent;
 use AndreasWolf\DebuggerClient\Session\DebugSession;
 use AndreasWolf\DecisionCoverage\DynamicAnalysis\Data\CoverageDataSet;
 use AndreasWolf\DecisionCoverage\DynamicAnalysis\PhpUnit\ProcessTestRunner;
 use AndreasWolf\DecisionCoverage\DynamicAnalysis\PhpUnit\TestEventHandler;
-use AndreasWolf\DecisionCoverage\DynamicAnalysis\PhpUnit\TestListenerOutputStream;
-use AndreasWolf\DecisionCoverage\Event\TestEvent;
 use AndreasWolf\DecisionCoverage\StaticAnalysis\ResultSet;
 use Symfony\Component\EventDispatcher\Event;
 use Symfony\Component\EventDispatcher\EventSubscriberInterface;
@@ -30,11 +27,6 @@ class ClientEventSubscriber implements EventSubscriberInterface {
 	 * @var Client
 	 */
 	protected $client;
-
-	/**
-	 * @var string
-	 */
-	protected $staticAnalysisFile;
 
 	/**
 	 * @var ResultSet
@@ -60,10 +52,10 @@ class ClientEventSubscriber implements EventSubscriberInterface {
 	}
 
 	/**
-	 * @param string $staticAnalysisFile
+	 * @param ResultSet $results
 	 */
-	public function setStaticAnalysisFile($staticAnalysisFile) {
-		$this->staticAnalysisFile = $staticAnalysisFile;
+	public function setStaticAnalysisResults(ResultSet $results) {
+		$this->staticAnalysisData = $results;
 	}
 
 	/**
@@ -78,7 +70,6 @@ class ClientEventSubscriber implements EventSubscriberInterface {
 	 */
 	public function listenerReadyHandler(Event $event) {
 		echo "Client ready\n";
-		$this->staticAnalysisData = $this->loadStaticAnalysisData();
 
 		$this->testRunner->run($this->client);
 
@@ -119,19 +110,7 @@ class ClientEventSubscriber implements EventSubscriberInterface {
 				$this->client->removeSubscriber($breakpointService);
 			}
 		});
-	}
 
-	/**
-	 * Loads the static analysis data gathered before.
-	 *
-	 * @return ResultSet
-	 */
-	protected function loadStaticAnalysisData() {
-		$fileContents = file_get_contents($this->staticAnalysisFile);
-
-		$analysisObject = unserialize($fileContents);
-
-		return $analysisObject;
 	}
 
 	/**
