@@ -1,6 +1,8 @@
 <?php
 namespace AndreasWolf\DecisionCoverage\DynamicAnalysis\Data;
+
 use AndreasWolf\DecisionCoverage\DynamicAnalysis\PhpUnit\Test;
+use AndreasWolf\DecisionCoverage\StaticAnalysis\ResultSet;
 
 
 /**
@@ -13,6 +15,13 @@ use AndreasWolf\DecisionCoverage\DynamicAnalysis\PhpUnit\Test;
 class CoverageDataSet {
 
 	/**
+	 * The analysed code this fetched data is based on.
+	 *
+	 * @var ResultSet
+	 */
+	protected $codeAnalysis;
+
+	/**
 	 * @var DataSample[]
 	 */
 	protected $samples = array();
@@ -22,6 +31,10 @@ class CoverageDataSet {
 	 */
 	protected $currentTest;
 
+
+	public function __construct(ResultSet $analysisResults) {
+		$this->codeAnalysis = $analysisResults;
+	}
 
 	public function addSample(DataSample $dataSet) {
 		$this->samples[] = $dataSet;
