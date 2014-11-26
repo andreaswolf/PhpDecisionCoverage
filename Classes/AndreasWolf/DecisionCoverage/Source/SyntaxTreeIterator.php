@@ -118,7 +118,7 @@ class SyntaxTreeIterator implements \RecursiveIterator {
 			return TRUE;
 		} else {
 			$subNodeNames = $this->current()->getSubNodeNames();
-			return in_array('stmts', $subNodeNames);
+			return in_array('stmts', $subNodeNames) && count($this->current()->stmts) > 0;
 		}
 	}
 
