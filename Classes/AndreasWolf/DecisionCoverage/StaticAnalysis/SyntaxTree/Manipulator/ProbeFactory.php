@@ -63,10 +63,13 @@ class ProbeFactory implements NodeVisitor {
 			return;
 		}
 
+		$conditionNode = $node->cond;
 		$probe = $this->createBreakpoint($node);
-		$this->addWatchExpressionsToBreakpoint($probe, $node->cond);
-		$node->setAttribute('coverage__cover', TRUE);
-		$probe->addWatchedExpression($node->cond);
+		$this->addWatchExpressionsToBreakpoint($probe, $conditionNode);
+		if (!$conditionNode->hasAttribute('coverage__cover')) {
+			$conditionNode->setAttribute('coverage__cover', TRUE);
+			$probe->addWatchedExpression($conditionNode);
+		}
 
 		$this->analysis->addBreakpoint($probe);
 	}
