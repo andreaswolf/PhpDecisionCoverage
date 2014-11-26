@@ -1,7 +1,7 @@
 <?php
 namespace AndreasWolf\DecisionCoverage\Console;
 use AndreasWolf\DecisionCoverage\Core\Bootstrap;
-use AndreasWolf\DecisionCoverage\Coverage\Builder\CoverageBuilder;
+use AndreasWolf\DecisionCoverage\Coverage\Builder\CoverageCalculationDirector;
 use AndreasWolf\DecisionCoverage\DynamicAnalysis\Data\CoverageDataSet;
 use AndreasWolf\DecisionCoverage\DynamicAnalysis\Persistence\SerializedObjectMapper;
 use Symfony\Component\Console\Command\Command;
@@ -32,7 +32,7 @@ class BuildCoverageCommand extends Command {
 	protected function execute(InputInterface $input, OutputInterface $output) {
 		$coverageDataSet = $this->loadCoverageData($input->getArgument('coverage-file'));
 
-		$builder = new CoverageBuilder();
+		$builder = new CoverageCalculationDirector();
 		$coverageData = $builder->buildFromDataSet($coverageDataSet);
 
 		echo var_export($coverageData);

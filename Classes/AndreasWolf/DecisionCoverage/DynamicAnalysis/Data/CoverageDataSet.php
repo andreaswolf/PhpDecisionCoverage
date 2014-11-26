@@ -49,6 +49,13 @@ class CoverageDataSet {
 	}
 
 	/**
+	 * @return ResultSet
+	 */
+	public function getAnalysisResult() {
+		return $this->codeAnalysis;
+	}
+
+	/**
 	 * @param Test $test
 	 */
 	public function enterTest($test) {
