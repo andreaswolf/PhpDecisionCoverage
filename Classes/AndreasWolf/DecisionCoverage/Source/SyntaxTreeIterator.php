@@ -38,6 +38,8 @@ class SyntaxTreeIterator implements \RecursiveIterator {
 		'Stmt_ElseIf' => array('cond', 'stmts'),
 		'Stmt_Echo' => array('exprs'),
 		'Expr_BinaryOp' => array('left', 'right'),
+		'Expr_MethodCall' => array('var'),
+		'Expr_PropertyFetch' => array('var'),
 	);
 
 	/**

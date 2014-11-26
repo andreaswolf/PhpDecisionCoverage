@@ -59,7 +59,22 @@ class SyntaxTreeIteratorTest extends ParserBasedTestCase {
 					array('Stmt_If', 'Expr_BinaryOp_BooleanAnd'),
 					$variableEqualsString, $variableSmallerThanNumber
 				)
-			)
+			),
+			'object property access' => array(
+				'$this->foo;',
+				2,
+				array('Expr_PropertyFetch', 'Expr_Variable')
+			),
+			'object method call' => array(
+				'$this->foo();',
+				2,
+				array('Expr_MethodCall', 'Expr_Variable')
+			),
+			'property access on method return value' => array(
+				'$this->foo()->bar;',
+				3,
+				array('Expr_PropertyFetch', 'Expr_MethodCall', 'Expr_Variable')
+			),
 		);
 	}
 
