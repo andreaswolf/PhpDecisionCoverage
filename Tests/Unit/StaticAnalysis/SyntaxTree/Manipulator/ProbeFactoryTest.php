@@ -48,56 +48,9 @@ class ProbeFactoryTest extends UnitTestCase {
 	/**
 	 * @test
 	 */
-	public function variableExpressionFromConditionIsAddedAsWatcher() {
+	public function variableExpressionFromIfConditionIsAddedAsWatcher() {
 		$variable = new Expr\Variable('foo');
 		$ifNode = new Stmt\If_($variable);
-		$mockedAnalysis = $this->mockFileAnalysis();
-
-		$mockedBreakpoint = $this->mockProbe();
-		$mockedBreakpoint->expects($this->once())->method('addWatchedExpression')->with($this->identicalTo($variable));
-		$subject = $this->mockProbeFactory($mockedAnalysis, array($mockedBreakpoint));
-
-		/** @var $subject ProbeFactory */
-		$subject->startInstrumentation(array($ifNode));
-		$subject->handleNode($ifNode);
-	}
-
-	public function watchableExpressionsProvider() {
-		return array(
-			'local variable access' => array(
-				new Expr\Variable('foo')
-			),
-			'class property access' => array(
-				new Expr\PropertyFetch(
-					new Expr\Variable('this'), 'foo'
-				)
-			),
-			'static class property' => array(
-				new Expr\StaticPropertyFetch(
-					new Name('Foo'), 'bar'
-				)
-			),
-			'object method call' => array(
-				new Expr\MethodCall(
-					new Expr\Variable('this'), 'foo'
-				)
-			),
-			'static method call' => array(
-				new Expr\StaticCall(
-					new Name('Foo'), 'bar'
-				)
-			)
-		);
-	}
-
-	/**
-	 * @param Expr $variable
-	 *
-	 * @test
-	 * @dataProvider watchableExpressionsProvider
-	 */
-	public function expressionFromComparisonIsAddedAsWatcher($variable) {
-		$ifNode = new Stmt\If_(new Expr\BinaryOp\Equal($variable, new LNumber(5)));
 		$mockedAnalysis = $this->mockFileAnalysis();
 
 		$mockedBreakpoint = $this->mockProbe();
