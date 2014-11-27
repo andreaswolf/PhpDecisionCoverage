@@ -7,6 +7,7 @@ use AndreasWolf\DecisionCoverage\StaticAnalysis\FileResult;
 use AndreasWolf\DecisionCoverage\StaticAnalysis\Probe;
 use PhpParser\Node;
 use Psr\Log\LoggerInterface;
+use Psr\Log\NullLogger;
 use Symfony\Component\EventDispatcher\EventDispatcher;
 use Symfony\Component\EventDispatcher\EventDispatcherInterface;
 
@@ -38,22 +39,38 @@ class CoverageCalculationDirector {
 	 */
 	protected $expressionService;
 
+	/**
+	 * @var LoggerInterface
+	 */
+	protected $log;
 
+	/**
+	 * @param CoverageBuilderFactory $factory
+	 * @param ExpressionService $expressionService
+	 * @param EventDispatcherInterface $eventDispatcher The event dispatcher to use. Optional because the events used
+	 *   here don't necessarily need to be handled globally
+	 * @param LoggerInterface $log
+	 */
 	public function __construct(CoverageBuilderFactory $factory = NULL, ExpressionService $expressionService = NULL,
-	                            EventDispatcherInterface $eventDispatcher = NULL) {
+	                            EventDispatcherInterface $eventDispatcher = NULL, LoggerInterface $log = NULL) {
 		if (!$eventDispatcher) {
 			$eventDispatcher = new EventDispatcher();
 		}
 		if (!$expressionService) {
 			$expressionService = new ExpressionService();
 		}
+		if (!$log) {
+			$log = new NullLogger();
+		}
 		if (!$factory) {
-			$factory = new CoverageBuilderFactory($eventDispatcher, new CoverageFactory($expressionService, $eventDispatcher));
+			$factory = new CoverageBuilderFactory($eventDispatcher,
+				new CoverageFactory($expressionService, $eventDispatcher), $log);
 		}
 
 		$this->builderFactory = $factory;
 		$this->eventDispatcher = $eventDispatcher;
 		$this->expressionService = $expressionService;
+		$this->log = $log;
 	}
 
 	/**

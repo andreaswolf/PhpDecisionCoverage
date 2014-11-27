@@ -4,6 +4,8 @@ use AndreasWolf\DecisionCoverage\Core\Bootstrap;
 use AndreasWolf\DecisionCoverage\Coverage\Builder\CoverageCalculationDirector;
 use AndreasWolf\DecisionCoverage\DynamicAnalysis\Data\CoverageDataSet;
 use AndreasWolf\DecisionCoverage\DynamicAnalysis\Persistence\SerializedObjectMapper;
+use Monolog\Handler\StreamHandler;
+use Monolog\Logger;
 use Symfony\Component\Console\Command\Command;
 use Symfony\Component\Console\Input\InputArgument;
 use Symfony\Component\Console\Input\InputInterface;

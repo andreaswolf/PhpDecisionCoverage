@@ -5,6 +5,7 @@ use AndreasWolf\DecisionCoverage\Coverage\MCDC\DecisionCoverage;
 use AndreasWolf\DecisionCoverage\Coverage\SingleConditionCoverage;
 use AndreasWolf\DecisionCoverage\Service\ExpressionService;
 use PhpParser\Node\Expr;
+use Psr\Log\LoggerInterface;
 use Symfony\Component\EventDispatcher\EventDispatcherInterface;
 
 
@@ -14,6 +15,11 @@ class CoverageBuilderFactory {
 	 * @var EventDispatcherInterface
 	 */
 	protected $eventDispatcher;
+
+	/**
+	 * @var LoggerInterface
+	 */
+	protected $log;
 
 	/**
 	 * @var CoverageFactory
@@ -26,8 +32,10 @@ class CoverageBuilderFactory {
 	protected $expressionService;
 
 
-	public function __construct(EventDispatcherInterface $dispatcher, CoverageFactory $coverageFactory) {
+	public function __construct(EventDispatcherInterface $dispatcher, CoverageFactory $coverageFactory, LoggerInterface $log = NULL) {
 		$this->eventDispatcher = $dispatcher;
+		$this->log = $log;
+
 		$this->coverageFactory = $coverageFactory;
 		$this->expressionService = new ExpressionService();
 	}
@@ -55,7 +63,7 @@ class CoverageBuilderFactory {
 			$partialCoverageBuilders[] = $this->createBuilderForExpression($partialExpression);
 		}
 		$decisionCoverage = $this->coverageFactory->createCoverageForNode($decision);
-		$coverageBuilder = new DecisionCoverageBuilder($partialCoverageBuilders, $this->eventDispatcher);
+		$coverageBuilder = new DecisionCoverageBuilder($partialCoverageBuilders, $this->eventDispatcher, $this->log);
 		$this->eventDispatcher->addSubscriber($coverageBuilder);
 
 		return $coverageBuilder;
@@ -67,7 +75,7 @@ class CoverageBuilderFactory {
 	 */
 	public function createBuilderForCondition(Expr $expression) {
 		$coverage = $this->coverageFactory->createCoverageForNode($expression);
-		$builder = new SingleConditionCoverageBuilder($expression, $coverage, $this->eventDispatcher);
+		$builder = new SingleConditionCoverageBuilder($expression, $coverage, $this->eventDispatcher, $this->log);
 		$this->eventDispatcher->addSubscriber($builder);
 
 		return $builder;

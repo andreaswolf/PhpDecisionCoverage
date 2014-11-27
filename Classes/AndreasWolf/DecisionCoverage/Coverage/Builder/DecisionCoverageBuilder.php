@@ -15,7 +15,7 @@ class DecisionCoverageBuilder implements EventSubscriberInterface, CoverageBuild
 	/**
 	 * @var LoggerInterface
 	 */
-	protected $logger;
+	protected $log;
 
 	/**
 	 * @var EventDispatcherInterface
@@ -46,10 +46,7 @@ class DecisionCoverageBuilder implements EventSubscriberInterface, CoverageBuild
 	 * @param LoggerInterface $log
 	 */
 	public function __construct($partBuilders, EventDispatcherInterface $eventDispatcher, LoggerInterface $log = NULL) {
-		if (!$log) {
-			$log = new NullLogger();
-		}
-		$this->logger = $log;
+		$this->log = ($log !== NULL) ? $log : new NullLogger();
 		$this->eventDispatcher = $eventDispatcher;
 
 		$this->decisionPartBuilders = $partBuilders;

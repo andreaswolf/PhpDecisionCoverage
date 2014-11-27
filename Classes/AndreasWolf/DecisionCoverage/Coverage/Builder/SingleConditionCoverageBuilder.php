@@ -7,6 +7,8 @@ use AndreasWolf\DecisionCoverage\Coverage\Event\DataSampleEvent;
 use AndreasWolf\DecisionCoverage\Coverage\SingleConditionCoverage;
 use AndreasWolf\DecisionCoverage\DynamicAnalysis\Data\DataSample;
 use PhpParser\Node;
+use Psr\Log\LoggerInterface;
+use Psr\Log\NullLogger;
 use Symfony\Component\EventDispatcher\EventDispatcherInterface;
 use Symfony\Component\EventDispatcher\EventSubscriberInterface;
 
@@ -24,6 +26,11 @@ class SingleConditionCoverageBuilder implements EventSubscriberInterface, Covera
 	protected $expression;
 
 	/**
+	 * @var LoggerInterface
+	 */
+	protected $log;
+
+	/**
 	 * @var SingleConditionCoverage
 	 */
 	protected $coverage;
@@ -39,10 +46,11 @@ class SingleConditionCoverageBuilder implements EventSubscriberInterface, Covera
 	 * @param Coverage $coverage
 	 * @param EventDispatcherInterface $eventDispatcher
 	 */
-	public function __construct(Node\Expr $expression, Coverage $coverage, EventDispatcherInterface $eventDispatcher) {
+	public function __construct(Node\Expr $expression, Coverage $coverage, EventDispatcherInterface $eventDispatcher, LoggerInterface $log = NULL) {
 		$this->expression = $expression;
 		$this->coverage = $coverage;
 
+		$this->log = ($log !== NULL) ? $log : new NullLogger();
 		$this->eventDispatcher = $eventDispatcher;
 	}
 

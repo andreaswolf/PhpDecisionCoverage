@@ -18,7 +18,8 @@
 		"andreaswolf/php-debugger-client": "dev-master",
 		"symfony/console": "~2.6@dev",
 		"symfony/process": "~3.0@dev",
-		"rhumsaa/uuid": "~2.8@dev"
+		"rhumsaa/uuid": "~2.8@dev",
+		"monolog/monolog": "~1.11@dev"
 	},
 	"require-dev": {
 		"phpunit/phpunit": "*",
