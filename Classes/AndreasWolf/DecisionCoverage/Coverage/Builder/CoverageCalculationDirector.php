@@ -2,7 +2,6 @@
 namespace AndreasWolf\DecisionCoverage\Coverage\Builder;
 
 use AndreasWolf\DecisionCoverage\DynamicAnalysis\Data\CoverageDataSet;
-use AndreasWolf\DecisionCoverage\DynamicAnalysis\Data\DataSample;
 use AndreasWolf\DecisionCoverage\Service\ExpressionService;
 use AndreasWolf\DecisionCoverage\StaticAnalysis\FileResult;
 use AndreasWolf\DecisionCoverage\StaticAnalysis\Probe;
@@ -45,11 +44,11 @@ class CoverageCalculationDirector {
 		if (!$eventDispatcher) {
 			$eventDispatcher = new EventDispatcher();
 		}
-		if (!$factory) {
-			$factory = new CoverageBuilderFactory($eventDispatcher, new CoverageFactory($eventDispatcher));
-		}
 		if (!$expressionService) {
 			$expressionService = new ExpressionService();
+		}
+		if (!$factory) {
+			$factory = new CoverageBuilderFactory($eventDispatcher, new CoverageFactory($expressionService, $eventDispatcher));
 		}
 
 		$this->builderFactory = $factory;
