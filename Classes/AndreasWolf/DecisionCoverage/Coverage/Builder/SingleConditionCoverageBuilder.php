@@ -2,10 +2,12 @@
 namespace AndreasWolf\DecisionCoverage\Coverage\Builder;
 
 use AndreasWolf\DecisionCoverage\Coverage\Coverage;
+use AndreasWolf\DecisionCoverage\Coverage\Event\CoverageBuilderEvent;
 use AndreasWolf\DecisionCoverage\Coverage\Event\DataSampleEvent;
 use AndreasWolf\DecisionCoverage\Coverage\SingleConditionCoverage;
 use AndreasWolf\DecisionCoverage\DynamicAnalysis\Data\DataSample;
 use PhpParser\Node;
+use Symfony\Component\EventDispatcher\EventDispatcherInterface;
 use Symfony\Component\EventDispatcher\EventSubscriberInterface;
 
 
@@ -26,15 +28,22 @@ class SingleConditionCoverageBuilder implements EventSubscriberInterface, Covera
 	 */
 	protected $coverage;
 
+	/**
+	 * @var EventDispatcherInterface
+	 */
+	protected $eventDispatcher;
+
 
 	/**
 	 * @param Node\Expr $expression The node this builder should generate the coverage for
 	 * @param Coverage $coverage
+	 * @param EventDispatcherInterface $eventDispatcher
 	 */
-	public function __construct(Node\Expr $expression, Coverage $coverage) {
+	public function __construct(Node\Expr $expression, Coverage $coverage, EventDispatcherInterface $eventDispatcher) {
 		$this->expression = $expression;
-
 		$this->coverage = $coverage;
+
+		$this->eventDispatcher = $eventDispatcher;
 	}
 
 	/**
@@ -51,23 +60,19 @@ class SingleConditionCoverageBuilder implements EventSubscriberInterface, Covera
 	 * @return void
 	 */
 	protected function handleSample(DataSample $sample) {
-		// TODO this is generic code -> move it to a generic handler
 		if (!$sample->hasValueFor($this->expression)) {
 			return;
 		}
 
 		$value = $sample->getValueFor($this->expression);
 		$this->coverage->recordCoveredValue($value);
+		$this->eventDispatcher->dispatch('coverage.builder.part.covered', new CoverageBuilderEvent($this));
 	}
 
 	/**
 	 * @param DataSampleEvent $event
 	 */
 	public function dataSampleReceivedHandler(DataSampleEvent $event) {
-		if (!$event->getDataSample()->hasValueFor($this->expression)) {
-			return;
-		}
-
 		$this->handleSample($event->getDataSample());
 	}
 
@@ -80,7 +85,7 @@ class SingleConditionCoverageBuilder implements EventSubscriberInterface, Covera
 	 */
 	public static function getSubscribedEvents() {
 		return array(
-			'coverage.datasample.received' => 'dataSampleReceivedHandler',
+			'coverage.sample.received' => 'dataSampleReceivedHandler',
 		);
 	}
 

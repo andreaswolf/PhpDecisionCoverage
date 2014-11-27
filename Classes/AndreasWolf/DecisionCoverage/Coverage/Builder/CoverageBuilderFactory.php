@@ -55,7 +55,7 @@ class CoverageBuilderFactory {
 			$partialCoverageBuilders[] = $this->createBuilderForExpression($partialExpression);
 		}
 		$decisionCoverage = $this->coverageFactory->createCoverageForNode($decision);
-		$coverageBuilder = new DecisionCoverageBuilder($partialCoverageBuilders);
+		$coverageBuilder = new DecisionCoverageBuilder($partialCoverageBuilders, $this->eventDispatcher);
 		$this->eventDispatcher->addSubscriber($coverageBuilder);
 
 		return $coverageBuilder;
@@ -67,7 +67,7 @@ class CoverageBuilderFactory {
 	 */
 	public function createBuilderForCondition(Expr $expression) {
 		$coverage = $this->coverageFactory->createCoverageForNode($expression);
-		$builder = new SingleConditionCoverageBuilder($expression, $coverage);
+		$builder = new SingleConditionCoverageBuilder($expression, $coverage, $this->eventDispatcher);
 		$this->eventDispatcher->addSubscriber($builder);
 
 		return $builder;

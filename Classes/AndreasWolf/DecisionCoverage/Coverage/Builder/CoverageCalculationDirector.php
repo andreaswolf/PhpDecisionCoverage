@@ -25,11 +25,6 @@ class CoverageCalculationDirector {
 	protected $knownProbes = array();
 
 	/**
-	 * @var DataSampleVisitor[]
-	 */
-	protected $visitors = array();
-
-	/**
 	 * @var CoverageBuilderFactory
 	 */
 	protected $builderFactory;

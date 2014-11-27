@@ -1,10 +1,12 @@
 <?php
 namespace AndreasWolf\DecisionCoverage\Coverage\Builder;
 
+use AndreasWolf\DecisionCoverage\Coverage\Event\CoverageBuilderEvent;
 use AndreasWolf\DecisionCoverage\Coverage\Event\CoverageEvent;
 use AndreasWolf\DecisionCoverage\Coverage\Event\DataSampleEvent;
 use Psr\Log\LoggerInterface;
 use Psr\Log\NullLogger;
+use Symfony\Component\EventDispatcher\EventDispatcherInterface;
 use Symfony\Component\EventDispatcher\EventSubscriberInterface;
 
 
@@ -15,24 +17,61 @@ class DecisionCoverageBuilder implements EventSubscriberInterface, CoverageBuild
 	 */
 	protected $logger;
 
+	/**
+	 * @var EventDispatcherInterface
+	 */
+	protected $eventDispatcher;
 
 	/**
-	 * @param SingleConditionCoverageBuilder[] $conditionBuilders
+	 * The builders for the parts of this decision.
+	 *
+	 * This will only be those directly "related" to the decision, e.g. for the "&&" in "A && (B || C)", it will be
+	 * A and the ||; the other parts of
+	 *
+	 * @var CoverageBuilder
+	 */
+	protected $decisionPartBuilders;
+
+	/**
+	 * All builders that have already been covered for the current sample
+	 *
+	 * @var array
+	 */
+	protected $coveredBuilders = array();
+
+
+	/**
+	 * @param CoverageBuilder[] $partBuilders
+	 * @param EventDispatcherInterface $eventDispatcher
 	 * @param LoggerInterface $log
 	 */
-	public function __construct($conditionBuilders, LoggerInterface $log = NULL) {
+	public function __construct($partBuilders, EventDispatcherInterface $eventDispatcher, LoggerInterface $log = NULL) {
 		if (!$log) {
 			$log = new NullLogger();
 		}
-
 		$this->logger = $log;
+		$this->eventDispatcher = $eventDispatcher;
+
+		$this->decisionPartBuilders = $partBuilders;
 	}
 
 	/**
-	 * @param CoverageEvent $event
+	 * @param CoverageBuilderEvent $event
 	 */
-	public function conditionCoveredHandler(CoverageEvent $event) {
-		// TODO check if all parts of decision are now covered, raise decisioncovered event then
+	public function partCoveredHandler(CoverageBuilderEvent $event) {
+		$builder = $event->getBuilder();
+		if (!in_array($builder, $this->decisionPartBuilders)) {
+			return;
+		}
+		if (in_array($builder, $this->coveredBuilders)) {
+			return;
+		}
+
+		$this->coveredBuilders[] = $builder;
+
+		if (count($this->coveredBuilders) == count($this->decisionPartBuilders)) {
+			$this->eventDispatcher->dispatch('coverage.builder.part.covered', new CoverageBuilderEvent($this));
+		}
 	}
 
 	/**
@@ -44,7 +83,7 @@ class DecisionCoverageBuilder implements EventSubscriberInterface, CoverageBuild
 	 */
 	public static function getSubscribedEvents() {
 		return array(
-			'coveragedata.sample.conditioncovered' => 'conditionCoveredHandler',
+			'coverage.builder.part.covered' => 'partCoveredHandler',
 		);
 	}
 
