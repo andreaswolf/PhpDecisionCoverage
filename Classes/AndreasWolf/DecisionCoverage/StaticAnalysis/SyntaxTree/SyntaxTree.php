@@ -26,12 +26,10 @@ class SyntaxTree {
 	}
 
 	/**
-	 * @return \RecursiveIteratorIterator
+	 * @return SyntaxTreeIterator
 	 */
 	public function getIterator() {
-		return new \RecursiveIteratorIterator(
-			new SyntaxTreeIterator($this->rootNodes, TRUE), \RecursiveIteratorIterator::SELF_FIRST
-		);
+		return new SyntaxTreeIterator($this->rootNodes, TRUE);
 	}
 
 }

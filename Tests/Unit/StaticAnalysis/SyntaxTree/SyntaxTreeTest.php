@@ -19,16 +19,7 @@ class SyntaxTreeTest extends ParserBasedTestCase {
 	public function getIteratorReturnsRecursiveIteratorInstance() {
 		$subject = $this->createSubject();
 
-		$this->assertInstanceOf('RecursiveIteratorIterator', $subject->getIterator());
-	}
-
-	/**
-	 * @test
-	 */
-	public function subIteratorOfReturnedIteratorIsASyntaxTreeIterator() {
-		$subject = $this->createSubject();
-
-		$this->assertInstanceOf('AndreasWolf\DecisionCoverage\Source\SyntaxTreeIterator', $subject->getIterator()->getSubIterator());
+		$this->assertInstanceOf('AndreasWolf\DecisionCoverage\Source\SyntaxTreeIterator', $subject->getIterator());
 	}
 
 }
