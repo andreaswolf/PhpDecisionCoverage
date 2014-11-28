@@ -18,6 +18,13 @@ class TestRunner {
 	protected $analysisFile;
 
 	/**
+	 * The path to the coverage data file
+	 *
+	 * @var string
+	 */
+	protected $coverageDataFile;
+
+	/**
 	 * The path to the coverage file
 	 *
 	 * @var string
@@ -41,15 +48,31 @@ class TestRunner {
 	 * @return CoverageDataSet
 	 */
 	public function runTestAndReturnCoverage($testName) {
-		$this->analysisFile = tempnam(sys_get_temp_dir(), 'coverage-test_analysis-') . '.analysis';
+		$this->analysisFile = tempnam(sys_get_temp_dir(), 'coverage-test_analysis-');
 		$this->runAnalysis();
 
-		$this->coverageFile = tempnam(sys_get_temp_dir(), 'coverage-test_coverage-') . '.coverage';
+		$this->coverageDataFile = tempnam(sys_get_temp_dir(), 'coverage-test_data-');
 		$this->runTest($testName);
+
+		$this->coverageFile = tempnam(sys_get_temp_dir(), 'coverage-test_coverage-');
+		$this->runCoverageBuild();
 
 		$contents = unserialize(file_get_contents($this->coverageFile));
 
 		return $contents;
+	}
+
+	/**
+	 * @return void
+	 */
+	protected function runCoverageBuild() {
+		$runArguments = array(
+			'build',
+			$this->coverageDataFile,
+			'--output', $this->coverageFile,
+		);
+
+		$process = $this->runDecisionCoverageScript($runArguments);
 	}
 
 	/**
@@ -63,7 +86,7 @@ class TestRunner {
 		$runArguments = array(
 			'run',
 			$this->analysisFile,
-			'--output', $this->coverageFile,
+			'--output', $this->coverageDataFile,
 			// we don’t need to wrap the PHPUnit arguments here again, doing so will let PHPUnit treat the whole
 			// arguments line as one single
 			'--phpunit-arguments=' . str_replace('"', '\\"', $phpunitArguments),
