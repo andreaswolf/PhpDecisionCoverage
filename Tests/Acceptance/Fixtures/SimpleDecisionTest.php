@@ -26,5 +26,14 @@ class SimpleDecisionTest extends \PHPUnit_Framework_TestCase {
 		$subject->coverSingleCondition(5);
 	}
 
+	/**
+	 * @test
+	 */
+	public function testSimpleDecisionCoverageWithTF() {
+		$subject = new SimpleDecisions();
+
+		$subject->coverDecisionWithBooleanAnd('A', 11);
+	}
+
 }
  
