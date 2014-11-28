@@ -117,7 +117,8 @@ class SyntaxTreeIterator implements \RecursiveIterator {
 		}
 
 		if ($this->includeAllSubNodes === TRUE) {
-			return TRUE;
+			$current = $this->current();
+			return count($this->getSubnodeInclusionOrderForType($current->getType())) > 0;
 		} else {
 			$subNodeNames = $this->current()->getSubNodeNames();
 			return in_array('stmts', $subNodeNames) && count($this->current()->stmts) > 0;
