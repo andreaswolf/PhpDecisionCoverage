@@ -7,17 +7,31 @@ use AndreasWolf\DecisionCoverage\Tests\ParserBasedTestCase;
 
 class SyntaxTreeIteratorTest extends ParserBasedTestCase {
 
+	public function ifConditionalTypesProvider() {
+		return array(
+			'single variable' => array(
+				'if ($foo) {}',
+				'PhpParser\Node\Expr\Variable'
+			),
+			'equality comparison' => array(
+				'if ($foo == "bar") {}',
+				'PhpParser\Node\Expr\BinaryOp\Equal'
+			)
+		);
+	}
+
 	/**
 	 * @test
+	 * @dataProvider ifConditionalTypesProvider
 	 */
-	public function conditionalInIfIsCorrectlyIterated() {
-		$nodes = $this->parseCode('if ($foo == "bar") {}');
+	public function variousTypesOfConditionalsOfIfAreCorrectlyIterated($code, $assertedChildType) {
+		$nodes = $this->parseCode($code);
 
 		$subject = new SyntaxTreeIterator($nodes, TRUE);
 
 		$ifChildren = $subject->getChildren();
 		$this->assertCount(1, $ifChildren);
-		$this->assertInstanceOf('PhpParser\Node\Expr\BinaryOp\Equal', $ifChildren->current());
+		$this->assertInstanceOf($assertedChildType, $ifChildren->current());
 	}
 
 	/**
