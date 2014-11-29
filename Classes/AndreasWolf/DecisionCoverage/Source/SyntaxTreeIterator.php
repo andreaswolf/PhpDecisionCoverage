@@ -1,6 +1,7 @@
 <?php
 namespace AndreasWolf\DecisionCoverage\Source;
 
+use AndreasWolf\DecisionCoverage\StaticAnalysis\SyntaxTree\SyntaxTree;
 use PhpParser\Node\Expr;
 use PhpParser\Node;
 use RecursiveIterator;
@@ -43,10 +44,13 @@ class SyntaxTreeIterator implements \RecursiveIterator {
 	);
 
 	/**
-	 * @param Node[]|Node $nodes
+	 * @param Node[]|Node|SyntaxTree $nodes
 	 * @param bool $includeAllSubNodes If TRUE, all sub nodes (e.g. conditions, elseifs and else for the if-statement) will be included
 	 */
 	public function __construct($nodes, $includeAllSubNodes = FALSE) {
+		if (is_object($nodes) && $nodes instanceof SyntaxTree) {
+			$nodes = $nodes->getRootNodes();
+		}
 		if (!is_array($nodes)) {
 			$nodes = array($nodes);
 		}

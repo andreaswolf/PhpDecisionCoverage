@@ -26,6 +26,13 @@ class SyntaxTree {
 	}
 
 	/**
+	 * @return \PhpParser\Node[]
+	 */
+	public function getRootNodes() {
+		return $this->rootNodes;
+	}
+
+	/**
 	 * @return SyntaxTreeIterator
 	 */
 	public function getIterator() {
