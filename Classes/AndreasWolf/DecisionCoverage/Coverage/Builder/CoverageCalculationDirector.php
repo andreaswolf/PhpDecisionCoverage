@@ -1,6 +1,7 @@
 <?php
 namespace AndreasWolf\DecisionCoverage\Coverage\Builder;
 
+use AndreasWolf\DecisionCoverage\Coverage\FileCoverage;
 use AndreasWolf\DecisionCoverage\DynamicAnalysis\Data\CoverageDataSet;
 use AndreasWolf\DecisionCoverage\Service\ExpressionService;
 use AndreasWolf\DecisionCoverage\Source\RecursiveSyntaxTreeIterator;
@@ -98,13 +99,18 @@ class CoverageCalculationDirector {
 	 * @param CoverageDataSet $dataSet
 	 */
 	protected function createFileCoverageBuilders(FileResult $file, CoverageDataSet $dataSet) {
+		$this->log->debug('Starting to create builders for file ' . $file->getFilePath());
+
+		$fileCoverage = new FileCoverage($file->getFilePath());
+
 		foreach ($this->createFileIterator($file) as $syntaxTreeNode) {
 			if (!$syntaxTreeNode instanceof Node\Stmt) {
 				continue;
 			}
 
 			if ($syntaxTreeNode instanceof Node\Stmt\If_) {
-				$this->createBuilderForNode($syntaxTreeNode->cond);
+				$builder = $this->createBuilderForNode($syntaxTreeNode->cond);
+				$fileCoverage->addCoverage($builder->getCoverage());
 			}
 		}
 	}
