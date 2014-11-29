@@ -35,9 +35,11 @@ class BuildCoverageCommand extends Command {
 	protected function execute(InputInterface $input, OutputInterface $output) {
 		$coverageDataSet = $this->loadCoverageData($input->getArgument('coverage-file'));
 
+		$log = new Logger('BuildCoverage');
+		$log->pushHandler(new StreamHandler(STDOUT));
 
 		$coverageSet = new CoverageSet($coverageDataSet);
-		$director = new CoverageCalculationDirector($coverageSet);
+		$director = new CoverageCalculationDirector($coverageSet, NULL, NULL, NULL, $log);
 		$director->build($coverageDataSet);
 	}
 

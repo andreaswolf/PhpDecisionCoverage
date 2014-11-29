@@ -20,8 +20,6 @@ use Symfony\Component\EventDispatcher\EventDispatcherInterface;
 
 /**
  * @author Andreas Wolf <aw@foundata.net>
- *
- * TODO introduce a logger
  */
 class CoverageCalculationDirector {
 
