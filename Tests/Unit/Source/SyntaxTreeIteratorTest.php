@@ -23,6 +23,31 @@ class SyntaxTreeIteratorTest extends ParserBasedTestCase {
 	/**
 	 * @test
 	 */
+	public function childrenOfNamespaceStatementAreCorrectlyDetected() {
+		$nodes = $this->parseCode('namespace MyNamespace;
+		class Foo {}');
+
+		$subject = new SyntaxTreeIterator($nodes, TRUE);
+
+		$this->assertTrue($subject->hasChildren());
+	}
+
+	/**
+	 * @test
+	 */
+	public function childrenOfClassStatementAreCorrectlyDetected() {
+		$nodes = $this->parseCode('class Foo {
+			public function bar() {}
+		}');
+
+		$subject = new SyntaxTreeIterator($nodes, TRUE);
+
+		$this->assertTrue($subject->hasChildren());
+	}
+
+	/**
+	 * @test
+	 */
 	public function statementsArrayOfEmptyIfStatementIsNotIncludedWhenIncludingAllSubnodes() {
 		$nodes = $this->parseCode('if ($foo == "bar") {}');
 
