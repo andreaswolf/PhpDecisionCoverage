@@ -2,6 +2,7 @@
 namespace AndreasWolf\DecisionCoverage\Tests\Unit\Coverage\Builder;
 
 
+use AndreasWolf\DecisionCoverage\Coverage\MCDC\DecisionCoverage;
 use AndreasWolf\DecisionCoverage\Tests\Helpers\PhpUnit\InvocationMatcher as Invocation;
 
 
@@ -19,6 +20,8 @@ trait CoverageBuilderTestTrait {
 		$mockedCoverageFactory = $this->getMockBuilder('AndreasWolf\DecisionCoverage\Coverage\Builder\CoverageFactory')
 			->getMock();
 		$mockedCoverageFactory->expects(Invocation::any())->method('createCoverageForNode')->willReturn($this->mockCoverage());
+		$mockedCoverageFactory->expects(Invocation::any())->method('createCoverageForDecision')
+			->willReturn($this->mockDecisionCoverage());
 
 		return $mockedCoverageFactory;
 	}
@@ -39,4 +42,19 @@ trait CoverageBuilderTestTrait {
 	protected function mockCoverage() {
 		return $this->getMockBuilder('AndreasWolf\DecisionCoverage\Coverage\Coverage')->getMock();
 	}
+
+	/**
+	 * @return DecisionCoverage
+	 */
+	protected function mockDecisionCoverage() {
+		$coverage = $this->getMockBuilder('AndreasWolf\DecisionCoverage\Coverage\MCDC\DecisionCoverage')
+			->disableOriginalConstructor()->getMock();
+		$coverage->expects(Invocation::any())->method('getExpression')->willReturn(
+			$this->getMockBuilder('PhpParser\Node\Expr\BinaryOp')->disableOriginalConstructor()
+				->setMockClassName('BinaryOp_' . uniqid())->getMock()
+		);
+
+		return $coverage;
+	}
+
 } 

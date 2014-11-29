@@ -3,10 +3,12 @@ namespace AndreasWolf\DecisionCoverage\Tests\Unit\Coverage\Builder;
 
 use AndreasWolf\DecisionCoverage\Coverage\Builder\DecisionCoverageBuilder;
 use AndreasWolf\DecisionCoverage\Coverage\Event\CoverageBuilderEvent;
+use AndreasWolf\DecisionCoverage\Coverage\MCDC\DecisionCoverage;
 use AndreasWolf\DecisionCoverage\Tests\Unit\UnitTestCase;
 
 
 class DecisionCoverageBuilderTest extends UnitTestCase {
+	use CoverageBuilderTestTrait;
 
 	/**
 	 * @test
@@ -19,7 +21,7 @@ class DecisionCoverageBuilderTest extends UnitTestCase {
 			$this->mockCoverageBuilder(),
 			$this->mockCoverageBuilder(),
 		);
-		$subject = new DecisionCoverageBuilder($partBuilders, $eventDispatcher);
+		$subject = new DecisionCoverageBuilder($this->mockDecisionCoverage(), $partBuilders, $eventDispatcher);
 
 		$subject->partCoveredHandler(new CoverageBuilderEvent($partBuilders[1]));
 		$subject->partCoveredHandler(new CoverageBuilderEvent($partBuilders[0]));
@@ -36,7 +38,7 @@ class DecisionCoverageBuilderTest extends UnitTestCase {
 			$this->mockCoverageBuilder(),
 			$this->mockCoverageBuilder(),
 		);
-		$subject = new DecisionCoverageBuilder($partBuilders, $eventDispatcher);
+		$subject = new DecisionCoverageBuilder($this->mockDecisionCoverage(), $partBuilders, $eventDispatcher);
 
 		$subject->partCoveredHandler(new CoverageBuilderEvent($this->mockCoverageBuilder()));
 		$subject->partCoveredHandler(new CoverageBuilderEvent($this->mockCoverageBuilder()));
@@ -53,7 +55,7 @@ class DecisionCoverageBuilderTest extends UnitTestCase {
 			$this->mockCoverageBuilder(),
 			$this->mockCoverageBuilder(),
 		);
-		$subject = new DecisionCoverageBuilder($partBuilders, $eventDispatcher);
+		$subject = new DecisionCoverageBuilder($this->mockDecisionCoverage(), $partBuilders, $eventDispatcher);
 
 		$subject->partCoveredHandler(new CoverageBuilderEvent($partBuilders[0]));
 		$subject->partCoveredHandler(new CoverageBuilderEvent($partBuilders[0]));

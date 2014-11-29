@@ -51,8 +51,8 @@ class CoverageBuilderFactoryTest extends UnitTestCase {
 			->will($this->returnValue($this->mockCoverage()));
 		$coverageFactory->expects($this->at(1))->method('createCoverageForNode')->with($this->equalTo($smaller))
 			->will($this->returnValue($this->mockCoverage()));
-		$coverageFactory->expects($this->at(2))->method('createCoverageForNode')->with($this->equalTo($expression))
-			->will($this->returnValue($this->mockCoverage()));
+		$coverageFactory->expects($this->once())->method('createCoverageForDecision')->with($this->equalTo($expression))
+			->will($this->returnValue($this->mockDecisionCoverage()));
 
 		$subject = new CoverageBuilderFactory($this->mockEventDispatcher(), $coverageFactory);
 		$subject->createBuilderForDecision($expression);

@@ -1,9 +1,12 @@
 <?php
 namespace AndreasWolf\DecisionCoverage\Coverage\Builder;
 
+use AndreasWolf\DecisionCoverage\Coverage\Coverage;
 use AndreasWolf\DecisionCoverage\Coverage\Event\CoverageBuilderEvent;
 use AndreasWolf\DecisionCoverage\Coverage\Event\CoverageEvent;
 use AndreasWolf\DecisionCoverage\Coverage\Event\DataSampleEvent;
+use AndreasWolf\DecisionCoverage\Coverage\MCDC\DecisionCoverage;
+use PhpParser\Node\Expr;
 use Psr\Log\LoggerInterface;
 use Psr\Log\NullLogger;
 use Symfony\Component\EventDispatcher\EventDispatcherInterface;
@@ -21,6 +24,11 @@ class DecisionCoverageBuilder implements EventSubscriberInterface, CoverageBuild
 	 * @var EventDispatcherInterface
 	 */
 	protected $eventDispatcher;
+
+	/**
+	 * @var DecisionCoverage
+	 */
+	protected $coverage;
 
 	/**
 	 * The builders for the parts of this decision.
@@ -41,14 +49,16 @@ class DecisionCoverageBuilder implements EventSubscriberInterface, CoverageBuild
 
 
 	/**
+	 * @param DecisionCoverage $coverage
 	 * @param CoverageBuilder[] $partBuilders
 	 * @param EventDispatcherInterface $eventDispatcher
 	 * @param LoggerInterface $log
 	 */
-	public function __construct($partBuilders, EventDispatcherInterface $eventDispatcher, LoggerInterface $log = NULL) {
+	public function __construct(DecisionCoverage $coverage, $partBuilders, EventDispatcherInterface $eventDispatcher, LoggerInterface $log = NULL) {
 		$this->log = ($log !== NULL) ? $log : new NullLogger();
 		$this->eventDispatcher = $eventDispatcher;
 
+		$this->coverage = $coverage;
 		$this->decisionPartBuilders = $partBuilders;
 	}
 

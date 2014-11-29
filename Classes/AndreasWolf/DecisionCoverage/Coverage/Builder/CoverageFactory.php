@@ -1,11 +1,11 @@
 <?php
 namespace AndreasWolf\DecisionCoverage\Coverage\Builder;
 
+use AndreasWolf\DecisionCoverage\Coverage\Coverage;
 use AndreasWolf\DecisionCoverage\Coverage\MCDC\DecisionCoverage;
 use AndreasWolf\DecisionCoverage\Coverage\SingleConditionCoverage;
 use AndreasWolf\DecisionCoverage\Service\ExpressionService;
 use PhpParser\Node\Expr;
-use Symfony\Component\EventDispatcher\EventDispatcherInterface;
 
 
 /**
@@ -38,14 +38,23 @@ class CoverageFactory {
 
 	/**
 	 * @param Expr $node
-	 * @return DecisionCoverage|SingleConditionCoverage
+	 * @return Coverage
 	 */
 	public function createCoverageForNode(Expr $node) {
 		if ($this->expressionService->isDecisionExpression($node)) {
-			return $this->coverageBuilderFactory->createBuilderForDecision($node);
+			throw new \InvalidArgumentException('createCoverageForNode() cannot create coverage for decision; use method createCoverageForDecision() instead.');
 		} else {
 			return new SingleConditionCoverage($node);
 		}
+	}
+
+	/**
+	 * @param Expr $node
+	 * @param Coverage[] $partialCoverages
+	 * @return DecisionCoverage
+	 */
+	public function createCoverageForDecision(Expr $node, $partialCoverages) {
+		return new DecisionCoverage($node, $partialCoverages);
 	}
 
 }

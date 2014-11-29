@@ -57,13 +57,16 @@ class CoverageBuilderFactory {
 	 * @return DecisionCoverageBuilder
 	 */
 	public function createBuilderForDecision(Expr\BinaryOp $decision) {
-		$partialCoverageBuilders = array();
+		$partialCoverageBuilders = $partialCoverages = array();
 		foreach (array($decision->left, $decision->right) as $partialExpression) {
 			// the partial expression might also be a decision (e.g. in "A && (B || C)")
-			$partialCoverageBuilders[] = $this->createBuilderForExpression($partialExpression);
+			$builder = $this->createBuilderForExpression($partialExpression);
+			$partialCoverageBuilders[] = $builder;
+			$partialCoverages[] = $builder->getCoverage();
 		}
-		$decisionCoverage = $this->coverageFactory->createCoverageForNode($decision);
-		$coverageBuilder = new DecisionCoverageBuilder($partialCoverageBuilders, $this->eventDispatcher, $this->log);
+		$decisionCoverage = $this->coverageFactory->createCoverageForDecision($decision, $partialCoverages);
+		$coverageBuilder = new DecisionCoverageBuilder($decisionCoverage, $partialCoverageBuilders,
+			$this->eventDispatcher, $this->log);
 		$this->eventDispatcher->addSubscriber($coverageBuilder);
 
 		return $coverageBuilder;
