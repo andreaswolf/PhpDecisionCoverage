@@ -1,6 +1,8 @@
 <?php
 namespace AndreasWolf\DecisionCoverage\Coverage\Builder;
 
+use AndreasWolf\DecisionCoverage\Coverage\CoverageSet;
+use AndreasWolf\DecisionCoverage\Coverage\Event\DataSampleEvent;
 use AndreasWolf\DecisionCoverage\Coverage\FileCoverage;
 use AndreasWolf\DecisionCoverage\DynamicAnalysis\Data\CoverageDataSet;
 use AndreasWolf\DecisionCoverage\Service\ExpressionService;
@@ -8,6 +10,7 @@ use AndreasWolf\DecisionCoverage\Source\RecursiveSyntaxTreeIterator;
 use AndreasWolf\DecisionCoverage\Source\SyntaxTreeIterator;
 use AndreasWolf\DecisionCoverage\StaticAnalysis\FileResult;
 use AndreasWolf\DecisionCoverage\StaticAnalysis\Probe;
+use AndreasWolf\DecisionCoverage\StaticAnalysis\SyntaxTree\SyntaxTreeStack;
 use PhpParser\Node;
 use Psr\Log\LoggerInterface;
 use Psr\Log\NullLogger;
@@ -26,6 +29,11 @@ class CoverageCalculationDirector {
 	 * @var Probe[]
 	 */
 	protected $knownProbes = array();
+
+	/**
+	 * @var CoverageSet
+	 */
+	protected $coverageSet;
 
 	/**
 	 * @var CoverageBuilderFactory
@@ -47,14 +55,17 @@ class CoverageCalculationDirector {
 	 */
 	protected $log;
 
+
 	/**
+	 * @param CoverageSet $coverageSet The coverage data set to insert the generated coverage into
 	 * @param CoverageBuilderFactory $factory
 	 * @param ExpressionService $expressionService
 	 * @param EventDispatcherInterface $eventDispatcher The event dispatcher to use. Optional because the events used
 	 *   here don't necessarily need to be handled globally
 	 * @param LoggerInterface $log
 	 */
-	public function __construct(CoverageBuilderFactory $factory = NULL, ExpressionService $expressionService = NULL,
+	public function __construct(CoverageSet $coverageSet, CoverageBuilderFactory $factory = NULL,
+	                            ExpressionService $expressionService = NULL,
 	                            EventDispatcherInterface $eventDispatcher = NULL, LoggerInterface $log = NULL) {
 		if (!$eventDispatcher) {
 			$eventDispatcher = new EventDispatcher();
@@ -70,6 +81,7 @@ class CoverageCalculationDirector {
 				new CoverageFactory($expressionService, $eventDispatcher), $log);
 		}
 
+		$this->coverageSet = $coverageSet;
 		$this->builderFactory = $factory;
 		$this->eventDispatcher = $eventDispatcher;
 		$this->expressionService = $expressionService;
@@ -77,18 +89,22 @@ class CoverageCalculationDirector {
 	}
 
 	/**
-	 * @param CoverageDataSet $dataSet
 	 */
-	public function buildForDataSet(CoverageDataSet $dataSet) {
-		$this->createCoverageBuildersForDataSet($dataSet);
+	public function build() {
+		$this->createCoverageBuildersForDataSet($this->coverageSet->getDataSet());
 
-		// TODO create data set for coverage
+		foreach ($this->coverageSet->getDataSet()->getSamples() as $dataSample) {
+			$this->eventDispatcher->dispatch('coverage.sample.received', new DataSampleEvent($dataSample));
+		}
 	}
 
 	/**
 	 * @param CoverageDataSet $dataSet
 	 */
 	protected function createCoverageBuildersForDataSet(CoverageDataSet $dataSet) {
+		$treeStack = new SyntaxTreeStack($this->eventDispatcher);
+		$this->eventDispatcher->addSubscriber($treeStack);
+
 		foreach ($dataSet->getAnalysisResult()->getFileResults() as $potentiallyCoveredFile) {
 			$this->createFileCoverageBuilders($potentiallyCoveredFile, $dataSet);
 		}
@@ -102,6 +118,7 @@ class CoverageCalculationDirector {
 		$this->log->debug('Starting to create builders for file ' . $file->getFilePath());
 
 		$fileCoverage = new FileCoverage($file->getFilePath());
+		$this->coverageSet->add($fileCoverage);
 
 		foreach ($this->createFileIterator($file) as $syntaxTreeNode) {
 			if (!$syntaxTreeNode instanceof Node\Stmt) {

@@ -2,6 +2,7 @@
 namespace AndreasWolf\DecisionCoverage\Tests\Unit\Coverage\Builder;
 
 use AndreasWolf\DecisionCoverage\Coverage\Builder\CoverageCalculationDirector;
+use AndreasWolf\DecisionCoverage\Coverage\CoverageSet;
 use AndreasWolf\DecisionCoverage\DynamicAnalysis\Data\CoverageDataSet;
 use AndreasWolf\DecisionCoverage\StaticAnalysis\FileResult;
 use AndreasWolf\DecisionCoverage\StaticAnalysis\ResultSet;
@@ -23,9 +24,10 @@ class CoverageCalculationDirectorTest extends ParserBasedTestCase {
 			->disableOriginalConstructor()->getMock();
 		$mockedBuilderFactory->expects($this->once())->method('createBuilderForExpression')
 			->with($this->isInstanceOf('PhpParser\Node\Expr\BinaryOp\BooleanAnd'));
-		$subject = new CoverageCalculationDirector($mockedBuilderFactory);
+		$subject = new CoverageCalculationDirector(new CoverageSet($this->mockCoverageDataSet($analysisResult)),
+			$mockedBuilderFactory);
 
-		$subject->buildForDataSet($this->mockCoverageDataSet($analysisResult));
+		$subject->build();
 	}
 
 
