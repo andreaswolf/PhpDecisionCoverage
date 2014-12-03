@@ -74,6 +74,7 @@ class SingleConditionCoverageBuilder implements EventSubscriberInterface, Covera
 
 		$value = $sample->getValueFor($this->expression);
 		$this->coverage->recordCoveredValue($value);
+		$this->log->debug('Condition covered');
 		$this->eventDispatcher->dispatch('coverage.builder.part.covered', new CoverageBuilderEvent($this));
 	}
 

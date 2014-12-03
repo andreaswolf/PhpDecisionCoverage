@@ -77,6 +77,7 @@ class DecisionCoverageBuilder implements EventSubscriberInterface, CoverageBuild
 		$this->coveredBuilders[] = $builder;
 
 		if (count($this->coveredBuilders) == count($this->decisionPartBuilders)) {
+			$this->log->debug('Decision covered');
 			$this->eventDispatcher->dispatch('coverage.builder.part.covered', new CoverageBuilderEvent($this));
 		}
 	}
