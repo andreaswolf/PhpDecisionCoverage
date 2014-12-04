@@ -3,7 +3,9 @@ namespace AndreasWolf\DecisionCoverage\Tests\Unit\Coverage\Weighting;
 
 use AndreasWolf\DecisionCoverage\Coverage\Weighting\ExpressionWeightBuilder;
 use AndreasWolf\DecisionCoverage\Coverage\Weighting\ExpressionWeightFactory;
+use AndreasWolf\DecisionCoverage\Tests\Helpers\PhpParser\ExpressionMockBuilder;
 use AndreasWolf\DecisionCoverage\Tests\Unit\UnitTestCase;
+use PhpParser\Node\Expr\BinaryOp\BooleanAnd;
 
 
 class ExpressionWeightBuilderTest extends UnitTestCase {
@@ -38,7 +40,36 @@ class ExpressionWeightBuilderTest extends UnitTestCase {
 	}
 
 	/**
-	 * @return ExpressionWeightFactory
+	 * @test
+	 */
+	public function weightForDecisionIsBuiltWithCorrectParameters() {
+		$mockedWeightA = $this->mockExpressionWeight('Left');
+		$mockedWeightB = $this->mockExpressionWeight('Right');
+		$mockedDecisionWeight = $this->getMockBuilder('AndreasWolf\DecisionCoverage\Coverage\Weighting\DecisionWeight')
+			->disableOriginalConstructor()->getMock();
+
+		$decision = new BooleanAnd(
+			$this->getExpressionMockBuilder('PhpParser\Node\Expr')->addAttribute('coverage__weight', $mockedWeightA)->getMock(),
+			$this->getExpressionMockBuilder('PhpParser\Node\Expr')->addAttribute('coverage__weight', $mockedWeightB)->getMock()
+		);
+
+		$mockedWeightFactory = $this->mockWeightFactory();
+		$mockedWeightFactory->expects($this->exactly(2))->method('createForCondition')
+			// the condition weights are built right to left (as the list is traversed from the back)
+			->willReturnOnConsecutiveCalls($mockedWeightB, $mockedWeightA);
+		$mockedWeightFactory->expects($this->once())->method('createForDecision')
+			->with($this->equalTo($decision), $this->equalTo($mockedWeightA), $this->equalTo($mockedWeightB))
+			->willReturn($mockedDecisionWeight);
+
+		$subject = new ExpressionWeightBuilder($mockedWeightFactory);
+
+		$subject->buildForExpression($decision);
+
+		$this->assertEquals($mockedDecisionWeight, $decision->getAttribute('coverage__weight'));
+	}
+
+	/**
+	 * @return \PHPUnit_Framework_MockObject_MockObject
 	 */
 	protected function mockWeightFactory() {
 		$mockedWeightFactory = $this->getMockBuilder('AndreasWolf\DecisionCoverage\Coverage\Weighting\ExpressionWeightFactory')
@@ -50,8 +81,24 @@ class ExpressionWeightBuilderTest extends UnitTestCase {
 	/**
 	 * @return \PHPUnit_Framework_MockObject_MockObject
 	 */
+	protected function mockExpressionWeight($classNameSuffix = '') {
+		$classNameSuffix = $classNameSuffix ?: uniqid();
+		return $this->getMockBuilder('AndreasWolf\DecisionCoverage\Coverage\Weighting\ExpressionWeight')
+			->setMockClassName('ExpressionWeight_' . $classNameSuffix)->getMock();
+	}
+
+	/**
+	 * @return \PHPUnit_Framework_MockObject_MockObject
+	 */
 	protected function mockConditionExpression() {
-		return $this->getMock('PhpParser\Node\Expr');
+		$mock = $this->getMock('PhpParser\Node\Expr');
+		$mock->expects($this->any())->method('getType')->willReturn('Expr');
+
+		return $mock;
+	}
+
+	protected function getExpressionMockBuilder($type) {
+		return new ExpressionMockBuilder($type);
 	}
 
 }
