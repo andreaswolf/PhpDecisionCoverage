@@ -4,10 +4,10 @@ namespace AndreasWolf\DecisionCoverage\Coverage\Builder;
 use AndreasWolf\DecisionCoverage\Coverage\CoverageSet;
 use AndreasWolf\DecisionCoverage\Coverage\Event\DataSampleEvent;
 use AndreasWolf\DecisionCoverage\Coverage\FileCoverage;
+use AndreasWolf\DecisionCoverage\Coverage\Weighting\ExpressionWeightBuilder;
 use AndreasWolf\DecisionCoverage\DynamicAnalysis\Data\CoverageDataSet;
 use AndreasWolf\DecisionCoverage\Service\ExpressionService;
 use AndreasWolf\DecisionCoverage\Source\RecursiveSyntaxTreeIterator;
-use AndreasWolf\DecisionCoverage\Source\SyntaxTreeIterator;
 use AndreasWolf\DecisionCoverage\StaticAnalysis\FileResult;
 use AndreasWolf\DecisionCoverage\StaticAnalysis\Probe;
 use AndreasWolf\DecisionCoverage\StaticAnalysis\SyntaxTree\SyntaxTreeStack;
@@ -97,22 +97,20 @@ class CoverageCalculationDirector {
 	}
 
 	/**
-	 * @param CoverageDataSet $dataSet
 	 */
-	protected function createCoverageBuildersForDataSet(CoverageDataSet $dataSet) {
+	protected function createCoverageBuildersForDataSet() {
 		$treeStack = new SyntaxTreeStack($this->eventDispatcher);
 		$this->eventDispatcher->addSubscriber($treeStack);
 
-		foreach ($dataSet->getAnalysisResult()->getFileResults() as $potentiallyCoveredFile) {
-			$this->createFileCoverageBuilders($potentiallyCoveredFile, $dataSet);
+		foreach ($this->coverageSet->getAnalysisResult()->getFileResults() as $potentiallyCoveredFile) {
+			$this->createFileCoverageBuilders($potentiallyCoveredFile);
 		}
 	}
 
 	/**
 	 * @param FileResult $file
-	 * @param CoverageDataSet $dataSet
 	 */
-	protected function createFileCoverageBuilders(FileResult $file, CoverageDataSet $dataSet) {
+	protected function createFileCoverageBuilders(FileResult $file) {
 		$this->log->debug('Starting to create builders for file ' . $file->getFilePath());
 
 		$fileCoverage = new FileCoverage($file->getFilePath());
@@ -124,10 +122,24 @@ class CoverageCalculationDirector {
 			}
 
 			if ($syntaxTreeNode instanceof Node\Stmt\If_) {
+				$this->buildExpressionWeights($syntaxTreeNode->cond);
+				$weight = $syntaxTreeNode->cond->getAttribute('coverage__weight');
+				$this->log->debug('Encountered if statement with expression weights ' . $weight->getTrueValue() . '/' . $weight->getFalseValue());
+
 				$builder = $this->createBuilderForNode($syntaxTreeNode->cond);
 				$fileCoverage->addCoverage($builder->getCoverage());
 			}
 		}
+	}
+
+	/**
+	 * Makes sure that
+	 *
+	 * @param Node\Expr $expression
+	 */
+	protected function buildExpressionWeights(Node\Expr $expression) {
+		$builder = new ExpressionWeightBuilder();
+		$builder->buildForExpression($expression);
 	}
 
 	/**
