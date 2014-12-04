@@ -11,20 +11,6 @@ use PhpParser\Parser;
  * @author Andreas Wolf <aw@foundata.net>
  */
 class ParserBasedTestCase extends \PHPUnit_Framework_TestCase {
+	use ParserTestIntegration;
 
-	/**
-	 * @var Parser
-	 */
-	protected $parser;
-
-	protected function setUp() {
-		parent::setUp();
-
-		$this->parser = new Parser(new Lexer());
-	}
-
-	protected function parseCode($code) {
-		return $this->parser->parse('<?php ' . $code);
-	}
 }
- 
