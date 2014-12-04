@@ -1,18 +1,18 @@
 <?php
 namespace AndreasWolf\DecisionCoverage\Tests\Unit\Coverage\Weighting;
 
-use AndreasWolf\DecisionCoverage\Coverage\Weighting\BooleanAndWeight;
+use AndreasWolf\DecisionCoverage\Coverage\Weighting\BooleanOrWeight;
 use AndreasWolf\DecisionCoverage\Tests\Unit\UnitTestCase;
 
 
 /**
- * Tests the weight for a boolean AND (&&).
+ * Tests the weight for a boolean OR (||).
  *
- * The weight is calculated using the cases Fx, TF and TT (x = not evaluated).
+ * The weight is calculated using the cases Tx, FT and FF (x = not evaluated).
  *
  * @author Andreas Wolf <aw@foundata.net>
  */
-class BooleanAndWeightTest extends UnitTestCase {
+class BooleanOrWeightTest extends UnitTestCase {
 	use DecisionWeightTestHelper;
 
 	public function expressionWeightDataProvider() {
@@ -20,7 +20,7 @@ class BooleanAndWeightTest extends UnitTestCase {
 			array(
 				array(1, 2), // left: TRUE, FALSE
 				array(4, 5), // right: TRUE, FALSE
-				4, 7), // expected TRUE, expected FALSE
+				9, 10), // expected TRUE, expected FALSE
 		);
 	}
 
@@ -36,7 +36,7 @@ class BooleanAndWeightTest extends UnitTestCase {
 		$leftMock = $this->mockExpressionWeight($leftWeights[0], $leftWeights[1]);
 		$rightMock = $this->mockExpressionWeight($rightWeights[0], $rightWeights[1]);
 
-		$subject = new BooleanAndWeight($leftMock, $rightMock, $this->getMock('PhpParser\Node\Expr'));
+		$subject = new BooleanOrWeight($leftMock, $rightMock, $this->getMock('PhpParser\Node\Expr'));
 
 		$this->assertEquals($expectedTrueValue, $subject->getTrueValue());
 	}
@@ -53,7 +53,7 @@ class BooleanAndWeightTest extends UnitTestCase {
 		$leftMock = $this->mockExpressionWeight($leftWeights[0], $leftWeights[1]);
 		$rightMock = $this->mockExpressionWeight($rightWeights[0], $rightWeights[1]);
 
-		$subject = new BooleanAndWeight($leftMock, $rightMock, $this->getMock('PhpParser\Node\Expr'));
+		$subject = new BooleanOrWeight($leftMock, $rightMock, $this->getMock('PhpParser\Node\Expr'));
 
 		$this->assertEquals($expectedFalseValue, $subject->getFalseValue());
 	}
@@ -70,7 +70,7 @@ class BooleanAndWeightTest extends UnitTestCase {
 		$leftMock = $this->mockExpressionWeight($leftWeights[0], $leftWeights[1]);
 		$rightMock = $this->mockExpressionWeight($rightWeights[0], $rightWeights[1]);
 
-		$subject = new BooleanAndWeight($leftMock, $rightMock, $this->getMock('PhpParser\Node\Expr'));
+		$subject = new BooleanOrWeight($leftMock, $rightMock, $this->getMock('PhpParser\Node\Expr'));
 
 		$this->assertEquals($expectedTrueValue + $expectedFalseValue, $subject->getValue());
 	}

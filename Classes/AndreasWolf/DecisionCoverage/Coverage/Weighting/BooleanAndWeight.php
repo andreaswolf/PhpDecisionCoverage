@@ -4,10 +4,6 @@ namespace AndreasWolf\DecisionCoverage\Coverage\Weighting;
 
 class BooleanAndWeight extends DecisionWeight {
 
-	public function getValue() {
-		return $this->getTrueValue() + $this->getFalseValue();
-	}
-
 	public function getTrueValue() {
 		return $this->leftWeight->getTrueValue() * $this->rightWeight->getTrueValue(); // TT
 	}

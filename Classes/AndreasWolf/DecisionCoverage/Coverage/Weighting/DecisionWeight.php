@@ -33,5 +33,9 @@ abstract class DecisionWeight implements ExpressionWeight {
 		$this->rightWeight = $rightWeight;
 	}
 
+	public function getValue() {
+		return $this->getTrueValue() + $this->getFalseValue();
+	}
+
 }
  
