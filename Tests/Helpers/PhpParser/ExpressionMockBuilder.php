@@ -22,6 +22,11 @@ class ExpressionMockBuilder {
 	 */
 	protected $mockedAttributes;
 
+	/**
+	 * @var Expr
+	 */
+	protected $mock;
+
 
 	public function __construct($class) {
 		$this->class = $class;
@@ -43,16 +48,28 @@ class ExpressionMockBuilder {
 	}
 
 	/**
+	 * @param string $mockedId
+	 * @return $this
+	 */
+	public function setId($mockedId) {
+		$this->addAttribute('coverage__nodeId', $mockedId);
+
+		return $this;
+	}
+
+	/**
 	 * @return Expr
 	 */
 	public function getMock() {
-		$mockGenerator = new \PHPUnit_Framework_MockObject_Generator();
-		/** @var \PHPUnit_Framework_MockObject_MockObject $mock */
-		$mock = $mockGenerator->getMock($this->class);
+		if (!$this->mock) {
+			$mockGenerator = new \PHPUnit_Framework_MockObject_Generator();
+			/** @var \PHPUnit_Framework_MockObject_MockObject $mock */
+			$this->mock = $mockGenerator->getMock($this->class);
 
-		$mock->expects(InvocationMatcher::any())->method('getAttribute')->willReturnMap($this->mockedAttributes);
+			$this->mock->expects(InvocationMatcher::any())->method('getAttribute')->willReturnMap($this->mockedAttributes);
+		}
 
-		return $mock;
+		return $this->mock;
 	}
 
 }
