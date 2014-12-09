@@ -3,6 +3,10 @@
 		{
 			"type": "vcs",
 			"url": "https://github.com/andreaswolf/PhpDebuggerClient.git"
+		},
+		{
+			"type": "vcs",
+			"url": "https://github.com/andreaswolf/BinaryDecisionDiagrams.git"
 		}
 	],
 	"name": "andreaswolf/decision-coverage",
@@ -16,6 +20,7 @@
 		"symfony/config": "*",
 		"symfony/event-dispatcher": "*",
 		"andreaswolf/php-debugger-client": "dev-master",
+		"andreaswolf/binary-decision-diagrams": "dev-master",
 		"symfony/console": "~2.6@dev",
 		"symfony/process": "~3.0@dev",
 		"rhumsaa/uuid": "~2.8@dev",
