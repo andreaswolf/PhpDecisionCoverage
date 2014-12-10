@@ -92,6 +92,8 @@ class CouplingClassifierTest extends UnitTestCase {
 	}
 
 	/**
+	 * The same test as above, just with switched parameters.
+	 *
 	 * @test
 	 * @dataProvider sameTypeRelationalExpressionProvider
 	 */
@@ -135,6 +137,20 @@ class CouplingClassifierTest extends UnitTestCase {
 		$coupling = $subject->determineConditionCoupling($leftExpression, $rightExpression);
 
 		$this->assertEquals(ConditionCoupling::TYPE_SUPERSET, $coupling, 'Condition coupling is not recognized as superset');
+	}
+
+	/**
+	 * The same as the test above, just with switched parameters, thus leading to sub- instead of supersets.
+	 *
+	 * @test
+	 * @dataProvider similarTypeAndSameValueRelationalExpressionProvider
+	 */
+	public function subsetIsCorrectlyClassifiedForSameVariableValue($rightExpression, $leftExpression) {
+		$subject = new CouplingClassifier();
+
+		$coupling = $subject->determineConditionCoupling($leftExpression, $rightExpression);
+
+		$this->assertEquals(ConditionCoupling::TYPE_SUBSET, $coupling, 'Condition coupling is not recognized as subset');
 	}
 
 
