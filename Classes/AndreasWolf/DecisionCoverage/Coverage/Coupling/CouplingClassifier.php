@@ -62,6 +62,14 @@ class CouplingClassifier {
 		}
 
 		switch ($leftExpression->getType()) {
+			case 'Expr_BinaryOp_Equal':
+				if ($leftValue == $rightValue) {
+					return ConditionCoupling::TYPE_IDENTICAL;
+				} else {
+					return ConditionCoupling::TYPE_WEAK_DISJOINT;
+				}
+				break;
+
 			case 'Expr_BinaryOp_Greater':
 			case 'Expr_BinaryOp_GreaterOrEqual':
 				if ($leftValue < $rightValue) {

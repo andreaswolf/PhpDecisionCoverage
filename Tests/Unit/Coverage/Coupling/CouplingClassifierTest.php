@@ -328,6 +328,11 @@ class CouplingClassifierTest extends UnitTestCase {
 			case self::OPERATOR_GREATER_OR_EQUAL:
 				return $this->mockGreaterOrEqual($variable, $value);
 
+			case self::OPERATOR_EQUAL:
+				return $this->mockEqual($variable, $value);
+
+			case self::OPERATOR_NOT_EQUAL:
+				return $this->mockNotEqual($variable, $value);
 		}
 	}
 
@@ -345,6 +350,14 @@ class CouplingClassifierTest extends UnitTestCase {
 
 	protected function mockSmallerOrEqual($left, $right) {
 		return new Expr\BinaryOp\SmallerOrEqual($left, $right);
+	}
+
+	protected function mockEqual($left, $right) {
+		return new Expr\BinaryOp\Equal($left, $right);
+	}
+
+	protected function mockNotEqual($left, $right) {
+		return new Expr\BinaryOp\NotEqual($left, $right);
 	}
 
 	protected function mockVariable($variableName) {
