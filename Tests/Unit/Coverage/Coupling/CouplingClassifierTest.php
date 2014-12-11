@@ -1,5 +1,6 @@
 <?php
 namespace AndreasWolf\DecisionCoverage\Tests\Unit\Coverage\Coupling;
+
 use AndreasWolf\DecisionCoverage\Coverage\Coupling\ConditionCoupling;
 use AndreasWolf\DecisionCoverage\Coverage\Coupling\CouplingClassifier;
 use AndreasWolf\DecisionCoverage\Tests\Unit\UnitTestCase;
@@ -13,6 +14,13 @@ use PhpParser\Node\Scalar;
  * @author Andreas Wolf <aw@foundata.net>
  */
 class CouplingClassifierTest extends UnitTestCase {
+
+	const OPERATOR_SMALLER = '<';
+	const OPERATOR_GREATER = '>';
+	const OPERATOR_SMALLER_OR_EQUAL = '<=';
+	const OPERATOR_GREATER_OR_EQUAL = '>=';
+	const OPERATOR_EQUAL = '==';
+	const OPERATOR_NOT_EQUAL = '!=';
 
 	/**
 	 * @test
@@ -28,131 +36,300 @@ class CouplingClassifierTest extends UnitTestCase {
 		$this->assertEquals(ConditionCoupling::TYPE_UNCOUPLED, $coupling, 'Conditions are not recognized as uncoupled.');
 	}
 
-	public function identicalExpressionsDataProvider() {
-		return array(
-			'greater' => array($this->mockGreater($this->mockVariable('a'), $this->mockInteger(5))),
-			'greater or equal' => array($this->mockGreaterOrEqual($this->mockVariable('a'), $this->mockInteger(5))),
-			'smaller' => array($this->mockSmaller($this->mockVariable('a'), $this->mockInteger(5))),
-			'smaller or equal' => array($this->mockSmallerOrEqual($this->mockVariable('a'), $this->mockInteger(5))),
-		);
-	}
-
 	/**
-	 * @test
-	 * @dataProvider identicalExpressionsDataProvider
-	 */
-	public function identicalExpressionsAreClassifiedCorrectly($expression) {
-		$subject = new CouplingClassifier();
-
-		$coupling = $subject->determineConditionCoupling(
-			$expression,
-			$expression
-		);
-
-		$this->assertEquals(ConditionCoupling::TYPE_IDENTICAL, $coupling, 'Conditions are not recognized as identical.');
-	}
-
-	/**
-	 * The variables returned by this provider can be used for both testing super- and subset relations by switching
-	 * the two expressions (due to the antisymmetrical nature of these relation types).
+	 * Provider for all relation type combinations and the expected value.
 	 *
 	 * @return array
 	 */
-	public function sameTypeRelationalExpressionProvider() {
+	public function relationTypesProvider() {
+		// first level = left expression type, second level: right expression type
 		return array(
-			'greater than' => array(
-				$this->mockGreater($this->mockVariable('a'), $this->mockInteger(5)),
-				$this->mockGreater($this->mockVariable('a'), $this->mockInteger(10)),
+			self::OPERATOR_SMALLER => array(
+				self::OPERATOR_SMALLER => array(
+					ConditionCoupling::TYPE_SUBSET,    // left value < right value
+					ConditionCoupling::TYPE_SUPERSET,  // left value > right value
+					ConditionCoupling::TYPE_IDENTICAL, // left value == right value
+				),
+				self::OPERATOR_SMALLER_OR_EQUAL => array(
+					ConditionCoupling::TYPE_SUBSET,
+					ConditionCoupling::TYPE_SUPERSET,
+					ConditionCoupling::TYPE_SUBSET,
+				),
+				self::OPERATOR_GREATER => array(
+					ConditionCoupling::TYPE_WEAK_DISJOINT,
+					ConditionCoupling::TYPE_WEAK_OVERLAPPING,
+					ConditionCoupling::TYPE_WEAK_DISJOINT,
+				),
+				self::OPERATOR_GREATER_OR_EQUAL => array(
+					ConditionCoupling::TYPE_WEAK_DISJOINT,
+					ConditionCoupling::TYPE_WEAK_OVERLAPPING,
+					ConditionCoupling::TYPE_STRONG,
+				),
+				self::OPERATOR_EQUAL => array(
+					ConditionCoupling::TYPE_WEAK_DISJOINT,
+					ConditionCoupling::TYPE_SUPERSET,
+					ConditionCoupling::TYPE_WEAK_DISJOINT,
+				),
+				self::OPERATOR_NOT_EQUAL => array(
+					// TODO implement
+				)
 			),
-			'greater or equal' => array(
-				$this->mockGreaterOrEqual($this->mockVariable('a'), $this->mockInteger(5)),
-				$this->mockGreaterOrEqual($this->mockVariable('a'), $this->mockInteger(10)),
+			self::OPERATOR_SMALLER_OR_EQUAL => array(
+				self::OPERATOR_SMALLER => array(
+					ConditionCoupling::TYPE_SUBSET,
+					ConditionCoupling::TYPE_SUPERSET,
+					ConditionCoupling::TYPE_SUPERSET,
+				),
+				self::OPERATOR_SMALLER_OR_EQUAL => array(
+					ConditionCoupling::TYPE_SUBSET,
+					ConditionCoupling::TYPE_SUPERSET,
+					ConditionCoupling::TYPE_IDENTICAL,
+				),
+				self::OPERATOR_GREATER => array(
+					ConditionCoupling::TYPE_WEAK_DISJOINT,
+					ConditionCoupling::TYPE_WEAK_OVERLAPPING,
+					ConditionCoupling::TYPE_STRONG,
+				),
+				self::OPERATOR_GREATER_OR_EQUAL => array(
+					ConditionCoupling::TYPE_WEAK_DISJOINT,
+					ConditionCoupling::TYPE_WEAK_OVERLAPPING,
+					ConditionCoupling::TYPE_WEAK_OVERLAPPING,
+				),
+				self::OPERATOR_EQUAL => array(
+					ConditionCoupling::TYPE_WEAK_DISJOINT,
+					ConditionCoupling::TYPE_SUPERSET,
+					ConditionCoupling::TYPE_SUPERSET,
+				),
+				self::OPERATOR_NOT_EQUAL => array(
+				)
 			),
-			'smaller than' => array(
-				$this->mockSmaller($this->mockVariable('a'), $this->mockInteger(10)),
-				$this->mockSmaller($this->mockVariable('a'), $this->mockInteger(5)),
+			self::OPERATOR_GREATER => array(
+				self::OPERATOR_SMALLER => array(
+					ConditionCoupling::TYPE_WEAK_OVERLAPPING,
+					ConditionCoupling::TYPE_WEAK_DISJOINT,
+					ConditionCoupling::TYPE_WEAK_DISJOINT,
+				),
+				self::OPERATOR_SMALLER_OR_EQUAL => array(
+					ConditionCoupling::TYPE_WEAK_OVERLAPPING,
+					ConditionCoupling::TYPE_WEAK_DISJOINT,
+					ConditionCoupling::TYPE_STRONG,
+				),
+				self::OPERATOR_GREATER => array(
+					ConditionCoupling::TYPE_SUPERSET,
+					ConditionCoupling::TYPE_SUBSET,
+					ConditionCoupling::TYPE_IDENTICAL,
+				),
+				self::OPERATOR_GREATER_OR_EQUAL => array(
+					ConditionCoupling::TYPE_SUPERSET,
+					ConditionCoupling::TYPE_SUBSET,
+					ConditionCoupling::TYPE_SUBSET,
+				),
+				self::OPERATOR_EQUAL => array(
+					ConditionCoupling::TYPE_SUPERSET,
+					ConditionCoupling::TYPE_WEAK_DISJOINT,
+					ConditionCoupling::TYPE_WEAK_DISJOINT,
+				),
+				self::OPERATOR_NOT_EQUAL => array(
+				)
 			),
-			'smaller or equal' => array(
-				$this->mockSmallerOrEqual($this->mockVariable('a'), $this->mockInteger(10)),
-				$this->mockSmallerOrEqual($this->mockVariable('a'), $this->mockInteger(5)),
+			self::OPERATOR_GREATER_OR_EQUAL => array(
+				self::OPERATOR_SMALLER => array(
+					ConditionCoupling::TYPE_WEAK_OVERLAPPING,
+					ConditionCoupling::TYPE_WEAK_DISJOINT,
+					ConditionCoupling::TYPE_STRONG,
+				),
+				self::OPERATOR_SMALLER_OR_EQUAL => array(
+					ConditionCoupling::TYPE_WEAK_OVERLAPPING,
+					ConditionCoupling::TYPE_WEAK_DISJOINT,
+					ConditionCoupling::TYPE_WEAK_OVERLAPPING,
+				),
+				self::OPERATOR_GREATER => array(
+					ConditionCoupling::TYPE_SUPERSET,
+					ConditionCoupling::TYPE_SUBSET,
+					ConditionCoupling::TYPE_SUPERSET,
+				),
+				self::OPERATOR_GREATER_OR_EQUAL => array(
+					ConditionCoupling::TYPE_SUPERSET,
+					ConditionCoupling::TYPE_SUBSET,
+					ConditionCoupling::TYPE_IDENTICAL,
+				),
+				self::OPERATOR_EQUAL => array(
+					ConditionCoupling::TYPE_SUPERSET,
+					ConditionCoupling::TYPE_WEAK_DISJOINT,
+					ConditionCoupling::TYPE_SUPERSET,
+				),
+				self::OPERATOR_NOT_EQUAL => array(
+				),
+			),
+			self::OPERATOR_EQUAL => array(
+				self::OPERATOR_SMALLER => array(
+					ConditionCoupling::TYPE_SUBSET,
+					ConditionCoupling::TYPE_WEAK_DISJOINT,
+					ConditionCoupling::TYPE_WEAK_DISJOINT,
+				),
+				self::OPERATOR_SMALLER_OR_EQUAL => array(
+					ConditionCoupling::TYPE_SUBSET,
+					ConditionCoupling::TYPE_WEAK_DISJOINT,
+					ConditionCoupling::TYPE_SUBSET,
+				),
+				self::OPERATOR_GREATER => array(
+					ConditionCoupling::TYPE_WEAK_DISJOINT,
+					ConditionCoupling::TYPE_SUBSET,
+					ConditionCoupling::TYPE_WEAK_DISJOINT,
+				),
+				self::OPERATOR_GREATER_OR_EQUAL => array(
+					ConditionCoupling::TYPE_WEAK_DISJOINT,
+					ConditionCoupling::TYPE_SUBSET,
+					ConditionCoupling::TYPE_SUBSET,
+				),
+				self::OPERATOR_EQUAL => array(
+					ConditionCoupling::TYPE_WEAK_DISJOINT,
+					ConditionCoupling::TYPE_WEAK_DISJOINT,
+					ConditionCoupling::TYPE_IDENTICAL,
+				),
+				self::OPERATOR_NOT_EQUAL => array(
+				),
+			),
+			self::OPERATOR_NOT_EQUAL => array(
+				self::OPERATOR_SMALLER => array(
+				),
+				self::OPERATOR_SMALLER_OR_EQUAL => array(
+				),
+				self::OPERATOR_GREATER => array(
+				),
+				self::OPERATOR_GREATER_OR_EQUAL => array(
+				),
+				self::OPERATOR_EQUAL => array(
+					ConditionCoupling::TYPE_SUPERSET,
+					ConditionCoupling::TYPE_SUPERSET,
+					ConditionCoupling::TYPE_STRONG,
+				),
+				self::OPERATOR_NOT_EQUAL => array(
+					-1, // TODO implement
+					-1, // TODO implement
+					ConditionCoupling::TYPE_IDENTICAL,
+				),
 			),
 		);
 	}
 
 	/**
-	 * @test
-	 * @dataProvider sameTypeRelationalExpressionProvider
-	 */
-	public function relationalSupersetExpressionsWithSameTypeAndVariableAreCorrectlyClassified($leftExpression, $rightExpression) {
-		$subject = new CouplingClassifier();
-
-		$coupling = $subject->determineConditionCoupling($leftExpression, $rightExpression);
-
-		$this->assertEquals(ConditionCoupling::TYPE_SUPERSET, $coupling, 'Condition coupling is not recognized as superset');
-	}
-
-	/**
-	 * The same test as above, just with switched parameters.
-	 *
-	 * @test
-	 * @dataProvider sameTypeRelationalExpressionProvider
-	 */
-	public function relationalSubsetExpressionsWithSameTypeAndVariableAreCorrectlyClassified($rightExpression, $leftExpression) {
-		$subject = new CouplingClassifier();
-
-		$coupling = $subject->determineConditionCoupling($leftExpression, $rightExpression);
-
-		$this->assertEquals(ConditionCoupling::TYPE_SUBSET, $coupling, 'Condition coupling is not recognized as subset');
-	}
-
-	/**
-	 * The variables returned by this provider can be used for both testing super- and subset relations by switching
-	 * the two expressions (due to the antisymmetrical nature of these relation types).
-	 *
-	 * The two relational operators >/>= and </<= form a super-/subset relation when fed with the same values as the
-	 * one that includes "equals" also includes the compared value, while the other excludes it.
+	 * Data provider for tests with similar types
 	 *
 	 * @return array
 	 */
-	public function similarTypeAndSameValueRelationalExpressionProvider() {
-		return array(
-			'greater or equal and greater' => array(
-				$this->mockGreaterOrEqual($this->mockVariable('a'), $this->mockInteger(5)),
-				$this->mockGreater($this->mockVariable('a'), $this->mockInteger(5)),
-			),
-			'smaller or equal and smaller' => array(
-				$this->mockSmallerOrEqual($this->mockVariable('a'), $this->mockInteger(5)),
-				$this->mockSmaller($this->mockVariable('a'), $this->mockInteger(5)),
-			),
-		);
+	public function sameExpressionTypeDataProvider() {
+		$tests = array();
+
+		foreach ($this->relationTypesProvider() as $type => $rightTypes) {
+			$expectedValues = $rightTypes[$type];
+
+			$this->addTestsForRelationType($tests, $type, $type, $expectedValues);
+		}
+
+		return $tests;
 	}
 
 	/**
 	 * @test
-	 * @dataProvider similarTypeAndSameValueRelationalExpressionProvider
+	 * @dataProvider sameExpressionTypeDataProvider
 	 */
-	public function supersetIsCorrectlyClassifiedForSameVariableValue($leftExpression, $rightExpression) {
+	public function relationsOfSameTypeAreCorrectlyHandled($leftOperator, $leftValue, $rightOperator, $rightValue, $expectedValue) {
+		$this->runTestForExpressionType($leftOperator, $rightOperator, $leftValue, $rightValue, $expectedValue);
+	}
+
+	/**
+	 * Data provider for tests with similar relation types.
+	 */
+	public function similarExpressionTypesDataProvider() {
+		$similarExpressionMappings = [
+			self::OPERATOR_GREATER => [self::OPERATOR_GREATER_OR_EQUAL],
+			self::OPERATOR_GREATER_OR_EQUAL => [self::OPERATOR_GREATER],
+			self::OPERATOR_SMALLER => [self::OPERATOR_SMALLER_OR_EQUAL],
+			self::OPERATOR_SMALLER_OR_EQUAL => [self::OPERATOR_SMALLER],
+		];
+
+		$relationTypes = $this->relationTypesProvider();
+
+		$tests = array();
+		foreach ($similarExpressionMappings as $leftType => $rightTypes) {
+			foreach ($rightTypes as $rightType) {
+				$this->addTestsForRelationType($tests, $leftType, $rightType, $relationTypes[$leftType][$rightType]);
+			}
+		}
+
+		return $tests;
+	}
+
+	/**
+	 * @test
+	 * @dataProvider similarExpressionTypesDataProvider
+	 */
+	public function relationsOfSimilarTypesAreCorrectlyHandled($leftOperator, $leftValue, $rightOperator, $rightValue, $expectedValue) {
+		$this->runTestForExpressionType($leftOperator, $rightOperator, $leftValue, $rightValue, $expectedValue);
+	}
+
+	/**
+	 * @param string $leftType
+	 * @param string $rightType
+	 * @param int $leftExpressionValue
+	 * @param int $rightExpressionValue
+	 * @param int $expectedCoupling
+	 */
+	protected function runTestForExpressionType($leftType, $rightType, $leftExpressionValue, $rightExpressionValue, $expectedCoupling) {
+		$leftExpression = $this->expression($leftType, $this->mockInteger($leftExpressionValue));
+		$rightExpression = $this->expression($rightType, $this->mockInteger($rightExpressionValue));
+
 		$subject = new CouplingClassifier();
 
 		$coupling = $subject->determineConditionCoupling($leftExpression, $rightExpression);
 
-		$this->assertEquals(ConditionCoupling::TYPE_SUPERSET, $coupling, 'Condition coupling is not recognized as superset');
+		$this->assertEquals($expectedCoupling, $coupling);
+	}
+
+
+	/**
+	 * @param array $tests
+	 * @param string $leftType The left relation type
+	 * @param string $rightType The right relation type
+	 * @param array $expectedValues The expected values (in this order) for the value relations <, > and ==
+	 */
+	protected function addTestsForRelationType(&$tests, $leftType, $rightType, $expectedValues) {
+		$dataSetName = 'x ' . $leftType . ' m, x ' . $rightType . ' n';
+
+		$tests[$dataSetName . ', m < n'] = array($leftType, 0, $rightType, 5, $expectedValues[0]);
+		$tests[$dataSetName . ', m > n'] = array($leftType, 10, $rightType, 5, $expectedValues[1]);
+		$tests[$dataSetName . ', m = n'] = array($leftType, 5, $rightType, 5, $expectedValues[2]);
 	}
 
 	/**
-	 * The same as the test above, just with switched parameters, thus leading to sub- instead of supersets.
+	 * Creates an expression of the given type.
 	 *
-	 * @test
-	 * @dataProvider similarTypeAndSameValueRelationalExpressionProvider
+	 * @param $type
+	 * @param $value
+	 * @param null $variable
+	 * @return Expr\BinaryOp\Greater|Expr\BinaryOp\GreaterOrEqual|Expr\BinaryOp\Smaller|Expr\BinaryOp\SmallerOrEqual
 	 */
-	public function subsetIsCorrectlyClassifiedForSameVariableValue($rightExpression, $leftExpression) {
-		$subject = new CouplingClassifier();
+	protected function expression($type, $value, $variable = NULL) {
+		if ($variable == NULL) {
+			$variable = $this->mockVariable('a');
+		}
 
-		$coupling = $subject->determineConditionCoupling($leftExpression, $rightExpression);
+		switch ($type) {
+			case self::OPERATOR_SMALLER:
+				return $this->mockSmaller($variable, $value);
 
-		$this->assertEquals(ConditionCoupling::TYPE_SUBSET, $coupling, 'Condition coupling is not recognized as subset');
+			case self::OPERATOR_SMALLER_OR_EQUAL:
+				return $this->mockSmallerOrEqual($variable, $value);
+
+			case self::OPERATOR_GREATER:
+				return $this->mockGreater($variable, $value);
+
+			case self::OPERATOR_GREATER_OR_EQUAL:
+				return $this->mockGreaterOrEqual($variable, $value);
+
+		}
 	}
-
 
 	protected function mockGreater($left, $right) {
 		return new Expr\BinaryOp\Greater($left, $right);
