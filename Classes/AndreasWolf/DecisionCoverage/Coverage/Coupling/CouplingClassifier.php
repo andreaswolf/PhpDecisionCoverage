@@ -98,7 +98,11 @@ class CouplingClassifier {
 		switch ($leftExpression->getType()) {
 			case 'Expr_BinaryOp_GreaterOrEqual':
 				// the right expression is a "greater"
-				if ($leftValue == $rightValue) {
+				if ($leftValue < $rightValue) {
+					return ConditionCoupling::TYPE_SUPERSET;
+				} elseif ($leftValue > $rightValue) {
+					return ConditionCoupling::TYPE_SUBSET;
+				} elseif ($leftValue == $rightValue) {
 					return ConditionCoupling::TYPE_SUPERSET;
 				}
 
@@ -106,7 +110,11 @@ class CouplingClassifier {
 
 			case 'Expr_BinaryOp_Greater':
 				// the right expression is a "greater or equal"
-				if ($leftValue == $rightValue) {
+				if ($leftValue < $rightValue) {
+					return ConditionCoupling::TYPE_SUPERSET;
+				} elseif ($leftValue > $rightValue) {
+					return ConditionCoupling::TYPE_SUBSET;
+				} elseif ($leftValue == $rightValue) {
 					return ConditionCoupling::TYPE_SUBSET;
 				}
 
@@ -114,7 +122,11 @@ class CouplingClassifier {
 
 			case 'Expr_BinaryOp_SmallerOrEqual':
 				// the right expression is a "smaller"
-				if ($leftValue == $rightValue) {
+				if ($leftValue < $rightValue) {
+					return ConditionCoupling::TYPE_SUBSET;
+				} elseif ($leftValue > $rightValue) {
+					return ConditionCoupling::TYPE_SUPERSET;
+				} elseif ($leftValue == $rightValue) {
 					return ConditionCoupling::TYPE_SUPERSET;
 				}
 
@@ -122,7 +134,11 @@ class CouplingClassifier {
 
 			case 'Expr_BinaryOp_Smaller':
 				// the right expression is a "smaller or equal"
-				if ($leftValue == $rightValue) {
+				if ($leftValue < $rightValue) {
+					return ConditionCoupling::TYPE_SUBSET;
+				} elseif ($leftValue > $rightValue) {
+					return ConditionCoupling::TYPE_SUPERSET;
+				} elseif ($leftValue == $rightValue) {
 					return ConditionCoupling::TYPE_SUBSET;
 				}
 
