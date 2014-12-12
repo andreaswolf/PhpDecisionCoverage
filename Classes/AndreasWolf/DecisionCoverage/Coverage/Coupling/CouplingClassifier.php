@@ -33,6 +33,8 @@ class CouplingClassifier {
 				return $this->determineCouplingOfSameTypeConditions($leftExpression, $rightExpression);
 			} elseif ($this->haveSimilarTypes($leftExpression, $rightExpression)) {
 				return $this->determineCouplingOfSimilarTypeConditions($leftExpression, $rightExpression);
+			} elseif ($leftExpression instanceof Expr\BinaryOp\Equal || $rightExpression instanceof Expr\BinaryOp\Equal) {
+				return $this->determineCouplingOfExpressionsConditionsWithEqualOnOneSide($leftExpression, $rightExpression);
 			} else {
 				return $this->determineCouplingOfContraryTypeConditions($leftExpression, $rightExpression);
 			}
@@ -202,6 +204,81 @@ class CouplingClassifier {
 
 				break;
 		}
+	}
+
+	protected function determineCouplingOfExpressionsConditionsWithEqualOnOneSide(Expr\BinaryOp $leftExpression,
+	                                                                              Expr\BinaryOp $rightExpression) {
+		$leftValue = $this->extractConstantValue($leftExpression->right);
+		$rightValue = $this->extractConstantValue($rightExpression->right);
+
+		if ($leftExpression instanceof Expr\BinaryOp\Equal) {
+			switch ($rightExpression->getType()) {
+				case 'Expr_BinaryOp_Smaller':
+				case 'Expr_BinaryOp_SmallerOrEqual':
+					if ($leftValue < $rightValue) {
+						return ConditionCoupling::TYPE_SUBSET;
+					} elseif ($leftValue > $rightValue) {
+						return ConditionCoupling::TYPE_WEAK_DISJOINT;
+					} else {
+						if ($rightExpression instanceof Expr\BinaryOp\Smaller) {
+							return ConditionCoupling::TYPE_WEAK_DISJOINT;
+						} else {
+							return ConditionCoupling::TYPE_SUBSET;
+						}
+					}
+
+					break;
+				case 'Expr_BinaryOp_Greater':
+				case 'Expr_BinaryOp_GreaterOrEqual':
+					if ($leftValue < $rightValue) {
+						return ConditionCoupling::TYPE_WEAK_DISJOINT;
+					} elseif ($leftValue > $rightValue) {
+						return ConditionCoupling::TYPE_SUBSET;
+					} else {
+						if ($rightExpression instanceof Expr\BinaryOp\Greater) {
+							return ConditionCoupling::TYPE_WEAK_DISJOINT;
+						} else {
+							return ConditionCoupling::TYPE_SUBSET;
+						}
+					}
+
+					break;
+			}
+		} elseif ($rightExpression instanceof Expr\BinaryOp\Equal) {
+			switch ($leftExpression->getType()) {
+				case 'Expr_BinaryOp_Smaller':
+				case 'Expr_BinaryOp_SmallerOrEqual':
+					if ($leftValue < $rightValue) {
+						return ConditionCoupling::TYPE_WEAK_DISJOINT;
+					} elseif ($leftValue > $rightValue) {
+						return ConditionCoupling::TYPE_SUPERSET;
+					} else {
+						if ($leftExpression instanceof Expr\BinaryOp\Smaller) {
+							return ConditionCoupling::TYPE_WEAK_DISJOINT;
+						} else {
+							return ConditionCoupling::TYPE_SUPERSET;
+						}
+					}
+
+					break;
+				case 'Expr_BinaryOp_Greater':
+				case 'Expr_BinaryOp_GreaterOrEqual':
+					if ($leftValue < $rightValue) {
+						return ConditionCoupling::TYPE_SUPERSET;
+					} elseif ($leftValue > $rightValue) {
+						return ConditionCoupling::TYPE_WEAK_DISJOINT;
+					} else {
+						if ($leftExpression instanceof Expr\BinaryOp\Greater) {
+							return ConditionCoupling::TYPE_WEAK_DISJOINT;
+						} else {
+							return ConditionCoupling::TYPE_SUPERSET;
+						}
+					}
+
+					break;
+			}
+		}
+		return NULL;
 	}
 
 	protected function haveSimilarTypes(Expr\BinaryOp $left, Expr\BinaryOp $right) {

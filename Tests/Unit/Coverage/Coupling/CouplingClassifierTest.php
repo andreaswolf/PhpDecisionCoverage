@@ -298,6 +298,38 @@ class CouplingClassifierTest extends UnitTestCase {
 	}
 
 	/**
+	 * Returns
+	 *
+	 * @return array
+	 */
+	public function equalsExpressionDataProvider() {
+		$relationalExpressionTypes = [
+			self::OPERATOR_GREATER, self::OPERATOR_GREATER_OR_EQUAL,
+			self::OPERATOR_SMALLER, self::OPERATOR_SMALLER_OR_EQUAL
+		];
+
+		$relationTypes = $this->relationTypesProvider();
+
+		$tests = array();
+		foreach ($relationalExpressionTypes as $relationalType) {
+			$this->addTestsForRelationType($tests, $relationalType, self::OPERATOR_EQUAL,
+				$relationTypes[$relationalType][self::OPERATOR_EQUAL]);
+			$this->addTestsForRelationType($tests, self::OPERATOR_EQUAL, $relationalType,
+				$relationTypes[self::OPERATOR_EQUAL][$relationalType]);
+		}
+
+		return $tests;
+	}
+
+	/**
+	 * @test
+	 * @dataProvider equalsExpressionDataProvider
+	 */
+	public function relationsWithEqualOnOneSideAreCorrectlyHandled($leftOperator, $leftValue, $rightOperator, $rightValue, $expectedValue) {
+		$this->runTestForExpressionType($leftOperator, $rightOperator, $leftValue, $rightValue, $expectedValue);
+	}
+
+	/**
 	 * @param string $leftType
 	 * @param string $rightType
 	 * @param int $leftExpressionValue
