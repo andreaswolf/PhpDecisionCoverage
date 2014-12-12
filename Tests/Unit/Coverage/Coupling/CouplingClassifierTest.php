@@ -269,6 +269,34 @@ class CouplingClassifierTest extends UnitTestCase {
 		$this->runTestForExpressionType($leftOperator, $rightOperator, $leftValue, $rightValue, $expectedValue);
 	}
 
+	public function contraryExpressionTypesProvider() {
+		$contraryExpressionTypes = [
+			self::OPERATOR_GREATER => [self::OPERATOR_SMALLER, self::OPERATOR_SMALLER_OR_EQUAL],
+			self::OPERATOR_GREATER_OR_EQUAL => [self::OPERATOR_SMALLER, self::OPERATOR_SMALLER_OR_EQUAL],
+			self::OPERATOR_SMALLER => [self::OPERATOR_GREATER, self::OPERATOR_GREATER_OR_EQUAL],
+			self::OPERATOR_SMALLER_OR_EQUAL => [self::OPERATOR_GREATER, SELF::OPERATOR_GREATER_OR_EQUAL],
+		];
+
+		$relationTypes = $this->relationTypesProvider();
+
+		$tests = array();
+		foreach ($contraryExpressionTypes as $leftType => $rightTypes) {
+			foreach ($rightTypes as $rightType) {
+				$this->addTestsForRelationType($tests, $leftType, $rightType, $relationTypes[$leftType][$rightType]);
+			}
+		}
+
+		return $tests;
+	}
+
+	/**
+	 * @test
+	 * @dataProvider contraryExpressionTypesProvider
+	 */
+	public function relationsOfContraryTypesAreCorrectlyHandled($leftOperator, $leftValue, $rightOperator, $rightValue, $expectedValue) {
+		$this->runTestForExpressionType($leftOperator, $rightOperator, $leftValue, $rightValue, $expectedValue);
+	}
+
 	/**
 	 * @param string $leftType
 	 * @param string $rightType
