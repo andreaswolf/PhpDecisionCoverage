@@ -1,7 +1,7 @@
 <?php
 namespace AndreasWolf\DecisionCoverage\Coverage\Coupling;
 
-
+use AndreasWolf\DecisionCoverage\Coverage\Comparison;
 use PhpParser\Node\Expr;
 use PhpParser\Node\Scalar\LNumber;
 
@@ -15,8 +15,6 @@ use PhpParser\Node\Scalar\LNumber;
  * - "contrary" relations are >/>= and </<=
  *
  * @author Andreas Wolf <aw@foundata.net>
- *
- * TODO make this work independent of the ordering within a condition, i.e. $a < 5 and 5 > $a should be treated equal
  */
 class CouplingClassifier {
 
@@ -26,6 +24,9 @@ class CouplingClassifier {
 	);
 
 	public function determineConditionCoupling(Expr\BinaryOp $leftExpression, Expr\BinaryOp $rightExpression) {
+		$leftExpression = Comparison::canonicalize($leftExpression);
+		$rightExpression = Comparison::canonicalize($rightExpression);
+
 		if (!$this->doReferenceSameVariable($leftExpression, $rightExpression)) {
 			return ConditionCoupling::TYPE_UNCOUPLED;
 		} else {

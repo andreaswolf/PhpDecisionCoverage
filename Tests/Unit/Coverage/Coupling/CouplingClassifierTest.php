@@ -37,6 +37,20 @@ class CouplingClassifierTest extends UnitTestCase {
 	}
 
 	/**
+	 * @test
+	 */
+	public function couplingForExpressionsWithVariablesOnDifferentSidesIsCorrectlyDetermined() {
+		$subject = new CouplingClassifier();
+
+		$coupling = $subject->determineConditionCoupling(
+			$this->mockGreater($this->mockInteger(5), $this->mockVariable('a')),
+			$this->mockGreater($this->mockVariable('a'), $this->mockInteger(0))
+		);
+
+		$this->assertEquals(ConditionCoupling::TYPE_WEAK_OVERLAPPING, $coupling);
+	}
+
+	/**
 	 * Provider for all relation type combinations and the expected value.
 	 *
 	 * @return array
