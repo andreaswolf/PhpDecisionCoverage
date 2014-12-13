@@ -75,6 +75,10 @@ class CouplingClassifier {
 				}
 				break;
 
+			case 'Expr_BinaryOp_NotEqual':
+				throw new \RuntimeException('Not implemented');
+				break;
+
 			case 'Expr_BinaryOp_Greater':
 			case 'Expr_BinaryOp_GreaterOrEqual':
 				if ($leftValue < $rightValue) {
