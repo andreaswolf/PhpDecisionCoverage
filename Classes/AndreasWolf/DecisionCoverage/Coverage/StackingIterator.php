@@ -1,5 +1,6 @@
 <?php
 namespace AndreasWolf\DecisionCoverage\Coverage;
+
 use AndreasWolf\DecisionCoverage\Event\IteratorEvent;
 use PhpParser\Node\Expr;
 use Symfony\Component\EventDispatcher\EventDispatcher;
@@ -8,16 +9,29 @@ use Traversable;
 
 
 /**
- * An iterator for binary trees using the depth
+ * An iterator for binary trees using a depth-first approach.
+ *
+ * Depending on the $mode passed to the constructor, it can be used to do a pre- or postorder traversal (the node
+ * itself before or after the children)
  *
  * @author Andreas Wolf <aw@foundata.net>
  */
 class StackingIterator extends \RecursiveIteratorIterator {
 
-	protected $currentDepth = 0;
-
+	/**
+	 * The last item encountered by the iterator.
+	 *
+	 * We need to store it because the iterator does not return a current item when the current children have finished.
+	 *
+	 * @var Expr
+	 */
 	protected $currentItem;
 
+	/**
+	 * The list of items in the hierarchy that lead to the current level.
+	 *
+	 * @var Expr[]
+	 */
 	protected $stack = array();
 
 	/**
@@ -64,18 +78,31 @@ class StackingIterator extends \RecursiveIteratorIterator {
 		parent::beginChildren();
 	}
 
+	/**
+	 * Ends iteration for the list of items on the current level.
+	 *
+	 * The current item’s parent is still on the stack when the event is raised, so it can be fetched with
+	 * getLastStackElement().
+	 */
 	public function endChildren() {
 		$this->eventDispatcher->dispatch('children.end', new IteratorEvent($this));
 
 		array_pop($this->stack);
-		parent::beginChildren();
+		parent::endChildren();
 	}
 
+	/**
+	 * Returns the stack of elements from the root to the current level.
+	 *
+	 * @return Expr[]
+	 */
 	public function getStack() {
 		return $this->stack;
 	}
 
 	/**
+	 * Returns the last stacked element, i.e. the current level’s parent item
+	 *
 	 * @return Expr
 	 */
 	public function getLastStackElement() {
