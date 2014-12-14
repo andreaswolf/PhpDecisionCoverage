@@ -12,6 +12,12 @@ use Symfony\Component\EventDispatcher\EventDispatcher;
 /**
  * Marks the nodes of a syntax tree with numbers.
  *
+ * The numbers do not correspond to array indices, but form an own hierarchy. The numbers are assigned on the left for
+ * all left-hand side (LHS) children, on the right for all RHS children. This is used to detect if a value finally
+ * determines the value of a decision (if it is the RHS value) or if it possibly short-circuits a decision (if it is
+ * the LHS value). Decisions have both a left and right value, to make it easier to determine their children and find
+ * them from a child (by going one number down/up).
+ *
  * @author Andreas Wolf <aw@foundata.net>
  */
 class SyntaxTreeMarker {
@@ -45,9 +51,9 @@ class SyntaxTreeMarker {
 			$nodeId = $node->getAttribute('coverage__nodeId');
 			if ($lastLevel == $iterator->getDepth()) {
 				// if the level was the same before, we must be on the right node now, as we only deal with binary trees
-				$markedTree[] = ['r' => ++$nodeCounter, 'id' => $nodeId];
+				$markedTree[] = ['r' => ++$nodeCounter, 'id' => $nodeId, 'type' => $node->getType()];
 			} else {
-				$markedTree[] = ['l' => ++$nodeCounter, 'id' => $nodeId];
+				$markedTree[] = ['l' => ++$nodeCounter, 'id' => $nodeId, 'type' => $node->getType()];
 			}
 			$lastLevel = $iterator->getDepth();
 		}
