@@ -64,6 +64,12 @@ class DecisionCoverageBuilder implements EventSubscriberInterface, CoverageBuild
 		$this->decisionPartBuilders = $partBuilders;
 	}
 
+	/**
+	 * @return DecisionCoverage
+	 */
+	public function getCoverage() {
+		return $this->coverage;
+	}
 
 	public function sampleReceivedHandler(DataSampleEvent $event) {
 		/**
