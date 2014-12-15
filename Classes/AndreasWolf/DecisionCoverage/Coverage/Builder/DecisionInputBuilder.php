@@ -21,15 +21,6 @@ use Symfony\Component\EventDispatcher\EventSubscriberInterface;
 class DecisionInputBuilder {
 
 	/**
-	 * The syntax tree of the decision to build the input for.
-	 *
-	 * All decision and condition nodes in this tree need to have an ID set in the attribute coverage__nodeId.
-	 *
-	 * @var Expr\BinaryOp
-	 */
-	protected $coveredExpression;
-
-	/**
 	 * @var LoggerInterface
 	 */
 	protected $log;
@@ -56,13 +47,11 @@ class DecisionInputBuilder {
 	protected $builtInputs = array();
 
 
-	public function __construct(Expr\BinaryOp $coveredExpression, LoggerInterface $logger = NULL) {
+	public function __construct(LoggerInterface $logger = NULL) {
 		if (!$logger) {
 			$logger = new NullLogger();
 		}
 		$this->log = $logger;
-
-		$this->coveredExpression = $coveredExpression;
 	}
 
 	/**
@@ -70,11 +59,12 @@ class DecisionInputBuilder {
 	 * not the outer product (dyadic product) of TRUE/FALSE values for each variable, but only contains variables that
 	 * really influence the output.
 	 *
-	 * @return DecisionInput[]
+	 * @param Expr\BinaryOp $coveredExpression The syntax tree of the decision to build the input for. All decision and condition nodes in this tree need to have an ID set in the attribute coverage__nodeId.
+	 * @return DecisionInput[] A list of feasible input combinations for the given decision, with the variables in the order in which the decision is evaluated.
 	 */
-	public function buildInput() {
+	public function buildInput(Expr\BinaryOp $coveredExpression) {
 		$marker = new SyntaxTreeMarker();
-		$this->markedTree = $marker->markSyntaxTree($this->coveredExpression);
+		$this->markedTree = $marker->markSyntaxTree($coveredExpression);
 
 		$this->conditions = [];
 
