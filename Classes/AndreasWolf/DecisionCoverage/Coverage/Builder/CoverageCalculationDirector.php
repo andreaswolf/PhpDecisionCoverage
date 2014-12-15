@@ -76,7 +76,7 @@ class CoverageCalculationDirector {
 		}
 		if (!$factory) {
 			$factory = new CoverageBuilderFactory($eventDispatcher,
-				new CoverageFactory($expressionService, $eventDispatcher), $log);
+				new CoverageFactory($expressionService, new DecisionInputBuilder($log)), $log);
 		}
 
 		$this->coverageSet = $coverageSet;

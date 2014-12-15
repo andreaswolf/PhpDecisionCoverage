@@ -1,33 +1,46 @@
 <?php
 namespace AndreasWolf\DecisionCoverage\Coverage\MCDC;
 
-use AndreasWolf\DebuggerClient\Protocol\Response\ExpressionValue;
-use AndreasWolf\DecisionCoverage\Coverage\Coverage;
+use AndreasWolf\DecisionCoverage\Coverage\Evaluation\DecisionSample;
 use AndreasWolf\DecisionCoverage\Coverage\ExpressionCoverage;
-use AndreasWolf\DecisionCoverage\Coverage\SingleConditionCoverage;
+use AndreasWolf\DecisionCoverage\Coverage\Input\DecisionInput;
 use PhpParser\Node\Expr;
 
 
 class DecisionCoverage extends ExpressionCoverage {
 
 	/**
-	 * @var Expr
+	 * @var Expr\BinaryOp
 	 */
 	protected $expression;
 
 	/**
-	 * @var SingleConditionCoverage[]
+	 * @var DecisionInput[]
 	 */
-	protected $conditionCoverages;
+	protected $feasibleInputs;
+
+	/**
+	 * @var DecisionSample[]
+	 */
+	protected $samples;
 
 
 	/**
 	 * @param Expr $expression The covered expression
-	 * @param SingleConditionCoverage[] $conditionCoverages The coverages of the conditions this decision is comprised of
+	 * @param DecisionInput[] $feasibleInputs
 	 */
-	public function __construct(Expr $expression, $conditionCoverages) {
+	public function __construct(Expr $expression, array $feasibleInputs) {
 		parent::__construct($expression);
-		$this->conditionCoverages = $conditionCoverages;
+
+		$this->feasibleInputs = $feasibleInputs;
+	}
+
+	/**
+	 * @param DecisionSample $sample
+	 * @return void
+	 */
+	public function addSample(DecisionSample $sample) {
+		$this->samples[] = $sample;
 	}
 
 	/**
