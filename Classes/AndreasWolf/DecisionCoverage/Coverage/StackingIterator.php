@@ -9,10 +9,14 @@ use Traversable;
 
 
 /**
- * An iterator for binary trees using a depth-first approach.
+ * An iterator for binary trees with a depth-first approach and events for each visit step.
+ *
+ * This iterator keeps a stack of the currently visited items, available in $stack (getStack()).
  *
  * Depending on the $mode passed to the constructor, it can be used to do a pre- or postorder traversal (the node
  * itself before or after the children)
+ * The event dispatcher can be passed as a constructor parameter, to allow easy handling of the events occurring during
+ * traversal.
  *
  * @author Andreas Wolf <aw@foundata.net>
  */
