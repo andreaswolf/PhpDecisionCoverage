@@ -109,6 +109,13 @@ class DecisionInputBuilder {
 
 		if ($this->isShorted($inputs, $currentVariable)) {
 			$this->buildInputForVariables($position + 1, $inputs);
+
+			if (isset($variableNode['r'])) {
+				// the current variable’s node is the right child of a decision, so we can determine the value of the
+				// decision above
+				$this->log->debug("Evaluating decision for node " . $variableNode['r']);
+				$this->evaluateDecision($inputs, $variableNode['r'] + 1);
+			}
 		} else {
 			// TODO limit this to feasible inputs
 			$trueInput = $inputs->addInputForCondition($currentVariable, TRUE);
