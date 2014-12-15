@@ -58,7 +58,7 @@ class DataSample {
 	/**
 	 * @return Probe
 	 */
-	public function getBreakpoint() {
+	public function getProbe() {
 		return $this->breakpoint;
 	}
 

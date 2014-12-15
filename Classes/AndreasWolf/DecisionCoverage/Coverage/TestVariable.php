@@ -41,8 +41,8 @@ class TestVariable {
 		if (!$foundComparisonValue) {
 			throw new \RuntimeException('Could not find comparison value for expression');
 		}
-		if ($yodaNotation && isset(Comparison::$invertedYodaNotationOpertors[$comparisonType])) {
-			$comparisonType = Comparison::$invertedYodaNotationOpertors[$comparisonType];
+		if ($yodaNotation && isset(Comparison::$invertedYodaNotationOperators[$comparisonType])) {
+			$comparisonType = Comparison::$invertedYodaNotationOperators[$comparisonType];
 		}
 
 		$this->testedValues[] = array($comparisonType, $comparisonValue);

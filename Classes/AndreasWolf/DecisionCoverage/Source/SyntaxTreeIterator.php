@@ -1,6 +1,7 @@
 <?php
 namespace AndreasWolf\DecisionCoverage\Source;
 
+use AndreasWolf\DecisionCoverage\StaticAnalysis\SyntaxTree\SyntaxTree;
 use PhpParser\Node\Expr;
 use PhpParser\Node;
 use RecursiveIterator;
@@ -38,13 +39,18 @@ class SyntaxTreeIterator implements \RecursiveIterator {
 		'Stmt_ElseIf' => array('cond', 'stmts'),
 		'Stmt_Echo' => array('exprs'),
 		'Expr_BinaryOp' => array('left', 'right'),
+		'Expr_MethodCall' => array('var'),
+		'Expr_PropertyFetch' => array('var'),
 	);
 
 	/**
-	 * @param Node[]|Node $nodes
+	 * @param Node[]|Node|SyntaxTree $nodes
 	 * @param bool $includeAllSubNodes If TRUE, all sub nodes (e.g. conditions, elseifs and else for the if-statement) will be included
 	 */
 	public function __construct($nodes, $includeAllSubNodes = FALSE) {
+		if (is_object($nodes) && $nodes instanceof SyntaxTree) {
+			$nodes = $nodes->getRootNodes();
+		}
 		if (!is_array($nodes)) {
 			$nodes = array($nodes);
 		}
@@ -115,10 +121,11 @@ class SyntaxTreeIterator implements \RecursiveIterator {
 		}
 
 		if ($this->includeAllSubNodes === TRUE) {
-			return TRUE;
+			$current = $this->current();
+			return count($this->getSubnodeNamesForNode($current)) > 0;
 		} else {
 			$subNodeNames = $this->current()->getSubNodeNames();
-			return in_array('stmts', $subNodeNames);
+			return in_array('stmts', $subNodeNames) && count($this->current()->stmts) > 0;
 		}
 	}
 
@@ -159,14 +166,9 @@ class SyntaxTreeIterator implements \RecursiveIterator {
 	protected function addCurrentNodeSubnodes(&$subnodes) {
 		$currentNode = $this->current();
 		$currentNodeType = $currentNode->getType();
-		$subnodeInclusionOrder = $this->getSubnodeInclusionOrderForType($currentNodeType);
+		$subnodeNames = $this->getSubnodeNamesForNode($currentNode);
 
-		if (count($subnodeInclusionOrder) == 0) {
-			// include statements and expressions if no specific order is defined
-			$subNodeNames = $currentNode->getSubNodeNames();
-			$subnodeInclusionOrder = array_intersect($subNodeNames, array('stmts', 'exprs'));
-		}
-		foreach ($subnodeInclusionOrder as $subnodeType) {
+		foreach ($subnodeNames as $subnodeType) {
 			$currentSubnodes = $currentNode->$subnodeType;
 			if (!$currentSubnodes) {
 				continue;
@@ -200,6 +202,24 @@ class SyntaxTreeIterator implements \RecursiveIterator {
 		}
 
 		return array();
+	}
+
+	/**
+	 * @param Node $currentNode
+	 * @return array
+	 */
+	protected function getSubnodeNamesForNode(Node $currentNode) {
+		$subnodeNames = $this->getSubnodeInclusionOrderForType($currentNode->getType());
+
+		if (count($subnodeNames) == 0) {
+			// include statements and expressions if no specific order is defined
+			$subNodeNames = $currentNode->getSubNodeNames();
+			$subnodeNames = array_intersect($subNodeNames, array('stmts', 'exprs'));
+
+			return $subnodeNames;
+		}
+
+		return $subnodeNames;
 	}
 
 

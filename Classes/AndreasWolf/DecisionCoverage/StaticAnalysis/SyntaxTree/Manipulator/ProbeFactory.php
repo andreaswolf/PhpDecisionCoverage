@@ -1,6 +1,7 @@
 <?php
 namespace AndreasWolf\DecisionCoverage\StaticAnalysis\SyntaxTree\Manipulator;
 
+use AndreasWolf\DecisionCoverage\Service\ExpressionService;
 use AndreasWolf\DecisionCoverage\Source\SyntaxTreeIterator;
 use AndreasWolf\DecisionCoverage\StaticAnalysis\Probe;
 use AndreasWolf\DecisionCoverage\StaticAnalysis\FileResult;
@@ -20,8 +21,19 @@ class ProbeFactory implements NodeVisitor {
 	 */
 	protected $analysis;
 
-	public function __construct(FileResult $analysis) {
+	/**
+	 * @var ExpressionService
+	 */
+	protected $expressionService;
+
+
+	public function __construct(FileResult $analysis, ExpressionService $expressionService = NULL) {
+		if (!$expressionService) {
+			$expressionService = new ExpressionService();
+		}
+
 		$this->analysis = $analysis;
+		$this->expressionService = $expressionService;
 	}
 
 	/**
@@ -51,10 +63,15 @@ class ProbeFactory implements NodeVisitor {
 			return;
 		}
 
-		$breakpoint = $this->createBreakpoint($node);
-		$this->addWatchExpressionsToBreakpoint($breakpoint, $node->cond);
+		$conditionNode = $node->cond;
+		$probe = $this->createBreakpoint($node);
+		$this->addWatchExpressionsToBreakpoint($probe, $conditionNode);
+		if (!$conditionNode->hasAttribute('coverage__cover')) {
+			$conditionNode->setAttribute('coverage__cover', TRUE);
+			$probe->addWatchedExpression($conditionNode);
+		}
 
-		$this->analysis->addBreakpoint($breakpoint);
+		$this->analysis->addBreakpoint($probe);
 	}
 
 	/**
@@ -68,12 +85,15 @@ class ProbeFactory implements NodeVisitor {
 
 		/** @var Node $node */
 		foreach ($nodeIterator as $node) {
-			if (in_array($node->getType(), array('Expr_Variable', 'Expr_PropertyFetch', 'Expr_StaticPropertyFetch',
-				'Expr_MethodCall', 'Expr_StaticCall'))
-			) {
+			if (!$node instanceof Node\Expr) {
+				continue;
+			}
 
+			if ($this->expressionService->isDecisionExpression($node) || $this->expressionService->isRelationalExpression($node)) {
+				$node->setAttribute('coverage__cover', TRUE);
 				$probe->addWatchedExpression($node);
 			}
+			// TODO check if we want to cover single variables?
 		}
 	}
 

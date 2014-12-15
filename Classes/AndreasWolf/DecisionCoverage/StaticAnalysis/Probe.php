@@ -45,6 +45,9 @@ class Probe {
 	 * @param Expr $watcher
 	 */
 	public function addWatchedExpression(Expr $watcher) {
+		if (in_array($watcher, $this->watchedExpressions)) {
+			return;
+		}
 		$this->watchedExpressions[] = $watcher;
 	}
 
@@ -53,6 +56,13 @@ class Probe {
 	 */
 	public function hasWatchedExpressions() {
 		return count($this->watchedExpressions) > 0;
+	}
+
+	/**
+	 * @return int
+	 */
+	public function countWatchedExpressions() {
+		return count($this->watchedExpressions);
 	}
 
 	/**

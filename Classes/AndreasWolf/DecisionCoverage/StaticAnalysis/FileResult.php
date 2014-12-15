@@ -1,5 +1,6 @@
 <?php
 namespace AndreasWolf\DecisionCoverage\StaticAnalysis;
+use AndreasWolf\DecisionCoverage\StaticAnalysis\SyntaxTree\SyntaxTree;
 use PhpParser\Node;
 
 
@@ -16,7 +17,7 @@ class FileResult {
 	protected $filePath;
 
 	/**
-	 * @var Node[]
+	 * @var SyntaxTree
 	 */
 	protected $syntaxTree;
 
@@ -26,7 +27,7 @@ class FileResult {
 	protected $breakpoints = array();
 
 
-	public function __construct($filePath, $syntaxTree) {
+	public function __construct($filePath, SyntaxTree $syntaxTree) {
 		$this->filePath = $filePath;
 		$this->syntaxTree = $syntaxTree;
 	}
@@ -47,6 +48,13 @@ class FileResult {
 	 */
 	public function getBreakpoints() {
 		return $this->breakpoints;
+	}
+
+	/**
+	 * @return SyntaxTree
+	 */
+	public function getSyntaxTree() {
+		return $this->syntaxTree;
 	}
 
 	/**

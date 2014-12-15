@@ -11,7 +11,13 @@ class SimpleDecisions {
 
 	public function coverSingleCondition($shouldBeSix) {
 		if ($shouldBeSix === 6) {
-			$shouldBeSix = FALSE;
+			echo "foo";
+		}
+	}
+
+	public function coverDecisionWithBooleanAnd($foo, $bar) {
+		if ($foo == 'A' && $bar < 10) {
+			echo "baz";
 		}
 	}
 

@@ -1,5 +1,6 @@
 <?php
 namespace AndreasWolf\DecisionCoverage\StaticAnalysis\SyntaxTree\Manipulator;
+use AndreasWolf\DecisionCoverage\Service\UuidService;
 use AndreasWolf\DecisionCoverage\StaticAnalysis\SyntaxTree\NodeVisitor;
 use PhpParser\Node;
 
@@ -11,7 +12,19 @@ use PhpParser\Node;
  */
 class NodeIdGenerator implements NodeVisitor {
 
-	protected $currentId;
+	/**
+	 * @var UuidService
+	 */
+	protected $uuidService;
+
+
+	public function __construct(UuidService $uuidService = NULL) {
+		if (!$uuidService) {
+			$uuidService = new UuidService();
+		}
+
+		$this->uuidService = $uuidService;
+	}
 
 	/**
 	 * Signal for the start of an instrumentation run.
@@ -20,7 +33,6 @@ class NodeIdGenerator implements NodeVisitor {
 	 * @return void
 	 */
 	public function startInstrumentation($rootNodes) {
-		$this->currentId = 0;
 	}
 
 	/**
@@ -39,7 +51,7 @@ class NodeIdGenerator implements NodeVisitor {
 	public function handleNode(Node $node) {
 		// use coverage__ as a kind of "pseudo-namespace" to not interfere with other attributes that might already
 		// be set
-		$node->setAttribute('coverage__nodeId', ++$this->currentId);
+		$node->setAttribute('coverage__nodeId', $this->uuidService->uuid4());
 	}
 
 }
