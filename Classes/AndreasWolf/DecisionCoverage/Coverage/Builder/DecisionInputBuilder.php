@@ -55,6 +55,15 @@ class DecisionInputBuilder {
 	}
 
 	/**
+	 * Returns the IDs of all condition nodes within the decision the inputs were built for last.
+	 *
+	 * @return \string[] A list of node ids as used in the coverage__nodeId attribute of an AST.
+	 */
+	public function getConditions() {
+		return $this->conditions;
+	}
+
+	/**
 	 * Builds the available inputs for the given decision. As this class respects short-circuit evaluation, this is
 	 * not the outer product (dyadic product) of TRUE/FALSE values for each variable, but only contains variables that
 	 * really influence the output.

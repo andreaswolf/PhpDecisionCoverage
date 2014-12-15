@@ -20,6 +20,13 @@ class DecisionCoverage extends ExpressionCoverage {
 	protected $feasibleInputs;
 
 	/**
+	 * The IDs of all conditions inside the decision covered by this object.
+	 *
+	 * @var string[]
+	 */
+	protected $conditionIds;
+
+	/**
 	 * @var DecisionSample[]
 	 */
 	protected $samples;
@@ -27,11 +34,13 @@ class DecisionCoverage extends ExpressionCoverage {
 
 	/**
 	 * @param Expr $expression The covered expression
-	 * @param DecisionInput[] $feasibleInputs
+	 * @param string[] $conditionIds The condition ids this decision contains
+	 * @param DecisionInput[] $feasibleInputs All inputs the decision covered by this object can possibly have.
 	 */
-	public function __construct(Expr $expression, array $feasibleInputs) {
+	public function __construct(Expr $expression, $conditionIds, array $feasibleInputs) {
 		parent::__construct($expression);
 
+		$this->conditionIds = $conditionIds;
 		$this->feasibleInputs = $feasibleInputs;
 	}
 

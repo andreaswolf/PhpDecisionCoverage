@@ -69,7 +69,7 @@ class CoverageFactory {
 	public function createCoverageForDecision(Expr\BinaryOp $node) {
 		$decisionInputs = $this->decisionInputBuilder->buildInput($node);
 
-		return new DecisionCoverage($node, $decisionInputs);
+		return new DecisionCoverage($node, $this->decisionInputBuilder->getConditions(), $decisionInputs);
 	}
 
 }
