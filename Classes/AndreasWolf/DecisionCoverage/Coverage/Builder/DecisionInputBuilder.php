@@ -100,14 +100,17 @@ class DecisionInputBuilder {
 	 * @param DecisionInput $inputs
 	 */
 	protected function buildInputForVariables($position, DecisionInput $inputs) {
+		$this->log->debug("inputs: " . json_encode($inputs->getInputs()));
 		if ($position >= count($this->conditions)) {
 			$this->builtInputs[] = $inputs;
 			return;
 		}
 		$currentVariable = $this->conditions[$position];
 		$variableNode = $this->getNodeFromMarkedTree($currentVariable);
+		$this->log->debug("Building input for variable " . $currentVariable);
 
 		if ($this->isShorted($inputs, $currentVariable)) {
+			$this->log->debug("Variable $currentVariable is shorted, continuing with next variable");
 			$this->buildInputForVariables($position + 1, $inputs);
 
 			if (isset($variableNode['r'])) {
@@ -124,6 +127,7 @@ class DecisionInputBuilder {
 			if (isset($variableNode['r'])) {
 				// the current variable’s node is the right child of a decision, so we can determine the value of the
 				// decision above
+				$this->log->debug("Evaluating decision for node " . $variableNode['r']);
 				$this->evaluateDecision($trueInput, $variableNode['r'] + 1);
 				$this->evaluateDecision($falseInput, $variableNode['r'] + 1);
 			}
@@ -205,12 +209,14 @@ class DecisionInputBuilder {
 		$variableNodeIndex = $this->getIndexFromMarkedTree($variable);
 
 		$decision = $this->findDecisionBeforeNodeInMarkedTree($variableNodeIndex);
-
+		$this->log->debug("Checking shorts for $variable, " . ($value == TRUE ? 'TRUE' : 'FALSE'));
+		$this->log->debug("Found decision with node id " . $decision['id'] . " and type " . $decision['type']);
 		if (($decision['type'] == 'Expr_BinaryOp_BooleanAnd' && $value == FALSE)
 			|| ($decision['type'] == 'Expr_BinaryOp_BooleanOr' && $value == TRUE)) {
 
 			// mark all nodes below the decision as short-circuited
 			$input->setShortCircuit($decision['r']);
+			$this->log->debug("Set short up to node " . $decision['r']);
 		}
 	}
 
@@ -256,6 +262,7 @@ class DecisionInputBuilder {
 
 	protected function evaluateDecision(DecisionInput $input, $decisionLeftRightValue) {
 		$decisionNode = $this->getNodeByLeftRightValue($decisionLeftRightValue);
+		$this->log->debug("Evaluating decision " . $decisionNode['id']);
 
 		$conditionNodes = [
 			$this->getNodeByLeftRightValue($decisionNode['l'] + 1),
