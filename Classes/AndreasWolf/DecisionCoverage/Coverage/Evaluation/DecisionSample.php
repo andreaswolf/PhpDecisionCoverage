@@ -2,6 +2,7 @@
 namespace AndreasWolf\DecisionCoverage\Coverage\Evaluation;
 
 use AndreasWolf\DecisionCoverage\Coverage\Evaluation\ConditionOutput;
+use AndreasWolf\DecisionCoverage\Coverage\Input\DecisionInput;
 use AndreasWolf\DecisionCoverage\DynamicAnalysis\Data\DataSample;
 
 
@@ -10,12 +11,12 @@ use AndreasWolf\DecisionCoverage\DynamicAnalysis\Data\DataSample;
  *
  * @author Andreas Wolf <aw@foundata.net>
  */
-class DecisionOutput {
+class DecisionSample {
 
 	/**
-	 * @var ConditionOutput
+	 * @var boolean[]
 	 */
-	protected $inputValues;
+	protected $input;
 
 	/**
 	 * @var boolean
@@ -29,12 +30,12 @@ class DecisionOutput {
 
 
 	/**
-	 * @param ConditionOutput[] $inputValues
+	 * @param boolean[] $input
 	 * @param boolean $outputValue
 	 * @param DataSample $dataSample
 	 */
-	public function __construct(array $inputValues, $outputValue, DataSample $dataSample) {
-		$this->inputValues = $inputValues;
+	public function __construct(array $input, $outputValue, DataSample $dataSample) {
+		$this->input = $input;
 		$this->outputValue = $outputValue;
 		$this->dataSample = $dataSample;
 	}
@@ -42,7 +43,7 @@ class DecisionOutput {
 	public function getInputForExpression($expressionOrNodeId) {
 		// TODO convert expression to node id
 
-		return $this->inputValues[$expressionOrNodeId];
+		return $this->input[$expressionOrNodeId];
 	}
 
 	/**

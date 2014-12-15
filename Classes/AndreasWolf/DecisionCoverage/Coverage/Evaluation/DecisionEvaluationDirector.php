@@ -44,7 +44,7 @@ class DecisionEvaluationDirector {
 
 	/**
 	 * @param DataSample $sample
-	 * @return DecisionOutput
+	 * @return DecisionSample
 	 */
 	public function evaluate(DataSample $sample) {
 		$evaluatorEventDispatcher = new EventDispatcher();
@@ -58,9 +58,9 @@ class DecisionEvaluationDirector {
 		foreach ($iterator as $item) {
 			// this is a no-op, every relevant feature is handled in the visitor.
 		}
-		$decisionOutput = new DecisionOutput($visitor->getInputValues(), $visitor->getRootEvaluator()->getOutput(), $sample);
+		$decisionSample = new DecisionSample($visitor->getInputValues(), $visitor->getRootEvaluator()->getOutput(), $sample);
 
-		return $decisionOutput;
+		return $decisionSample;
 	}
 
 }
