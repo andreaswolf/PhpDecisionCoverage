@@ -13,23 +13,6 @@ use AndreasWolf\DecisionCoverage\Tests\ParserBasedTestCase;
 class CoverageCalculationDirectorTest extends ParserBasedTestCase {
 	use CoverageBuilderTestTrait;
 
-	/**
-	 * @test
-	 */
-	public function builderFactoryIsAskedToCreateCoverageBuilderForDecision() {
-		$nodes = $this->parseCode('if ($foo == "bar" && $baz < 10) {}');
-		$analysisResult = $this->mockAnalysisResultSet($nodes);
-
-		$mockedBuilderFactory = $this->getMockBuilder('AndreasWolf\DecisionCoverage\Coverage\Builder\CoverageBuilderFactory')
-			->disableOriginalConstructor()->getMock();
-		$mockedBuilderFactory->expects($this->once())->method('createBuilderForExpression')
-			->with($this->isInstanceOf('PhpParser\Node\Expr\BinaryOp\BooleanAnd'));
-		$subject = new CoverageCalculationDirector(new CoverageSet($this->mockCoverageDataSet($analysisResult)),
-			$mockedBuilderFactory);
-
-		$subject->build();
-	}
-
 
 	protected function mockAnalysisResultSet($syntaxTreeNodes) {
 		$resultSet = new ResultSet();
