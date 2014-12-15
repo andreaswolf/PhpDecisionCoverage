@@ -31,6 +31,7 @@ class DecisionInput {
 	public function addInputForCondition($condition, $input) {
 		$newInput = new self();
 		$newInput->inputs = array_merge($this->inputs, [$this->getNodeId($condition) => $input]);
+		$newInput->shortCircuit = $this->shortCircuit;
 
 		return $newInput;
 	}
