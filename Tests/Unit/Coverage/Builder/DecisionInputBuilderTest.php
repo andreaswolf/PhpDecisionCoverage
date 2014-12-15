@@ -4,6 +4,8 @@ namespace AndreasWolf\DecisionCoverage\Tests\Unit\Coverage\Builder;
 use AndreasWolf\DecisionCoverage\Coverage\Builder\DecisionInputBuilder;
 use AndreasWolf\DecisionCoverage\Coverage\Input\SyntaxTreeMarker;
 use AndreasWolf\DecisionCoverage\Tests\Unit\UnitTestCase;
+use Monolog\Handler\StreamHandler;
+use Monolog\Logger;
 use PhpParser\Node\Expr;
 use PhpParser\Node\Scalar;
 
@@ -146,7 +148,7 @@ class DecisionInputBuilderTest extends UnitTestCase {
 				$this->mockCondition('G')
 			)
 		);
-		$subject = new DecisionInputBuilder($tree);
+		$subject = $this->getDecisionBuilder($tree);
 
 		$inputs = $subject->buildInput();
 
@@ -181,6 +183,21 @@ class DecisionInputBuilderTest extends UnitTestCase {
 		$mock->expects($this->any())->method('getAttribute')->with('coverage__nodeId')->willReturn($nodeId);
 
 		return $mock;
+	}
+
+	/**
+	 * @param Expr\BinaryOp $tree
+	 * @param bool $enableLogging
+	 * @return DecisionInputBuilder
+	 */
+	protected function getDecisionBuilder($tree, $enableLogging = FALSE) {
+		if ($enableLogging) {
+			$subject = new DecisionInputBuilder($tree, new Logger('Test', [new StreamHandler(STDOUT)]));
+		} else {
+			$subject = new DecisionInputBuilder($tree);
+		}
+
+		return $subject;
 	}
 
 }
