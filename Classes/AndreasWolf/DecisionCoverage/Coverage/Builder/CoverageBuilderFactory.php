@@ -40,6 +40,14 @@ class CoverageBuilderFactory {
 		$this->expressionService = new ExpressionService();
 	}
 
+	/**
+	 * Generic factory method for coverage builders.
+	 *
+	 * This might internally create a hierarchy of builders; return value will only be the top-level builder.
+	 *
+	 * @param Expr $expression
+	 * @return CoverageBuilder
+	 */
 	public function createBuilderForExpression(Expr $expression) {
 		if ($this->expressionService->isDecisionExpression($expression)) {
 			return $this->createBuilderForDecision($expression);
@@ -51,7 +59,7 @@ class CoverageBuilderFactory {
 	/**
 	 * Creates a builder structure for a decision node.
 	 *
-	 * The builder is attached as a listener to the event dispatcher.
+	 * The builder is attached to the event dispatcher.
 	 *
 	 * @param Expr\BinaryOp $decision
 	 * @return DecisionCoverageBuilder
