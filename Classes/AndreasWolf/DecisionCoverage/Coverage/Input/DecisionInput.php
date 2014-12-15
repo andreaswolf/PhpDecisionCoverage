@@ -1,18 +1,32 @@
 <?php
 namespace AndreasWolf\DecisionCoverage\Coverage\Input;
 
-
 use PhpParser\Node\Expr;
 
 
+/**
+ * A feasible combination of input values for a decision.
+ *
+ * TODO add the output value/a getter for the output value (= the top-level decision)
+ *
+ * @author Andreas Wolf <aw@foundata.net>
+ */
 class DecisionInput {
 
 	/**
+	 * The input (= condition) values as captured from the program.
+	 *
 	 * @var boolean[]
 	 */
 	protected $inputs = array();
 
 	/**
+	 * Values of decisions within this decision. This is used to store e.g. the value of (A || B) in the expression
+	 * (A || B) && C, so we have a basis for further evaluation of the decision.
+	 *
+	 * This can also be used for storing the final value of the decision, but this is currently not implemented (would
+	 * belong to DecisionInputBuilder)
+	 *
 	 * @var boolean[]
 	 */
 	protected $decisionValues = array();
@@ -48,6 +62,10 @@ class DecisionInput {
 		$this->decisionValues[$this->getNodeId($decision)] = $value;
 	}
 
+	/**
+	 * @param Expr|string $condition
+	 * @return bool
+	 */
 	public function getValueForCondition($condition) {
 		$id = $this->getNodeId($condition);
 		if (isset($this->inputs[$id])) {
