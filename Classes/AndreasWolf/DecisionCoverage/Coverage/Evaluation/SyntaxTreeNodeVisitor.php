@@ -17,6 +17,7 @@ use Symfony\Component\EventDispatcher\EventSubscriberInterface;
  * track of short circuits within a subtree and marks all subsequent conditions and subordinate decisions accordingly.
  *
  * @author Andreas Wolf <aw@foundata.net>
+ * @deprecated This class was only used by DecisionEvaluationDirector
  */
 class SyntaxTreeNodeVisitor implements EventSubscriberInterface {
 
