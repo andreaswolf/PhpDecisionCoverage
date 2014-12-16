@@ -6,7 +6,7 @@ use AndreasWolf\DecisionCoverage\DynamicAnalysis\Data\DataSample;
 use PhpParser\Node\Expr;
 
 
-class ConditionOutput {
+class ConditionSample {
 
 	/**
 	 * The expression ID of the condition

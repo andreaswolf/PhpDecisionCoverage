@@ -1,7 +1,7 @@
 <?php
 namespace AndreasWolf\DecisionCoverage\Coverage\Evaluation;
 
-use AndreasWolf\DecisionCoverage\Coverage\Evaluation\ConditionOutput;
+use AndreasWolf\DecisionCoverage\Coverage\Evaluation\ConditionSample;
 use AndreasWolf\DecisionCoverage\Coverage\Input\DecisionInput;
 use AndreasWolf\DecisionCoverage\DynamicAnalysis\Data\DataSample;
 

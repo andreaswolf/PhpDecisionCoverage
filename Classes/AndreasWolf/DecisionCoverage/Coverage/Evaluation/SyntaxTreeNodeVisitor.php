@@ -23,7 +23,7 @@ class SyntaxTreeNodeVisitor implements EventSubscriberInterface {
 	/**
 	 * The condition values used for determining the decision value
 	 *
-	 * @var ConditionOutput[]
+	 * @var ConditionSample[]
 	 */
 	protected $inputValues = array();
 
@@ -112,7 +112,7 @@ class SyntaxTreeNodeVisitor implements EventSubscriberInterface {
 		$this->checkAndSetShortCircuit($event);
 		if (!$this->expressionService->isDecisionExpression($currentItem)) {
 			$value = $this->sample->getValueFor($currentItem);
-			$conditionOutput = new ConditionOutput($currentItem, $this->sample, $value);
+			$conditionOutput = new ConditionSample($currentItem, $this->sample, $value);
 			$this->inputValues[$currentItem->getAttribute('coverage__nodeId')] = $conditionOutput;
 			if ($this->shortedLevel > 0) {
 				$conditionOutput->shortCircuit();
@@ -131,7 +131,7 @@ class SyntaxTreeNodeVisitor implements EventSubscriberInterface {
 	}
 
 	/**
-	 * @return ConditionOutput[]
+	 * @return ConditionSample[]
 	 */
 	public function getInputValues() {
 		return $this->inputValues;
