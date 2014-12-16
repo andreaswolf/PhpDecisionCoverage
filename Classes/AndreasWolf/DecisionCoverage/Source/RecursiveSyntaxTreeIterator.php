@@ -21,10 +21,6 @@ class RecursiveSyntaxTreeIterator extends \RecursiveIteratorIterator {
 		$this->eventDispatcher = $eventDispatcher;
 	}
 
-	public function next() {
-		parent::next();
-	}
-
 	public function beginChildren() {
 		parent::beginChildren();
 		$this->eventDispatcher->dispatch('syntaxtree.level.entered', new SyntaxTreeIteratorEvent($this->getSubIterator()));
