@@ -45,7 +45,7 @@ class DecisionInputBuilderTest extends UnitTestCase {
 	 */
 	public function resultForSingleBooleanAndHasCorrectInputs(){
 		$tree = $this->getSimpleBooleanAnd();
-		$subject = new DecisionInputBuilder();
+		$subject = $this->getDecisionBuilder();
 
 		$inputs = $subject->buildInput($tree);
 
@@ -115,6 +115,30 @@ class DecisionInputBuilderTest extends UnitTestCase {
 	/**
 	 * @test
 	 */
+	public function resultsForDecisionsInBooleanOrWithNestedBooleanAndAreAddedToTheInputObject(){
+		$tree = $this->createBooleanOr('A',
+			$this->createBooleanAnd('B',
+				$this->mockCondition('C'),
+				$this->mockCondition('D')
+			),
+			$this->mockCondition('E')
+		);
+		$subject = $this->getDecisionBuilder();
+
+		$inputs = $subject->buildInput($tree);
+
+		// test B first because of evaluation order
+		$this->assertEquals(TRUE, $inputs[0]->getValueForCondition('B'));
+		$this->assertEquals(TRUE, $inputs[0]->getValueForCondition('A'));
+		$this->assertEquals(FALSE, $inputs[3]->getValueForCondition('B'));
+		$this->assertEquals(TRUE, $inputs[3]->getValueForCondition('A'));
+		$this->assertEquals(FALSE, $inputs[4]->getValueForCondition('B'));
+		$this->assertEquals(FALSE, $inputs[4]->getValueForCondition('A'));
+	}
+
+	/**
+	 * @test
+	 */
 	public function resultForBooleanAndWithNestedBooleanOrHasCorrectInputs() {
 		$tree = $this->createBooleanAnd('A',
 			$this->createBooleanOr('B',
@@ -123,7 +147,7 @@ class DecisionInputBuilderTest extends UnitTestCase {
 			),
 			$this->mockCondition('E')
 		);
-		$subject = new DecisionInputBuilder();
+		$subject = $this->getDecisionBuilder();
 
 		$inputs = $subject->buildInput($tree);
 
@@ -160,6 +184,31 @@ class DecisionInputBuilderTest extends UnitTestCase {
 		$this->assertEquals(array('C' => FALSE, 'D' => TRUE, 'F' => FALSE, 'G' => TRUE), $inputs[4]->getInputs());
 		$this->assertEquals(array('C' => FALSE, 'D' => TRUE, 'F' => FALSE, 'G' => FALSE), $inputs[5]->getInputs());
 		$this->assertEquals(array('C' => FALSE, 'D' => FALSE), $inputs[6]->getInputs());
+	}
+
+	/**
+	 * @test
+	 */
+	public function rootDecisionResultInDeeplyNestedStructureIsEvaluatedCorrectly() {
+		$tree = $this->createBooleanAnd('A',
+			$this->createBooleanOr('B',
+				$this->createBooleanAnd('C',
+					$this->createBooleanAnd('D',
+						$this->mockCondition('E'),
+						$this->mockCondition('F')
+					),
+					$this->mockCondition('G')
+				),
+				$this->mockCondition('H')
+			),
+			$this->mockCondition('I')
+		);
+		$subject = $this->getDecisionBuilder();
+
+		$inputs = $subject->buildInput($tree);
+
+		$this->assertEquals(TRUE, $inputs[0]->getValueForCondition('A'));
+		$this->assertEquals(FALSE, $inputs[10]->getValueForCondition('A'));
 	}
 
 
