@@ -213,7 +213,7 @@ class SyntaxTreeIterator implements \RecursiveIterator {
 
 		if (count($subnodeNames) == 0) {
 			// include statements and expressions if no specific order is defined
-			$subNodeNames = $currentNode->getSubNodeNames();
+			$subNodeNames = (array)$currentNode->getSubNodeNames();
 			$subnodeNames = array_intersect($subNodeNames, array('stmts', 'exprs'));
 
 			return $subnodeNames;
