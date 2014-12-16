@@ -46,6 +46,7 @@ class DecisionInput {
 		$newInput = new self();
 		$newInput->inputs = array_merge($this->inputs, [$this->getNodeId($condition) => $input]);
 		$newInput->shortCircuit = $this->shortCircuit;
+		$newInput->decisionValues = $this->decisionValues;
 
 		return $newInput;
 	}
