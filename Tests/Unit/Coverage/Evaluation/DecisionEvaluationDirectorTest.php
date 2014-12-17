@@ -24,8 +24,8 @@ class DecisionEvaluationDirectorTest extends UnitTestCase {
 		$subject = new DecisionEvaluationDirector($expression);
 		$output = $subject->evaluate($sample);
 
-		$this->assertTrue($output->getInputForExpression('A')->getValue());
-		$this->assertFalse($output->getInputForExpression('B')->getValue());
+		$this->assertTrue($output->getInputForExpression('A'));
+		$this->assertFalse($output->getInputForExpression('B'));
 		$this->assertFalse($output->getOutputValue());
 	}
 
@@ -43,8 +43,9 @@ class DecisionEvaluationDirectorTest extends UnitTestCase {
 		$subject = new DecisionEvaluationDirector($expression);
 		$output = $subject->evaluate($sample);
 
-		$this->assertTrue($output->getInputForExpression('A')->isEvaluated());
-		$this->assertFalse($output->getInputForExpression('B')->isEvaluated());
+		// TODO check mark skipped variables in evaluation result
+		$this->assertTrue($output->isEvaluated('A'));
+		$this->assertFalse($output->isEvaluated('B'));
 	}
 
 	/**
@@ -67,8 +68,8 @@ class DecisionEvaluationDirectorTest extends UnitTestCase {
 		$output = $subject->evaluate($sample);
 
 		$this->assertFalse($output->getOutputValue());
-		$this->assertFalse($output->getInputForExpression('B')->isEvaluated());
-		$this->assertFalse($output->getInputForExpression('C')->isEvaluated());
+		$this->assertFalse($output->isEvaluated('B'));
+		$this->assertFalse($output->isEvaluated('C'));
 	}
 
 	/**
@@ -90,7 +91,7 @@ class DecisionEvaluationDirectorTest extends UnitTestCase {
 		$output = $subject->evaluate($sample);
 
 		$this->assertFalse($output->getOutputValue());
-		$this->assertFalse($output->getInputForExpression('C')->isEvaluated());
+		$this->assertFalse($output->isEvaluated('C'));
 	}
 
 	/**
@@ -113,8 +114,8 @@ class DecisionEvaluationDirectorTest extends UnitTestCase {
 		$output = $subject->evaluate($sample);
 
 		$this->assertFalse($output->getOutputValue());
-		$this->assertFalse($output->getInputForExpression('B')->isEvaluated());
-		$this->assertFalse($output->getInputForExpression('C')->isEvaluated());
+		$this->assertFalse($output->isEvaluated('B'));
+		$this->assertFalse($output->isEvaluated('C'));
 	}
 
 }

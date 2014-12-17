@@ -7,8 +7,6 @@ use PhpParser\Node\Expr;
 /**
  * A feasible combination of input values for a decision.
  *
- * TODO add the output value/a getter for the output value (= the top-level decision)
- *
  * @author Andreas Wolf <aw@foundata.net>
  */
 class DecisionInput {

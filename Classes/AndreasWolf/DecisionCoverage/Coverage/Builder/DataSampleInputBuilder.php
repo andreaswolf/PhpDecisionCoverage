@@ -21,6 +21,11 @@ class DataSampleInputBuilder extends DecisionInputBuilder {
 	 */
 	protected $sample;
 
+	/**
+	 * @var array
+	 */
+	protected $shortedVariables = array();
+
 
 	/**
 	 * Builds the available inputs for the given decision. As this class respects short-circuit evaluation, this is
@@ -39,6 +44,13 @@ class DataSampleInputBuilder extends DecisionInputBuilder {
 		return $this->builtInputs[0];
 	}
 
+	/**
+	 * @return array
+	 */
+	public function getShortedVariables() {
+		return $this->shortedVariables;
+	}
+
 	protected function buildInputForVariables($position, DecisionInput $inputs) {
 		if ($position >= count($this->conditions)) {
 			$this->builtInputs[] = $inputs;
@@ -50,6 +62,7 @@ class DataSampleInputBuilder extends DecisionInputBuilder {
 
 		if ($this->isShorted($inputs, $currentVariable)) {
 			$this->log->debug("Variable $currentVariable is shorted, continuing with next variable");
+			$this->shortedVariables[] = $currentVariable;
 			$this->buildInputForVariables($position + 1, $inputs);
 		} else {
 			$value = $this->sample->getValueFor($currentVariable)->getRawValue();

@@ -49,7 +49,7 @@ class DecisionEvaluationDirector {
 		$builder = new DataSampleInputBuilder();
 		$result = $builder->buildInputForSample($this->decision, $sample);
 
-		$decisionSample = new DecisionSample($result->getInputs(),
+		$decisionSample = new DecisionSample($result, $builder->getShortedVariables(),
 			$result->getValueForCondition($this->decision->getAttribute('coverage__nodeId')), $sample);
 
 		return $decisionSample;
