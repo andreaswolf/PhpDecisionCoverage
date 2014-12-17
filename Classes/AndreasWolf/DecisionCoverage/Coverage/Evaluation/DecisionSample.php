@@ -85,4 +85,25 @@ class DecisionSample {
 		return $this->outputValue;
 	}
 
+	/**
+	 * Checks if the given input is covered by this sample.
+	 *
+	 * @param DecisionInput|array $input An input object or an array of condition ids and values.
+	 * @return bool
+	 */
+	public function coversDecisionInput($input) {
+		if ($input instanceof DecisionInput) {
+			$values = $input->getInputs();
+		} else {
+			$values = $input;
+		}
+
+		foreach ($values as $expressionId => $value) {
+			if ($this->input->getValueForCondition($expressionId) !== $value) {
+				return FALSE;
+			}
+		}
+		return TRUE;
+	}
+
 }
