@@ -15,6 +15,8 @@ class DecisionCoverage extends ExpressionCoverage {
 	protected $expression;
 
 	/**
+	 * The list of feasible inputs for the decision.
+	 *
 	 * @var DecisionInput[]
 	 */
 	protected $feasibleInputs;
@@ -27,9 +29,20 @@ class DecisionCoverage extends ExpressionCoverage {
 	protected $conditionIds;
 
 	/**
+	 * The samples that cover this decision.
+	 *
 	 * @var DecisionSample[]
 	 */
 	protected $samples;
+
+	/**
+	 * Mapping from the index of a sample to the index of the feasible input.
+	 *
+	 * This is used for determining the coverage.
+	 *
+	 * @var array
+	 */
+	protected $sampleToInputMap = array();
 
 
 	/**
@@ -45,18 +58,31 @@ class DecisionCoverage extends ExpressionCoverage {
 	}
 
 	/**
+	 * @return Expr\BinaryOp
+	 */
+	public function getExpression() {
+		return $this->expression;
+	}
+
+	/**
 	 * @param DecisionSample $sample
 	 * @return void
 	 */
 	public function addSample(DecisionSample $sample) {
 		$this->samples[] = $sample;
+		foreach ($this->feasibleInputs as $inputIndex => $input) {
+			if ($sample->coversDecisionInput($input)) {
+				$this->sampleToInputMap[] = $inputIndex;
+			}
+		}
 	}
 
 	/**
 	 * @return float The coverage as a value between 0 and 1.
 	 */
 	public function getCoverage() {
-		// TODO: Implement getCoverage() method.
+		// all feasible inputs have to be covered
+		return (float)count(array_unique(array_values($this->sampleToInputMap))) / count($this->feasibleInputs);
 	}
 
 }
