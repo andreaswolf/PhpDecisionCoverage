@@ -126,6 +126,59 @@ class SyntaxTreeMarkerTest extends UnitTestCase {
 		$this->assertEquals('E', $markedTree[4]['id']);
 	}
 
+	/**
+	 * @test
+	 */
+	public function noIdsAreAssignedToChildrenOfEqual() {
+		$markedTree = $this->getTreeForNodes($this->createBooleanAnd('A',
+			new Expr\BinaryOp\Equal(
+				$this->mockCondition('C'),
+				$this->mockCondition('D')
+			),
+			$this->mockCondition('E')
+		));
+
+		$this->assertEquals(1, $markedTree[0]['l']);
+		$this->assertEquals(4, $markedTree[0]['r']);
+		$this->assertEquals(2, $markedTree[1]['l']);
+		$this->assertEquals(3, $markedTree[2]['r']);
+	}
+
+	/**
+	 * @test
+	 */
+	public function idsAreCorrectlyAssignedForBinaryOperationCondition() {
+		$markedTree = $this->getTreeForNodes($this->createBooleanAnd('A',
+			$this->mockBinaryCondition('B',
+				$this->mockCondition('C'),
+				$this->mockCondition('D')
+			),
+			$this->mockCondition('E')
+		));
+
+		$this->assertEquals('A', $markedTree[0]['id']);
+		$this->assertEquals('B', $markedTree[1]['id']);
+		$this->assertEquals('E', $markedTree[2]['id']);
+	}
+
+	/**
+	 * @test
+	 */
+	public function leftAndRightValuesAreCorrectlyAssignedForBinaryConditions() {
+		$markedTree = $this->getTreeForNodes($this->createBooleanAnd('A',
+			$this->mockBinaryCondition('B',
+				$this->mockCondition('C'),
+				$this->mockCondition('D')
+			),
+			$this->mockCondition('E')
+		));
+
+		$this->assertEquals(1, $markedTree[0]['l']);
+		$this->assertEquals(4, $markedTree[0]['r']);
+		$this->assertEquals(2, $markedTree[1]['l']);
+		$this->assertEquals(3, $markedTree[2]['r']);
+	}
+
 
 	/**
 	 * @param Expr $left
@@ -147,6 +200,16 @@ class SyntaxTreeMarkerTest extends UnitTestCase {
 		$mock = $this->getMockBuilder('PhpParser\Node\Expr')->getMock();
 		$mock->expects($this->any())->method('getSubNodeNames')->willReturn(array());
 		$mock->expects($this->any())->method('getAttribute')->with('coverage__nodeId')->willReturn($nodeId);
+		$mock->expects($this->any())->method('getType')->willReturn('Expr');
+
+		return $mock;
+	}
+
+	protected function mockBinaryCondition($nodeId, $left, $right) {
+		$mock = $this->getMockBuilder('PhpParser\Node\Expr\BinaryOp')->setConstructorArgs(array($left, $right))->getMock();
+		$mock->expects($this->any())->method('getSubNodeNames')->willReturn(array('left', 'right'));
+		$mock->expects($this->any())->method('getAttribute')->with('coverage__nodeId')->willReturn($nodeId);
+		$mock->expects($this->any())->method('getType')->willReturn('Expr_BinaryOp');
 
 		return $mock;
 	}

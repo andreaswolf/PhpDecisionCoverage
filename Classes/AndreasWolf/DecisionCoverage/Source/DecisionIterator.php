@@ -18,7 +18,19 @@ class DecisionIterator extends SyntaxTreeIterator {
 	 * @var array
 	 */
 	protected $subnodeInclusionOrder = array(
-		'Expr_BinaryOp' => array('left', 'right'),
+		'Expr_BinaryOp_BooleanAnd' => array('left', 'right'),
+		'Expr_BinaryOp_BooleanOr' => array('left', 'right'),
+		'Expr_BinaryOp' => array(),
 	);
+
+	/**
+	 * Returns an iterator for the current entry.
+	 *
+	 * @link http://php.net/manual/en/recursiveiterator.getchildren.php
+	 * @return \RecursiveIterator An iterator for the current entry.
+	 */
+	public function getChildren() {
+		return new self($this->getCurrentNodeSubnodes(), $this->includeAllSubNodes);
+	}
 
 }
