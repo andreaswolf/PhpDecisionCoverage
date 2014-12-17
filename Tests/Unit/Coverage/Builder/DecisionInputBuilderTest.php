@@ -115,6 +115,48 @@ class DecisionInputBuilderTest extends UnitTestCase {
 	/**
 	 * @test
 	 */
+	public function booleanAndInRightBranchIsCorrectlyEvaluated() {
+		$tree = $this->createBooleanAnd('A',
+			$this->mockCondition('B'),
+			$this->createBooleanAnd('C',
+				$this->mockCondition('D'),
+				$this->mockCondition('E')
+			)
+		);
+		$subject = $this->getDecisionBuilder();
+
+		$inputs = $subject->buildInput($tree);
+
+		$this->assertEquals(array('B' => TRUE, 'D' => TRUE, 'E' => TRUE), $inputs[0]->getInputs());
+		$this->assertEquals(array('B' => TRUE, 'D' => TRUE, 'E' => FALSE), $inputs[1]->getInputs());
+		$this->assertEquals(array('B' => TRUE, 'D' => FALSE), $inputs[2]->getInputs());
+		$this->assertEquals(array('B' => FALSE), $inputs[3]->getInputs());
+	}
+
+	/**
+	 * @test
+	 */
+	public function booleanOrInRightBranchOfBooleanAndIsCorrectlyEvaluated() {
+		$tree = $this->createBooleanAnd('A',
+			$this->mockCondition('B'),
+			$this->createBooleanOr('C',
+				$this->mockCondition('D'),
+				$this->mockCondition('E')
+			)
+		);
+		$subject = $this->getDecisionBuilder();
+
+		$inputs = $subject->buildInput($tree);
+
+		$this->assertEquals(array('B' => TRUE, 'D' => TRUE), $inputs[0]->getInputs());
+		$this->assertEquals(array('B' => TRUE, 'D' => FALSE, 'E' => TRUE), $inputs[1]->getInputs());
+		$this->assertEquals(array('B' => TRUE, 'D' => FALSE, 'E' => FALSE), $inputs[2]->getInputs());
+		$this->assertEquals(array('B' => FALSE), $inputs[3]->getInputs());
+	}
+
+	/**
+	 * @test
+	 */
 	public function resultsForDecisionsInBooleanOrWithNestedBooleanAndAreAddedToTheInputObject(){
 		$tree = $this->createBooleanOr('A',
 			$this->createBooleanAnd('B',

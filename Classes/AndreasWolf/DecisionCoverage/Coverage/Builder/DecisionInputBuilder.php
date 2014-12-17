@@ -123,8 +123,9 @@ class DecisionInputBuilder {
 			$trueInput = $inputs->addInputForCondition($currentVariable, TRUE);
 			$falseInput = $inputs->addInputForCondition($currentVariable, FALSE);
 
-			$this->evaluateDecision($trueInput, $this->findParentDecision($variableNode));
-			$this->evaluateDecision($falseInput, $this->findParentDecision($variableNode));
+			$decision = $this->findParentDecision($variableNode);
+			$this->evaluateDecision($trueInput, $decision);
+			$this->evaluateDecision($falseInput, $decision);
 
 			$this->buildInputForVariables($position + 1, $trueInput);
 
