@@ -1,10 +1,10 @@
 <?php
 namespace AndreasWolf\DecisionCoverage\Tests\Unit\Coverage\Evaluation;
 
-use AndreasWolf\DebuggerClient\Protocol\Response\ExpressionValue;
 use AndreasWolf\DecisionCoverage\Coverage\Evaluation\BooleanAndEvaluator;
+use AndreasWolf\DecisionCoverage\Coverage\Input\DecisionInput;
 use AndreasWolf\DecisionCoverage\Tests\Unit\UnitTestCase;
-use PhpParser\Node\Expr\BinaryOp\BooleanAnd;
+use PhpParser\Node\Expr;
 
 
 class BooleanAndEvaluatorTest extends UnitTestCase {
@@ -12,55 +12,111 @@ class BooleanAndEvaluatorTest extends UnitTestCase {
 	/**
 	 * @test
 	 */
-	public function evaluatorIsNotShortedIfNoInputWasInserted() {
-		$subject = $this->createSubject();
+	public function evaluationResultIsFalseIfBothInputsAreFalse() {
+		$expression = $this->createBooleanAnd('A',
+			$this->mockCondition('B'),
+			$this->mockCondition('C'));
+		$input = $this->createDecisionInput(array('A' => FALSE, 'B' => FALSE));
 
-		$this->assertFalse($subject->isShorted());
+		$subject = $this->createSubject($expression);
+		$result = $subject->evaluate($input);
+
+		$this->assertFalse($result->getValue());
 	}
 
 	/**
 	 * @test
 	 */
-	public function getOutputThrowsExceptionIfEvaluationWasNotFinished() {
-		$this->setExpectedException('InvalidArgumentException', '', 1417909000);
-		$subject = $this->createSubject();
+	public function resultIsShortCircuitedIfFirstExpressionValueIsFalse() {
+		$expression = $this->createBooleanAnd('A',
+			$this->mockCondition('B'),
+			$this->mockCondition('C'));
+		$input = $this->createDecisionInput(array('B' => FALSE, 'C' => FALSE));
 
-		$subject->recordInputValue(new ExpressionValue(ExpressionValue::TYPE_BOOLEAN, TRUE));
+		$subject = $this->createSubject($expression);
+		$result = $subject->evaluate($input);
 
-		$this->assertTrue($subject->getOutput());
+		$this->assertTrue($result->isShortCircuited());
+		$this->assertEquals($expression->left, $result->getLastEvaluatedExpression());
 	}
 
 	/**
 	 * @test
 	 */
-	public function evaluatorIsShortedForAFalseInputValue() {
-		$subject = $this->createSubject();
+	public function resultIsTrueIfBothInputsAreTrue() {
+		$expression = $this->createBooleanAnd('A',
+			$this->mockCondition('B'),
+			$this->mockCondition('C'));
+		$input = $this->createDecisionInput(array('B' => TRUE, 'C' => TRUE));
 
-		$subject->recordInputValue(new ExpressionValue(ExpressionValue::TYPE_BOOLEAN, FALSE));
+		$subject = $this->createSubject($expression);
+		$result = $subject->evaluate($input);
 
-		$this->assertTrue($subject->isShorted());
+		$this->assertTrue($result->getValue());
 	}
 
 	/**
 	 * @test
 	 */
-	public function evaluatorReturnsTrueForASingleTrueInputValue() {
-		$subject = $this->createSubject();
+	public function evaluatorIsNotShortedIfRightInputIsFalse() {
+		$expression = $this->createBooleanAnd('A',
+			$this->mockCondition('B'),
+			$this->mockCondition('C'));
+		$input = $this->createDecisionInput(array('B' => TRUE, 'C' => FALSE));
 
-		$subject->recordInputValue(new ExpressionValue(ExpressionValue::TYPE_BOOLEAN, TRUE));
-		$subject->finishEvaluation();
+		$subject = $this->createSubject($expression);
+		$result = $subject->evaluate($input);
 
-		$this->assertTrue($subject->getOutput());
+		$this->assertFalse($result->isShortCircuited());
+	}
+
+	/**
+	 * @test
+	 */
+	public function exceptionIsThrownIfRightSubexpressionWasNotEvaluated() {
+		$this->setExpectedException('RuntimeException');
+
+		$expression = $this->createBooleanAnd('A',
+			$this->mockCondition('B'),
+			$this->mockCondition('C'));
+		$input = $this->createDecisionInput(array('B' => TRUE));
+
+		$subject = $this->createSubject($expression);
+		$result = $subject->evaluate($input);
 	}
 
 	/**
 	 * @return BooleanAndEvaluator
 	 */
-	protected function createSubject() {
-		return new BooleanAndEvaluator(new BooleanAnd(
-			$this->getMock('PhpParser\Node\Expr'),
-			$this->getMock('PhpParser\Node\Expr')
-		));
+	protected function createSubject($expression) {
+		return new BooleanAndEvaluator($expression);
+	}
+
+
+	protected function createDecisionInput($values) {
+		return new DecisionInput($values);
+	}
+
+	protected function createBooleanAnd($nodeId, $left, $right) {
+		$expression = new Expr\BinaryOp\BooleanAnd($left, $right);
+		$expression->setAttribute('coverage__nodeId', $nodeId);
+
+		return $expression;
+	}
+
+	protected function createBooleanOr($nodeId, $left, $right) {
+		$expression = new Expr\BinaryOp\BooleanOr($left, $right);
+		$expression->setAttribute('coverage__nodeId', $nodeId);
+
+		return $expression;
+	}
+
+	protected function mockCondition($nodeId) {
+		$mock = $this->getMockBuilder('PhpParser\Node\Expr')->getMock();
+		$mock->expects($this->any())->method('getSubNodeNames')->willReturn(array());
+		$mock->expects($this->any())->method('getAttribute')->with('coverage__nodeId')->willReturn($nodeId);
+
+		return $mock;
 	}
 
 }

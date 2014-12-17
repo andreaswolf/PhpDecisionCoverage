@@ -20,12 +20,4 @@ interface DecisionEvaluator {
 	 */
 	public function evaluate(DecisionInput $input);
 
-	public function recordInputValue(ExpressionValue $value);
-
-	public function isShorted();
-
-	public function finishEvaluation();
-
-	public function getOutput();
-
 }

@@ -9,29 +9,9 @@ use PhpParser\Node\Expr\BinaryOp;
 class BooleanAndEvaluator implements DecisionEvaluator {
 
 	/**
-	 * @var BinaryOp
-	 */
-	protected $expression;
-
-	/**
 	 * @var array
 	 */
 	protected $nodeIds;
-
-	/**
-	 * @var boolean[]
-	 */
-	protected $inputValues;
-
-	/**
-	 * @var boolean
-	 */
-	protected $output;
-
-	/**
-	 * @var boolean
-	 */
-	protected $shorted = FALSE;
 
 
 	/**
@@ -45,11 +25,18 @@ class BooleanAndEvaluator implements DecisionEvaluator {
 		}
 	}
 
+	/**
+	 * Evaluates the decision for the given set of input values
+	 *
+	 * @param DecisionInput $input
+	 * @return EvaluationResult
+	 */
 	public function evaluate(DecisionInput $input) {
 		$inputValues = [];
 		foreach ($this->nodeIds as $nodeId) {
 			$inputValues[] = $input->getValueForCondition($nodeId);
 		}
+
 		if ($inputValues[0] === FALSE) {
 			$shortCircuited = TRUE;
 			$output = FALSE;
@@ -66,45 +53,8 @@ class BooleanAndEvaluator implements DecisionEvaluator {
 			// TODO set flag in result instead of throwing exception
 			throw new \RuntimeException('Left part of boolean AND has not been evaluated.');
 		}
+
 		return new EvaluationResult($output, $shortCircuited, $lastEvaluatedExpression);
-	}
-
-	/**
-	 * @deprecated
-	 */
-	public function recordInputValue(ExpressionValue $value) {
-		$this->inputValues[] = $value->getRawValue();
-		if ($value->getRawValue() === FALSE) {
-			$this->output = FALSE;
-			$this->shorted = TRUE;
-		}
-	}
-
-	/**
-	 * @deprecated
-	 */
-	public function isShorted() {
-		return $this->shorted;
-	}
-
-	/**
-	 * @deprecated
-	 */
-	public function finishEvaluation() {
-		if ($this->output === NULL) {
-			$this->output = TRUE;
-		}
-	}
-
-	/**
-	 * @return boolean
-	 * @deprecated
-	 */
-	public function getOutput() {
-		if ($this->output === NULL) {
-			throw new \InvalidArgumentException('Evaluation has not been finished.', 1417909000);
-		}
-		return $this->output;
 	}
 
 }
