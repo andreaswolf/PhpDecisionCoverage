@@ -49,12 +49,15 @@ class SyntaxTreeMarker {
 			\RecursiveIteratorIterator::SELF_FIRST, 0, $dispatcher);
 		foreach ($iterator as $node) {
 			$nodeId = $node->getAttribute('coverage__nodeId');
-			if ($lastLevel == $iterator->getDepth()) {
-				// if the level was the same before, we must be on the right node now, as we only deal with binary trees
-				$markedTree[] = ['r' => ++$nodeCounter, 'id' => $nodeId, 'type' => $node->getType()];
+			$newNode = ['id' => $nodeId, 'type' => $node->getType()];
+			// only assign a right id now if we are at a leaf
+			if ($lastLevel == $iterator->getDepth() && !$iterator->callHasChildren()) {
+				// if the level was the same before, we must be at the right node now, as we only deal with binary trees
+				$newNode['r'] = ++$nodeCounter;
 			} else {
-				$markedTree[] = ['l' => ++$nodeCounter, 'id' => $nodeId, 'type' => $node->getType()];
+				$newNode['l'] = ++$nodeCounter;
 			}
+			$markedTree[] = $newNode;
 			$lastLevel = $iterator->getDepth();
 		}
 

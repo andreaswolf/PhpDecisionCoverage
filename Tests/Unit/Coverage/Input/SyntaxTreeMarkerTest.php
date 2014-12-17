@@ -94,6 +94,22 @@ class SyntaxTreeMarkerTest extends UnitTestCase {
 	/**
 	 * @test
 	 */
+	public function rootOfRightSubtreeHasCorrectLeftAndRightValues() {
+		$markedTree = $this->getTreeForNodes($this->createBooleanAnd('A',
+			$this->mockCondition('B'),
+			$this->createBooleanAnd('C',
+				$this->mockCondition('D'),
+				$this->mockCondition('E')
+			)
+		));
+
+		$this->assertEquals(3, $markedTree[2]['l']);
+		$this->assertEquals(6, $markedTree[2]['r']);
+	}
+
+	/**
+	 * @test
+	 */
 	public function idsOfMarkerNodesAreCorrectlyAssignedForTreeWithNestedBooleanAnd() {
 		$markedTree =$this->getTreeForNodes($this->createBooleanAnd('A',
 			$this->createBooleanAnd('B',
