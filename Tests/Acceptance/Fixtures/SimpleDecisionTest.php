@@ -1,6 +1,9 @@
 <?php
 namespace AndreasWolf\DecisionCoverage\Tests\Acceptance\Fixtures;
 
+use AndreasWolf\DecisionCoverage\Tests\Fixtures\Acceptance\SimpleDecisions;
+
+
 /**
  *
  *

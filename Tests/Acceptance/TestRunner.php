@@ -103,16 +103,19 @@ class TestRunner {
 	}
 
 	/**
+	 * Returns the command line arguments for the analysis run, i.e. for the part that checks the code that is to
+	 * be executed in the tests (not the tests itself!)
+	 *
 	 * @return array
 	 */
 	protected function buildAnalysisArguments() {
-		$testsPath = realpath(__DIR__ . '/Fixtures/');
+		$fixturesPath = realpath(__DIR__ . '/../Fixtures/Acceptance/');
 
 		$analysisArguments = array(
 			'analyze',
 			'--project=DecisionCoverageAcceptanceTests',
 			'--output=' . $this->analysisFile,
-			$testsPath,
+			$fixturesPath,
 		);
 
 		return $analysisArguments;

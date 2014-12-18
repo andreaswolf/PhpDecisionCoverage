@@ -1,5 +1,5 @@
 <?php
-namespace AndreasWolf\DecisionCoverage\Tests\Acceptance\Fixtures;
+namespace AndreasWolf\DecisionCoverage\Tests\Fixtures\Acceptance;
 
 /**
  * Test fixture for simple decisions
