@@ -33,9 +33,9 @@ class DecisionInputBuilderTest extends UnitTestCase {
 	 */
 	public function resultForSingleBooleanAndHasCorrectNumberOfInputs() {
 		$tree = $this->getSimpleBooleanAnd();
-		$subject = new DecisionInputBuilder($tree);
+		$subject = new DecisionInputBuilder();
 
-		$inputs = $subject->buildInput();
+		$inputs = $subject->buildInput($tree);
 
 		$this->assertCount(3, $inputs);
 	}
@@ -45,9 +45,9 @@ class DecisionInputBuilderTest extends UnitTestCase {
 	 */
 	public function resultForSingleBooleanAndHasCorrectInputs(){
 		$tree = $this->getSimpleBooleanAnd();
-		$subject = new DecisionInputBuilder($tree);
+		$subject = $this->getDecisionBuilder();
 
-		$inputs = $subject->buildInput();
+		$inputs = $subject->buildInput($tree);
 
 		$this->assertEquals(array('B' => TRUE, 'C' => TRUE), $inputs[0]->getInputs());
 		$this->assertEquals(array('B' => TRUE, 'C' => FALSE), $inputs[1]->getInputs());
@@ -65,9 +65,9 @@ class DecisionInputBuilderTest extends UnitTestCase {
 			),
 			$this->mockCondition('E')
 		);
-		$subject = new DecisionInputBuilder($tree);
+		$subject = new DecisionInputBuilder();
 
-		$inputs = $subject->buildInput();
+		$inputs = $subject->buildInput($tree);
 
 		$this->assertCount(5, $inputs);
 	}
@@ -83,9 +83,9 @@ class DecisionInputBuilderTest extends UnitTestCase {
 			),
 			$this->mockCondition('E')
 		);
-		$subject = new DecisionInputBuilder($tree);
+		$subject = new DecisionInputBuilder();
 
-		$inputs = $subject->buildInput();
+		$inputs = $subject->buildInput($tree);
 
 		$this->assertCount(5, $inputs);
 	}
@@ -101,15 +101,81 @@ class DecisionInputBuilderTest extends UnitTestCase {
 			),
 			$this->mockCondition('E')
 		);
-		$subject = new DecisionInputBuilder($tree);
+		$subject = new DecisionInputBuilder();
 
-		$inputs = $subject->buildInput();
+		$inputs = $subject->buildInput($tree);
 
 		$this->assertEquals(array('C' => TRUE, 'D' => TRUE), $inputs[0]->getInputs());
 		$this->assertEquals(array('C' => TRUE, 'D' => FALSE, 'E' => TRUE), $inputs[1]->getInputs());
 		$this->assertEquals(array('C' => TRUE, 'D' => FALSE, 'E' => FALSE), $inputs[2]->getInputs());
 		$this->assertEquals(array('C' => FALSE, 'E' => TRUE), $inputs[3]->getInputs());
 		$this->assertEquals(array('C' => FALSE, 'E' => FALSE), $inputs[4]->getInputs());
+	}
+
+	/**
+	 * @test
+	 */
+	public function booleanAndInRightBranchIsCorrectlyEvaluated() {
+		$tree = $this->createBooleanAnd('A',
+			$this->mockCondition('B'),
+			$this->createBooleanAnd('C',
+				$this->mockCondition('D'),
+				$this->mockCondition('E')
+			)
+		);
+		$subject = $this->getDecisionBuilder();
+
+		$inputs = $subject->buildInput($tree);
+
+		$this->assertEquals(array('B' => TRUE, 'D' => TRUE, 'E' => TRUE), $inputs[0]->getInputs());
+		$this->assertEquals(array('B' => TRUE, 'D' => TRUE, 'E' => FALSE), $inputs[1]->getInputs());
+		$this->assertEquals(array('B' => TRUE, 'D' => FALSE), $inputs[2]->getInputs());
+		$this->assertEquals(array('B' => FALSE), $inputs[3]->getInputs());
+	}
+
+	/**
+	 * @test
+	 */
+	public function booleanOrInRightBranchOfBooleanAndIsCorrectlyEvaluated() {
+		$tree = $this->createBooleanAnd('A',
+			$this->mockCondition('B'),
+			$this->createBooleanOr('C',
+				$this->mockCondition('D'),
+				$this->mockCondition('E')
+			)
+		);
+		$subject = $this->getDecisionBuilder();
+
+		$inputs = $subject->buildInput($tree);
+
+		$this->assertEquals(array('B' => TRUE, 'D' => TRUE), $inputs[0]->getInputs());
+		$this->assertEquals(array('B' => TRUE, 'D' => FALSE, 'E' => TRUE), $inputs[1]->getInputs());
+		$this->assertEquals(array('B' => TRUE, 'D' => FALSE, 'E' => FALSE), $inputs[2]->getInputs());
+		$this->assertEquals(array('B' => FALSE), $inputs[3]->getInputs());
+	}
+
+	/**
+	 * @test
+	 */
+	public function resultsForDecisionsInBooleanOrWithNestedBooleanAndAreAddedToTheInputObject(){
+		$tree = $this->createBooleanOr('A',
+			$this->createBooleanAnd('B',
+				$this->mockCondition('C'),
+				$this->mockCondition('D')
+			),
+			$this->mockCondition('E')
+		);
+		$subject = $this->getDecisionBuilder();
+
+		$inputs = $subject->buildInput($tree);
+
+		// test B first because of evaluation order
+		$this->assertEquals(TRUE, $inputs[0]->getValueForCondition('B'));
+		$this->assertEquals(TRUE, $inputs[0]->getValueForCondition('A'));
+		$this->assertEquals(FALSE, $inputs[3]->getValueForCondition('B'));
+		$this->assertEquals(TRUE, $inputs[3]->getValueForCondition('A'));
+		$this->assertEquals(FALSE, $inputs[4]->getValueForCondition('B'));
+		$this->assertEquals(FALSE, $inputs[4]->getValueForCondition('A'));
 	}
 
 	/**
@@ -123,9 +189,9 @@ class DecisionInputBuilderTest extends UnitTestCase {
 			),
 			$this->mockCondition('E')
 		);
-		$subject = new DecisionInputBuilder($tree);
+		$subject = $this->getDecisionBuilder();
 
-		$inputs = $subject->buildInput();
+		$inputs = $subject->buildInput($tree);
 
 		$this->assertEquals(array('C' => TRUE, 'E' => TRUE), $inputs[0]->getInputs());
 		$this->assertEquals(array('C' => TRUE, 'E' => FALSE), $inputs[1]->getInputs());
@@ -148,9 +214,9 @@ class DecisionInputBuilderTest extends UnitTestCase {
 				$this->mockCondition('G')
 			)
 		);
-		$subject = $this->getDecisionBuilder($tree);
+		$subject = $this->getDecisionBuilder();
 
-		$inputs = $subject->buildInput();
+		$inputs = $subject->buildInput($tree);
 
 		$this->assertCount(7, $inputs);
 		$this->assertEquals(array('C' => TRUE, 'F' => TRUE), $inputs[0]->getInputs());
@@ -160,6 +226,31 @@ class DecisionInputBuilderTest extends UnitTestCase {
 		$this->assertEquals(array('C' => FALSE, 'D' => TRUE, 'F' => FALSE, 'G' => TRUE), $inputs[4]->getInputs());
 		$this->assertEquals(array('C' => FALSE, 'D' => TRUE, 'F' => FALSE, 'G' => FALSE), $inputs[5]->getInputs());
 		$this->assertEquals(array('C' => FALSE, 'D' => FALSE), $inputs[6]->getInputs());
+	}
+
+	/**
+	 * @test
+	 */
+	public function rootDecisionResultInDeeplyNestedStructureIsEvaluatedCorrectly() {
+		$tree = $this->createBooleanAnd('A',
+			$this->createBooleanOr('B',
+				$this->createBooleanAnd('C',
+					$this->createBooleanAnd('D',
+						$this->mockCondition('E'),
+						$this->mockCondition('F')
+					),
+					$this->mockCondition('G')
+				),
+				$this->mockCondition('H')
+			),
+			$this->mockCondition('I')
+		);
+		$subject = $this->getDecisionBuilder();
+
+		$inputs = $subject->buildInput($tree);
+
+		$this->assertEquals(TRUE, $inputs[0]->getValueForCondition('A'));
+		$this->assertEquals(FALSE, $inputs[10]->getValueForCondition('A'));
 	}
 
 
@@ -186,15 +277,14 @@ class DecisionInputBuilderTest extends UnitTestCase {
 	}
 
 	/**
-	 * @param Expr\BinaryOp $tree
 	 * @param bool $enableLogging
 	 * @return DecisionInputBuilder
 	 */
-	protected function getDecisionBuilder($tree, $enableLogging = FALSE) {
+	protected function getDecisionBuilder($enableLogging = FALSE) {
 		if ($enableLogging) {
-			$subject = new DecisionInputBuilder($tree, new Logger('Test', [new StreamHandler(STDOUT)]));
+			$subject = new DecisionInputBuilder(new Logger('Test', [new StreamHandler(STDOUT)]));
 		} else {
-			$subject = new DecisionInputBuilder($tree);
+			$subject = new DecisionInputBuilder();
 		}
 
 		return $subject;

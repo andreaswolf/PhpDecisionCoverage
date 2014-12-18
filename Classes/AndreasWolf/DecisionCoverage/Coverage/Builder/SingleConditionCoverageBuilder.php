@@ -45,8 +45,10 @@ class SingleConditionCoverageBuilder implements EventSubscriberInterface, Covera
 	 * @param Node\Expr $expression The node this builder should generate the coverage for
 	 * @param Coverage $coverage
 	 * @param EventDispatcherInterface $eventDispatcher
+	 * @param LoggerInterface $log
 	 */
-	public function __construct(Node\Expr $expression, Coverage $coverage, EventDispatcherInterface $eventDispatcher, LoggerInterface $log = NULL) {
+	public function __construct(Node\Expr $expression, Coverage $coverage, EventDispatcherInterface $eventDispatcher,
+	                            LoggerInterface $log = NULL) {
 		$this->expression = $expression;
 		$this->coverage = $coverage;
 

@@ -23,13 +23,23 @@ class CoverageFactory {
 	 */
 	protected $coverageBuilderFactory;
 
+	/**
+	 * @var DecisionInputBuilder
+	 */
+	protected $decisionInputBuilder;
 
-	public function __construct(ExpressionService $expressionService = NULL) {
+
+	public function __construct(ExpressionService $expressionService = NULL,
+	                            DecisionInputBuilder $decisionInputBuilder = NULL) {
 		if (!$expressionService) {
 			$expressionService = new ExpressionService();
 		}
+		if (!$decisionInputBuilder) {
+			$decisionInputBuilder = new DecisionInputBuilder();
+		}
 
 		$this->expressionService = $expressionService;
+		$this->decisionInputBuilder = $decisionInputBuilder;
 	}
 
 	public function canCreateCoverage(Expr $node) {
@@ -49,12 +59,17 @@ class CoverageFactory {
 	}
 
 	/**
-	 * @param Expr $node
-	 * @param Coverage[] $partialCoverages
+	 * Creates a coverage object for the given decision statement.
+	 *
+	 * Using the decision input builder, this method also gets the feasible inputs for the decision.
+	 *
+	 * @param Expr\BinaryOp $node
 	 * @return DecisionCoverage
 	 */
-	public function createCoverageForDecision(Expr $node, $partialCoverages) {
-		return new DecisionCoverage($node, $partialCoverages);
+	public function createCoverageForDecision(Expr\BinaryOp $node) {
+		$decisionInputs = $this->decisionInputBuilder->buildInput($node);
+
+		return new DecisionCoverage($node, $this->decisionInputBuilder->getConditions(), $decisionInputs);
 	}
 
 }

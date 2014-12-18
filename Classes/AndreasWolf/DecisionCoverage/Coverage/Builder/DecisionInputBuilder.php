@@ -1,6 +1,8 @@
 <?php
 namespace AndreasWolf\DecisionCoverage\Coverage\Builder;
 
+use AndreasWolf\DecisionCoverage\Coverage\Evaluation\BooleanAndEvaluator;
+use AndreasWolf\DecisionCoverage\Coverage\Evaluation\BooleanOrEvaluator;
 use AndreasWolf\DecisionCoverage\Coverage\Event\DataSampleEvent;
 use AndreasWolf\DecisionCoverage\Coverage\Input\DecisionInput;
 use AndreasWolf\DecisionCoverage\Coverage\Input\SyntaxTreeMarker;
@@ -21,15 +23,6 @@ use Symfony\Component\EventDispatcher\EventSubscriberInterface;
 class DecisionInputBuilder {
 
 	/**
-	 * The syntax tree of the decision to build the input for.
-	 *
-	 * All decision and condition nodes in this tree need to have an ID set in the attribute coverage__nodeId.
-	 *
-	 * @var Expr\BinaryOp
-	 */
-	protected $coveredExpression;
-
-	/**
 	 * @var LoggerInterface
 	 */
 	protected $log;
@@ -46,6 +39,11 @@ class DecisionInputBuilder {
 	 *
 	 * See SyntaxTreeMarker for more information on the way the tree is built.
 	 *
+	 * The nodes in this array have various properties:
+	 *   - their array *index*, used for directly accessing them in the array
+	 *   - their *node id* (from coverage__nodeId)
+	 *   - their *left and/or right value*
+	 *
 	 * @var array
 	 */
 	protected $markedTree;
@@ -56,13 +54,20 @@ class DecisionInputBuilder {
 	protected $builtInputs = array();
 
 
-	public function __construct(Expr\BinaryOp $coveredExpression, LoggerInterface $logger = NULL) {
+	public function __construct(LoggerInterface $logger = NULL) {
 		if (!$logger) {
 			$logger = new NullLogger();
 		}
 		$this->log = $logger;
+	}
 
-		$this->coveredExpression = $coveredExpression;
+	/**
+	 * Returns the IDs of all condition nodes within the decision the inputs were built for last.
+	 *
+	 * @return \string[] A list of node ids as used in the coverage__nodeId attribute of an AST.
+	 */
+	public function getConditions() {
+		return $this->conditions;
 	}
 
 	/**
@@ -70,11 +75,12 @@ class DecisionInputBuilder {
 	 * not the outer product (dyadic product) of TRUE/FALSE values for each variable, but only contains variables that
 	 * really influence the output.
 	 *
-	 * @return DecisionInput[]
+	 * @param Expr\BinaryOp $coveredExpression The syntax tree of the decision to build the input for. All decision and condition nodes in this tree need to have an ID set in the attribute coverage__nodeId.
+	 * @return DecisionInput[] A list of feasible input combinations for the given decision, with the variables in the order in which the decision is evaluated.
 	 */
-	public function buildInput() {
+	public function buildInput(Expr\BinaryOp $coveredExpression) {
 		$marker = new SyntaxTreeMarker();
-		$this->markedTree = $marker->markSyntaxTree($this->coveredExpression);
+		$this->markedTree = $marker->markSyntaxTree($coveredExpression);
 
 		$this->conditions = [];
 
@@ -112,30 +118,41 @@ class DecisionInputBuilder {
 		if ($this->isShorted($inputs, $currentVariable)) {
 			$this->log->debug("Variable $currentVariable is shorted, continuing with next variable");
 			$this->buildInputForVariables($position + 1, $inputs);
-
-			if (isset($variableNode['r'])) {
-				// the current variable’s node is the right child of a decision, so we can determine the value of the
-				// decision above
-				$this->log->debug("Evaluating decision for node " . $variableNode['r']);
-				$this->evaluateDecision($inputs, $variableNode['r'] + 1);
-			}
 		} else {
 			// TODO limit this to feasible inputs
 			$trueInput = $inputs->addInputForCondition($currentVariable, TRUE);
 			$falseInput = $inputs->addInputForCondition($currentVariable, FALSE);
 
-			if (isset($variableNode['r'])) {
-				// the current variable’s node is the right child of a decision, so we can determine the value of the
-				// decision above
-				$this->log->debug("Evaluating decision for node " . $variableNode['r']);
-				$this->evaluateDecision($trueInput, $variableNode['r'] + 1);
-				$this->evaluateDecision($falseInput, $variableNode['r'] + 1);
-			}
+			$decision = $this->findParentDecision($variableNode);
+			$this->evaluateDecision($trueInput, $decision);
+			$this->evaluateDecision($falseInput, $decision);
 
-			$this->checkInputForShortCircuit($trueInput, $currentVariable, TRUE);
 			$this->buildInputForVariables($position + 1, $trueInput);
-			$this->checkInputForShortCircuit($falseInput, $currentVariable, FALSE);
+
 			$this->buildInputForVariables($position + 1, $falseInput);
+		}
+	}
+
+	/**
+	 * Finds the decision node directly above any given node.
+	 *
+	 * @param array $node
+	 * @return array The decision node
+	 */
+	protected function findParentDecision($node) {
+		$nodeId = isset($node['l']) ? $node['l'] : $node['r'];
+		$nodeIndex = $this->getArrayIndexFromMarkedTree($node['id']);
+
+		foreach ($this->markedTree as $treeNode) {
+			if (!isset($treeNode['l']) || !isset($treeNode['r'])) {
+				continue;
+			}
+			if (isset($treeNode['l']) && $treeNode['l'] + 1 == $nodeId) {
+				return $treeNode;
+			}
+			if (isset($treeNode['r']) && $treeNode['r'] - 1 == $nodeId) {
+				return $treeNode;
+			}
 		}
 	}
 
@@ -181,7 +198,7 @@ class DecisionInputBuilder {
 	 * @param string $id
 	 * @return int
 	 */
-	protected function getIndexFromMarkedTree($id) {
+	protected function getArrayIndexFromMarkedTree($id) {
 		foreach ($this->markedTree as $index => $treeItem) {
 			if ($treeItem['id'] == $id) {
 				return $index;
@@ -205,31 +222,16 @@ class DecisionInputBuilder {
 	}
 
 
-	protected function checkInputForShortCircuit(DecisionInput $input, $variable, $value) {
-		$variableNodeIndex = $this->getIndexFromMarkedTree($variable);
-
-		$decision = $this->findDecisionBeforeNodeInMarkedTree($variableNodeIndex);
-		$this->log->debug("Checking shorts for $variable, " . ($value == TRUE ? 'TRUE' : 'FALSE'));
-		$this->log->debug("Found decision with node id " . $decision['id'] . " and type " . $decision['type']);
-		if (($decision['type'] == 'Expr_BinaryOp_BooleanAnd' && $value == FALSE)
-			|| ($decision['type'] == 'Expr_BinaryOp_BooleanOr' && $value == TRUE)) {
-
-			// mark all nodes below the decision as short-circuited
-			$input->setShortCircuit($decision['r']);
-			$this->log->debug("Set short up to node " . $decision['r']);
-		}
-	}
-
 	/**
-	 * Traverse the tree backwards beginning at the node with the given node id, returning the first decision that is
-	 * found. Due to the ordering of nodes, this will always return the decision directly above the given node id.
-	 * This will also work for decisions.
+	 * Traverse the tree backwards beginning at the node with the given node left/right value, returning the first
+	 * decision that is found. Due to the ordering of nodes, this will always return the decision directly above the
+	 * given node id. This will also work for decisions.
 	 *
-	 * @param $nodeId
+	 * @param $nodeNumber
 	 * @return array
 	 */
-	protected function findDecisionBeforeNodeInMarkedTree($nodeId) {
-		$i = $nodeId;
+	protected function findDecisionBeforeNodeInMarkedTree($nodeNumber) {
+		$i = $nodeNumber;
 		while ($i > 0) {
 			--$i;
 			$node = $this->markedTree[$i];
@@ -240,16 +242,15 @@ class DecisionInputBuilder {
 	}
 
 	/**
-	 * Traverse the tree backwards beginning at the node with the given node id, returning the first decision that is
-	 * found. Due to the ordering of nodes, this will always return the decision directly above the given node id.
-	 * This will also work for decisions.
+	 * Traverse the tree forward beginning at the node with the given node left/right value, returning the first
+	 * decision that is found. Due to the ordering of nodes, this will always return the decision directly above the
+	 * given node id. This will also work for decisions.
 	 *
-	 * @param $nodeId
+	 * @param $nodeNumber
 	 * @return array
 	 */
-	protected function findDecisionAfterNodeInMarkedTree($nodeId) {
-		throw new \RuntimeException('foo');
-		$i = $nodeId;
+	protected function findDecisionAfterNodeInMarkedTree($nodeNumber) {
+		$i = $nodeNumber;
 		$nodeCount = count($this->markedTree);
 		while ($i < $nodeCount - 1) {
 			++$i;
@@ -261,7 +262,11 @@ class DecisionInputBuilder {
 	}
 
 	protected function evaluateDecision(DecisionInput $input, $decisionLeftRightValue) {
-		$decisionNode = $this->getNodeByLeftRightValue($decisionLeftRightValue);
+		if (is_array($decisionLeftRightValue)) {
+			$decisionNode = $decisionLeftRightValue;
+		} else {
+			$decisionNode = $this->getNodeByLeftRightValue($decisionLeftRightValue);
+		}
 		$this->log->debug("Evaluating decision " . $decisionNode['id']);
 
 		$conditionNodes = [
@@ -269,17 +274,38 @@ class DecisionInputBuilder {
 			$this->getNodeByLeftRightValue($decisionNode['r'] - 1),
 		];
 		$values = [];
+		// TODO move this to its own class structure
 		foreach ($conditionNodes as $conditionNode) {
+			// TODO we need to check if the value has not been set at all, if yes, we can possibly not evaluate this
+			// decision
 			$values[] = $input->getValueForCondition($conditionNode['id']);
 		}
-		if ($decisionNode['type'] == 'Expr_BinaryOp_BooleanAnd') {
-			$decisionValue = !in_array(FALSE, $values, TRUE);
-		} elseif ($decisionNode['type'] == 'Expr_BinaryOp_BooleanOr') {
-			$decisionValue = in_array(TRUE, $values, TRUE);
+		$this->log->debug("Decision input values: " . json_encode($values));
+		try {
+			if ($decisionNode['type'] == 'Expr_BinaryOp_BooleanAnd') {
+				$evaluator = new BooleanAndEvaluator(array($conditionNodes[0]['id'], $conditionNodes[1]['id']));
+			} elseif ($decisionNode['type'] == 'Expr_BinaryOp_BooleanOr') {
+				$evaluator = new BooleanOrEvaluator(array($conditionNodes[0]['id'], $conditionNodes[1]['id']));
+			} else {
+				throw new \RuntimeException('Unsupported decision type "' . $decisionNode['type'] . '"');
+			}
+			$result = $evaluator->evaluate($input);
+			$decisionValue = $result->getValue();
+			if ($result->isShortCircuited()) {
+				$this->log->debug('Shorted decision ' . $decisionNode['id']);
+				$input->setShortCircuit($decisionNode['r']);
+			}
+		} catch (\RuntimeException $e) {
+			$this->log->debug('Could not evaluate decision: ' . $e->getMessage());
+			return;
 		}
 		if (isset($decisionValue)) {
+			$this->log->debug('Determined decision to be ' . var_export($decisionValue, TRUE));
 			$input->setValueForDecision($decisionNode['id'], $decisionValue);
-			$this->checkInputForShortCircuit($input, $decisionNode['id'], $decisionValue);
+			$nextDecision = $this->findParentDecision($decisionNode);
+			if ($nextDecision) {
+				$this->evaluateDecision($input, $nextDecision['l']);
+			}
 		}
 	}
 

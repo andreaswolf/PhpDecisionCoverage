@@ -1,12 +1,10 @@
 <?php
 namespace AndreasWolf\DecisionCoverage\Coverage\Evaluation;
 
-use AndreasWolf\DecisionCoverage\Coverage\StackingIterator;
+use AndreasWolf\DecisionCoverage\Coverage\Builder\DataSampleInputBuilder;
 use AndreasWolf\DecisionCoverage\DynamicAnalysis\Data\DataSample;
 use AndreasWolf\DecisionCoverage\Service\ExpressionService;
-use AndreasWolf\DecisionCoverage\Source\DecisionIterator;
 use PhpParser\Node\Expr;
-use Symfony\Component\EventDispatcher\EventDispatcher;
 
 
 /**
@@ -15,6 +13,7 @@ use Symfony\Component\EventDispatcher\EventDispatcher;
  * This class is the central part of the decision evaluation, using the other classes in this namespace as helpers.
  *
  * @author Andreas Wolf <aw@foundata.net>
+ * @deprecated This class should be removed in favor of DataSampleInputBuilder
  */
 class DecisionEvaluationDirector {
 
@@ -44,23 +43,16 @@ class DecisionEvaluationDirector {
 
 	/**
 	 * @param DataSample $sample
-	 * @return DecisionOutput
+	 * @return DecisionSample
 	 */
 	public function evaluate(DataSample $sample) {
-		$evaluatorEventDispatcher = new EventDispatcher();
-		$iterator = new StackingIterator(
-			new DecisionIterator($this->decision, TRUE), \RecursiveIteratorIterator::SELF_FIRST, 0,
-			$evaluatorEventDispatcher
-		);
-		$visitor = new SyntaxTreeNodeVisitor($iterator, $sample, $this->expressionService);
-		$evaluatorEventDispatcher->addSubscriber($visitor);
+		$builder = new DataSampleInputBuilder();
+		$result = $builder->buildInputForSample($this->decision, $sample);
 
-		foreach ($iterator as $item) {
-			// this is a no-op, every relevant feature is handled in the visitor.
-		}
-		$decisionOutput = new DecisionOutput($visitor->getInputValues(), $visitor->getRootEvaluator()->getOutput(), $sample);
+		$decisionSample = new DecisionSample($result, $builder->getShortedVariables(),
+			$result->getValueForCondition($this->decision->getAttribute('coverage__nodeId')), $sample);
 
-		return $decisionOutput;
+		return $decisionSample;
 	}
 
 }

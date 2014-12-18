@@ -2,18 +2,19 @@
 namespace AndreasWolf\DecisionCoverage\Tests\Unit\Coverage\Evaluation;
 
 use AndreasWolf\DecisionCoverage\Coverage\Evaluation\BooleanAndEvaluator;
+use AndreasWolf\DecisionCoverage\Coverage\Evaluation\BooleanOrEvaluator;
 use AndreasWolf\DecisionCoverage\Coverage\Input\DecisionInput;
 use AndreasWolf\DecisionCoverage\Tests\Unit\UnitTestCase;
 use PhpParser\Node\Expr;
 
 
-class BooleanAndEvaluatorTest extends UnitTestCase {
+class BooleanOrEvaluatorTest extends UnitTestCase {
 
 	/**
 	 * @test
 	 */
 	public function evaluationResultIsFalseIfBothInputsAreFalse() {
-		$expression = $this->createBooleanAnd('A',
+		$expression = $this->createBooleanOr('A',
 			$this->mockCondition('B'),
 			$this->mockCondition('C'));
 		$input = $this->createDecisionInput(array('B' => FALSE, 'C' => FALSE));
@@ -27,11 +28,11 @@ class BooleanAndEvaluatorTest extends UnitTestCase {
 	/**
 	 * @test
 	 */
-	public function resultIsShortCircuitedIfFirstExpressionValueIsFalse() {
-		$expression = $this->createBooleanAnd('A',
+	public function resultIsShortCircuitedIfFirstExpressionValueIsTrue() {
+		$expression = $this->createBooleanOr('A',
 			$this->mockCondition('B'),
 			$this->mockCondition('C'));
-		$input = $this->createDecisionInput(array('B' => FALSE, 'C' => FALSE));
+		$input = $this->createDecisionInput(array('B' => TRUE, 'C' => TRUE));
 
 		$subject = $this->createSubject($expression);
 		$result = $subject->evaluate($input);
@@ -44,7 +45,7 @@ class BooleanAndEvaluatorTest extends UnitTestCase {
 	 * @test
 	 */
 	public function resultIsTrueIfBothInputsAreTrue() {
-		$expression = $this->createBooleanAnd('A',
+		$expression = $this->createBooleanOr('A',
 			$this->mockCondition('B'),
 			$this->mockCondition('C'));
 		$input = $this->createDecisionInput(array('B' => TRUE, 'C' => TRUE));
@@ -58,11 +59,11 @@ class BooleanAndEvaluatorTest extends UnitTestCase {
 	/**
 	 * @test
 	 */
-	public function evaluatorIsNotShortedIfRightInputIsFalse() {
-		$expression = $this->createBooleanAnd('A',
+	public function evaluatorIsNotShortedIfRightInputIsTrue() {
+		$expression = $this->createBooleanOr('A',
 			$this->mockCondition('B'),
 			$this->mockCondition('C'));
-		$input = $this->createDecisionInput(array('B' => TRUE, 'C' => FALSE));
+		$input = $this->createDecisionInput(array('B' => FALSE, 'C' => TRUE));
 
 		$subject = $this->createSubject($expression);
 		$result = $subject->evaluate($input);
@@ -76,10 +77,10 @@ class BooleanAndEvaluatorTest extends UnitTestCase {
 	public function exceptionIsThrownIfRightSubexpressionWasNotEvaluated() {
 		$this->setExpectedException('RuntimeException');
 
-		$expression = $this->createBooleanAnd('A',
+		$expression = $this->createBooleanOr('A',
 			$this->mockCondition('B'),
 			$this->mockCondition('C'));
-		$input = $this->createDecisionInput(array('B' => TRUE));
+		$input = $this->createDecisionInput(array('B' => FALSE));
 
 		$subject = $this->createSubject($expression);
 		$result = $subject->evaluate($input);
@@ -89,7 +90,7 @@ class BooleanAndEvaluatorTest extends UnitTestCase {
 	 * @return BooleanAndEvaluator
 	 */
 	protected function createSubject($expression) {
-		return new BooleanAndEvaluator($expression);
+		return new BooleanOrEvaluator($expression);
 	}
 
 

@@ -53,6 +53,8 @@ class DecisionCoverageBuilder implements EventSubscriberInterface, CoverageBuild
 	 * @param CoverageBuilder[] $partBuilders
 	 * @param EventDispatcherInterface $eventDispatcher
 	 * @param LoggerInterface $log
+	 *
+	 * TODO remove dependency to event dispatcher -> we don’t need to dispatch events
 	 */
 	public function __construct(DecisionCoverage $coverage, $partBuilders, EventDispatcherInterface $eventDispatcher, LoggerInterface $log = NULL) {
 		$this->log = ($log !== NULL) ? $log : new NullLogger();
@@ -63,23 +65,20 @@ class DecisionCoverageBuilder implements EventSubscriberInterface, CoverageBuild
 	}
 
 	/**
-	 * @param CoverageBuilderEvent $event
+	 * @return DecisionCoverage
 	 */
-	public function partCoveredHandler(CoverageBuilderEvent $event) {
-		$builder = $event->getBuilder();
-		if (!in_array($builder, $this->decisionPartBuilders)) {
-			return;
-		}
-		if (in_array($builder, $this->coveredBuilders)) {
-			return;
-		}
+	public function getCoverage() {
+		return $this->coverage;
+	}
 
-		$this->coveredBuilders[] = $builder;
-
-		if (count($this->coveredBuilders) == count($this->decisionPartBuilders)) {
-			$this->log->debug('Decision covered');
-			$this->eventDispatcher->dispatch('coverage.builder.part.covered', new CoverageBuilderEvent($this));
-		}
+	public function sampleReceivedHandler(DataSampleEvent $event) {
+		/**
+		 * for each variable:
+		 *   fetch value from data sample
+		 *   add it to the internal array
+		 * build decision input from fetched variables
+		 * add sample to decision coverage
+		 */
 	}
 
 	/**
@@ -91,7 +90,7 @@ class DecisionCoverageBuilder implements EventSubscriberInterface, CoverageBuild
 	 */
 	public static function getSubscribedEvents() {
 		return array(
-			'coverage.builder.part.covered' => 'partCoveredHandler',
+			'coverage.sample.received' => array('sampleReceivedHandler', 0),
 		);
 	}
 
