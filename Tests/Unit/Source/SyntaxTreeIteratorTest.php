@@ -3,6 +3,7 @@ namespace AndreasWolf\DecisionCoverage\Tests\Unit\Source;
 
 use AndreasWolf\DecisionCoverage\Source\SyntaxTreeIterator;
 use AndreasWolf\DecisionCoverage\Tests\ParserBasedTestCase;
+use PhpParser\Node;
 
 
 class SyntaxTreeIteratorTest extends ParserBasedTestCase {
@@ -128,8 +129,48 @@ class SyntaxTreeIteratorTest extends ParserBasedTestCase {
 			new SyntaxTreeIterator($nodes, TRUE), \RecursiveIteratorIterator::SELF_FIRST
 		);
 
+		$this->assertNodeTypes($expectedTypes, $subject, $expectedNodeCount);
+		// check that we have really reached the last iterator item
+		$this->assertFalse($subject->valid());
+	}
+
+	/**
+	 * @test
+	 */
+	public function recursiveIterationOnlyIncludesStatementsInIf() {
+		$code = 'class Foo {
+			public function bar($baz) {
+				if ($baz == 123) {
+					echo "Just a test";
+				}
+			}
+		}';
+		$nodes = $this->parseCode($code);
+
+		$expectedTypes = array(
+			'Stmt_Class', 'Stmt_ClassMethod', 'Stmt_If', 'Stmt_Echo'
+		);
+
+		$subject = new \RecursiveIteratorIterator(
+			new SyntaxTreeIterator($nodes), \RecursiveIteratorIterator::SELF_FIRST
+		);
+
+		$this->assertNodeTypes($expectedTypes, $subject, count($expectedTypes));
+		$this->assertFalse($subject->valid());
+	}
+
+	/**
+	 * Matches the types of the given nodes against the list of node types.
+	 *
+	 * This method uses a recursive iterator instance to
+	 *
+	 * @param string[] $expectedTypes The types expected for the nodes, in the order in which they appear
+	 * @param \Iterator $iterator The iterator used for iterating the nodes
+	 * @param int $expectedNodeCount The number of nodes the iterator should contain
+	 */
+	protected function assertNodeTypes($expectedTypes, $iterator, $expectedNodeCount = -1) {
 		$currentNode = 0;
-		foreach ($subject as $currentItem) {
+		foreach ($iterator as $currentItem) {
 			++$currentNode;
 
 			if (!isset($expectedTypes[$currentNode - 1])) {
@@ -144,8 +185,9 @@ class SyntaxTreeIteratorTest extends ParserBasedTestCase {
 					$e->getComparisonFailure(), $e);
 			}
 		}
-		$this->assertEquals($expectedNodeCount, $currentNode);
-		$this->assertFalse($subject->valid());
+		if ($expectedNodeCount >= 0) {
+			$this->assertEquals($expectedNodeCount, $currentNode);
+		}
 	}
-	
+
 }
