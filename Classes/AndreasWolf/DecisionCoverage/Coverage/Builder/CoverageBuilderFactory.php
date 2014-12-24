@@ -73,8 +73,7 @@ class CoverageBuilderFactory {
 			$partialCoverages[] = $builder->getCoverage();
 		}
 		$decisionCoverage = $this->coverageFactory->createCoverageForDecision($decision, $partialCoverages);
-		$coverageBuilder = new DecisionCoverageBuilder($decisionCoverage, $partialCoverageBuilders,
-			$this->eventDispatcher, $this->log);
+		$coverageBuilder = new DecisionCoverageBuilder($decisionCoverage, $partialCoverageBuilders, $this->log);
 		$this->eventDispatcher->addSubscriber($coverageBuilder);
 
 		return $coverageBuilder;
