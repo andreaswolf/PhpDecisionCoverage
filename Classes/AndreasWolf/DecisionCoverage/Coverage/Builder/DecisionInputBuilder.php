@@ -274,14 +274,7 @@ class DecisionInputBuilder {
 			$this->getNodeByLeftRightValue($decisionNode['l'] + 1),
 			$this->getNodeByLeftRightValue($decisionNode['r'] - 1),
 		];
-		$values = [];
-		// TODO move this to its own class structure
-		foreach ($conditionNodes as $conditionNode) {
-			// TODO we need to check if the value has not been set at all, if yes, we can possibly not evaluate this
-			// decision
-			$values[] = $input->getValueForCondition($conditionNode['id']);
-		}
-		$this->log->debug("Decision input values: " . json_encode($values));
+
 		try {
 			if ($decisionNode['type'] == 'Expr_BinaryOp_BooleanAnd') {
 				$evaluator = new BooleanAndEvaluator(array($conditionNodes[0]['id'], $conditionNodes[1]['id']));
