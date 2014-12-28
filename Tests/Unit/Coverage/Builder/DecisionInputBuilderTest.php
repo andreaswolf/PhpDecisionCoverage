@@ -231,6 +231,34 @@ class DecisionInputBuilderTest extends UnitTestCase {
 	/**
 	 * @test
 	 */
+	public function resultForBooleanAndWithTwoNestedBooleanOrsHasCorrectInputsIfConditionsAreEqualityComparisons() {
+		$tree = $this->createBooleanAnd('A',
+			$this->createBooleanOr('B',
+				$this->mockEqualCondition('C'),
+				$this->mockEqualCondition('D')
+			),
+			$this->createBooleanOr('E',
+				$this->mockEqualCondition('F'),
+				$this->mockEqualCondition('G')
+			)
+		);
+		$subject = $this->getDecisionBuilder();
+
+		$inputs = $subject->buildInput($tree);
+
+		$this->assertCount(7, $inputs);
+		$this->assertEquals(array('C' => TRUE, 'F' => TRUE), $inputs[0]->getInputs());
+		$this->assertEquals(array('C' => TRUE, 'F' => FALSE, 'G' => TRUE), $inputs[1]->getInputs());
+		$this->assertEquals(array('C' => TRUE, 'F' => FALSE, 'G' => FALSE), $inputs[2]->getInputs());
+		$this->assertEquals(array('C' => FALSE, 'D' => TRUE, 'F' => TRUE), $inputs[3]->getInputs());
+		$this->assertEquals(array('C' => FALSE, 'D' => TRUE, 'F' => FALSE, 'G' => TRUE), $inputs[4]->getInputs());
+		$this->assertEquals(array('C' => FALSE, 'D' => TRUE, 'F' => FALSE, 'G' => FALSE), $inputs[5]->getInputs());
+		$this->assertEquals(array('C' => FALSE, 'D' => FALSE), $inputs[6]->getInputs());
+	}
+
+	/**
+	 * @test
+	 */
 	public function rootDecisionResultInDeeplyNestedStructureIsEvaluatedCorrectly() {
 		$tree = $this->createBooleanAnd('A',
 			$this->createBooleanOr('B',
@@ -274,6 +302,13 @@ class DecisionInputBuilderTest extends UnitTestCase {
 		$mock->expects($this->any())->method('getAttribute')->with('coverage__nodeId')->willReturn($nodeId);
 
 		return $mock;
+	}
+
+	protected function mockEqualCondition($nodeId) {
+		$equals = new Expr\BinaryOp\Equal($this->mockCondition($nodeId . ':L'), $this->mockCondition($nodeId . ':R'));
+		$equals->setAttribute('coverage__nodeId', $nodeId);
+
+		return $equals;
 	}
 
 	/**
