@@ -1,11 +1,17 @@
 <?php
 namespace AndreasWolf\DecisionCoverage\Tests\Acceptance;
-use AndreasWolf\DecisionCoverage\DynamicAnalysis\Data\CoverageDataSet;
+
+use AndreasWolf\DecisionCoverage\Coverage\CoverageSet;
 use Symfony\Component\Process\Process;
 use Symfony\Component\Process\ProcessBuilder;
 
 
 /**
+ * Runner class for acceptances tests.
+ *
+ * Executes the three stages static analysis, dynamic analysis and coverage calculation in separate processes and
+ * returns the deserialized generated coverage object.
+ *
  * @author Andreas Wolf <aw@foundata.net>
  */
 class TestRunner {
@@ -41,11 +47,32 @@ class TestRunner {
 	}
 
 	/**
+	 * @return string
+	 */
+	public function getAnalysisFile() {
+		return $this->analysisFile;
+	}
+
+	/**
+	 * @return string
+	 */
+	public function getCoverageDataFile() {
+		return $this->coverageDataFile;
+	}
+
+	/**
+	 * @return string
+	 */
+	public function getCoverageFile() {
+		return $this->coverageFile;
+	}
+
+	/**
 	 * Runs the given test from the `Fixtures` folder and returns the coverage object
 	 * as a result.
 	 *
 	 * @param string $testName
-	 * @return CoverageDataSet
+	 * @return CoverageSet
 	 */
 	public function runTestAndReturnCoverage($testName) {
 		$this->analysisFile = tempnam(sys_get_temp_dir(), 'coverage-test_analysis-');
