@@ -43,6 +43,25 @@ class DecisionInputBuilderTest extends UnitTestCase {
 	/**
 	 * @test
 	 */
+	public function inputsCanBeBuiltMultipleTimesWithSameBuilderInstance() {
+		$subject = new DecisionInputBuilder();
+
+		// these inputs will are thrown away; we’re just interested in getting the correct results in the second pass
+		$tree = $this->getSimpleBooleanAnd();
+		$subject->buildInput($tree);
+
+		$tree = $this->createBooleanOr('A',
+			$this->mockCondition('B'),
+			$this->mockCondition('C')
+		);
+		$inputs = $subject->buildInput($tree);
+
+		$this->assertCount(3, $inputs);
+	}
+
+	/**
+	 * @test
+	 */
 	public function resultForSingleBooleanAndHasCorrectInputs(){
 		$tree = $this->getSimpleBooleanAnd();
 		$subject = $this->getDecisionBuilder();

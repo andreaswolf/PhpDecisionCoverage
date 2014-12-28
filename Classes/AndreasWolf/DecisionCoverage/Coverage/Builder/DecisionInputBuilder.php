@@ -83,6 +83,7 @@ class DecisionInputBuilder {
 		$this->markedTree = $marker->markSyntaxTree($coveredExpression);
 
 		$this->conditions = [];
+		$this->builtInputs = [];
 
 		foreach ($this->markedTree as $treeNode) {
 			if (!array_key_exists('l', $treeNode) || !array_key_exists('r', $treeNode)) {
