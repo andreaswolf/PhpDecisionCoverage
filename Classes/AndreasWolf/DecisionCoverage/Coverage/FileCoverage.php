@@ -40,6 +40,13 @@ class FileCoverage implements CoverageAggregate {
 	}
 
 	/**
+	 * @return Coverage[]
+	 */
+	public function getCoverages() {
+		return $this->coverages;
+	}
+
+	/**
 	 * @return float The coverage as a value between 0 and 1.
 	 */
 	public function getCoverage() {

@@ -4,6 +4,7 @@ namespace AndreasWolf\DecisionCoverage\Coverage\Builder;
 use AndreasWolf\DecisionCoverage\Coverage\CoverageSet;
 use AndreasWolf\DecisionCoverage\Coverage\Event\DataSampleEvent;
 use AndreasWolf\DecisionCoverage\Coverage\FileCoverage;
+use AndreasWolf\DecisionCoverage\Coverage\MethodCoverage;
 use AndreasWolf\DecisionCoverage\Coverage\Weighting\ExpressionWeightBuilder;
 use AndreasWolf\DecisionCoverage\DynamicAnalysis\Data\CoverageDataSet;
 use AndreasWolf\DecisionCoverage\Service\ExpressionService;
@@ -121,19 +122,32 @@ class CoverageCalculationDirector {
 				continue;
 			}
 
+			// TODO use an event-based approach for generating the coverage builders instead
+
+			if ($syntaxTreeNode instanceof Node\Stmt\ClassMethod) {
+				// TODO this will break if there is code outside the class after the first method
+				$currentMethodCoverage = new MethodCoverage($syntaxTreeNode->name);
+
+				$fileCoverage->addCoverage($currentMethodCoverage);
+			}
+
 			if ($syntaxTreeNode instanceof Node\Stmt\If_) {
 				$this->buildExpressionWeights($syntaxTreeNode->cond);
 				$weight = $syntaxTreeNode->cond->getAttribute('coverage__weight');
 				$this->log->debug('Encountered if statement with expression weights ' . $weight->getTrueValue() . '/' . $weight->getFalseValue());
 
 				$builder = $this->createBuilderForNode($syntaxTreeNode->cond);
-				$fileCoverage->addCoverage($builder->getCoverage());
+				if (isset($currentMethodCoverage)) {
+					$currentMethodCoverage->addCoverage($builder->getCoverage());
+				} else {
+					$fileCoverage->addCoverage($builder->getCoverage());
+				}
 			}
 		}
 	}
 
 	/**
-	 * Makes sure that
+	 * Builds weights for an expression and all its sub-expressions.
 	 *
 	 * @param Node\Expr $expression
 	 */
