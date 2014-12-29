@@ -81,8 +81,46 @@ class DecisionCoverage extends ExpressionCoverage {
 	 * @return float The coverage as a value between 0 and 1.
 	 */
 	public function getCoverage() {
-		// all feasible inputs have to be covered
-		return (float)count(array_unique(array_values($this->sampleToInputMap))) / count($this->feasibleInputs);
+		// all feasible inputs have to be covered at least once, but should only be counted once.
+		return (float)($this->countUniqueCoveredInputs() / count($this->feasibleInputs));
+	}
+
+	/**
+	 * Returns all feasible, unique inputs for the decision.
+	 *
+	 * These inputs already respect short-circuits and thus are the minimum full-coverage set for this decision.
+	 *
+	 * @return \AndreasWolf\DecisionCoverage\Coverage\Input\DecisionInput[]
+	 */
+	public function getFeasibleInputs() {
+		return $this->feasibleInputs;
+	}
+
+	/**
+	 * Returns the samples for this decision that were fetched from the program.
+	 *
+	 * @return \AndreasWolf\DecisionCoverage\Coverage\Evaluation\DecisionSample[]
+	 */
+	public function getSamples() {
+		return $this->samples;
+	}
+
+	/**
+	 * Returns the number of covered inputs, with each input only counted once.
+	 *
+	 * @return int
+	 */
+	public function countUniqueCoveredInputs() {
+		return count(array_unique(array_values($this->sampleToInputMap)));
+	}
+
+	/**
+	 * Returns the number of input combinations for full coverage of this decision.
+	 *
+	 * @return int
+	 */
+	public function countFeasibleInputs() {
+		return count($this->feasibleInputs);
 	}
 
 }
