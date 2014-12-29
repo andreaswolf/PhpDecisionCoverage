@@ -2,6 +2,7 @@
 namespace AndreasWolf\DecisionCoverage\Coverage\Builder;
 
 use AndreasWolf\DecisionCoverage\Coverage\Coverage;
+use AndreasWolf\DecisionCoverage\Coverage\Evaluation\DecisionEvaluationDirector;
 use AndreasWolf\DecisionCoverage\Coverage\Event\CoverageBuilderEvent;
 use AndreasWolf\DecisionCoverage\Coverage\Event\CoverageEvent;
 use AndreasWolf\DecisionCoverage\Coverage\Event\DataSampleEvent;
@@ -35,13 +36,6 @@ class DecisionCoverageBuilder implements EventSubscriberInterface, CoverageBuild
 	 */
 	protected $decisionPartBuilders;
 
-	/**
-	 * All builders that have already been covered for the current sample
-	 *
-	 * @var array
-	 */
-	protected $coveredBuilders = array();
-
 
 	/**
 	 * @param DecisionCoverage $coverage
@@ -63,13 +57,17 @@ class DecisionCoverageBuilder implements EventSubscriberInterface, CoverageBuild
 	}
 
 	public function sampleReceivedHandler(DataSampleEvent $event) {
-		/**
-		 * for each variable:
-		 *   fetch value from data sample
-		 *   add it to the internal array
-		 * build decision input from fetched variables
-		 * add sample to decision coverage
-		 */
+		// TODO simplify the expression check -> make DataSample aware of the watched expressions.
+		if (!in_array($this->coverage->getExpression(), $event->getDataSample()->getProbe()->getWatchedExpressions())) {
+			return;
+		}
+
+		// TODO create in constructor and add as an object property
+		$inputSampleBuilder = new DecisionEvaluationDirector($this->coverage->getExpression());
+
+		$decisionSample = $inputSampleBuilder->evaluate($event->getDataSample());
+
+		$this->coverage->addSample($decisionSample);
 	}
 
 	/**

@@ -28,13 +28,16 @@ class DataSampleInputBuilder extends DecisionInputBuilder {
 
 
 	/**
-	 * Builds the available inputs for the given decision. As this class respects short-circuit evaluation, this is
-	 * not the outer product (dyadic product) of TRUE/FALSE values for each variable, but only contains variables that
-	 * really influence the output.
+	 * Builds the input object for the given data sample.
+	 *
+	 * The built input is the data sample without all shorted variables, i.e. only the variables that really influenced
+	 * the decision output. This does however not mean that each of the values really influenced the decision output.
+	 * (For example, for an AND, if both inputs were FALSE, only the first would have been evaluated, so the second
+	 * is removed in this method. If the first however was TRUE, the decision output would still have been FALSE.)
 	 *
 	 * @param Expr\BinaryOp $coveredExpression The syntax tree of the decision to build the input for. All decision and condition nodes in this tree need to have an ID set in the attribute coverage__nodeId.
 	 * @param DataSample $sample
-	 * @return DecisionInput The decision input built for this
+	 * @return DecisionInput The decision input built for the data sample.
 	 */
 	public function buildInputForSample(Expr\BinaryOp $coveredExpression, DataSample $sample) {
 		$this->sample = $sample;
