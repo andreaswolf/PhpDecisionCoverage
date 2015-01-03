@@ -20,4 +20,18 @@ class SourceFileTokenizerTest extends UnitTestCase {
 		$this->assertEquals('bar', $lines[1]);
 	}
 
+	/**
+	 * @test
+	 */
+	public function windowsLineEndingsAreCorrectlyStripped() {
+		$subject = new SourceFileTokenizer();
+
+		$lines = $subject->getSourceLinesInFile(__DIR__ . '/Fixtures/WindowsLineEndings.php');
+
+		$this->assertCount(3, $lines);
+		$this->assertEquals('This file', $lines[0]);
+		$this->assertEquals('has Windows', $lines[1]);
+		$this->assertEquals('line endings', $lines[2]);
+	}
+
 }

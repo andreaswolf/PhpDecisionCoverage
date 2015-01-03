@@ -13,7 +13,7 @@ class SourceFileTokenizer {
 
 		$lines = [];
 		while ($line = fgets($fileHandle)) {
-			$lines[] = rtrim($line, "\n");
+			$lines[] = rtrim($line, "\r\n");
 		}
 
 		return $lines;
