@@ -13,11 +13,11 @@ class SourceFileTokenizerTest extends UnitTestCase {
 	public function tokenizeReturnsAllLinesFromFile() {
 		$subject = new SourceFileTokenizer();
 
-		$lines = $subject->getSourceLinesInFile(__DIR__ . '/Fixtures/SimpleTestFile.php');
+		$result = $subject->getSourceLinesInFile(__DIR__ . '/Fixtures/SimpleTestFile.php');
 
-		$this->assertCount(2, $lines);
-		$this->assertEquals('foo', $lines[0]);
-		$this->assertEquals('bar', $lines[1]);
+		$this->assertEquals(2, $result->countLines());
+		$this->assertEquals('foo', $result->getLine(1));
+		$this->assertEquals('bar', $result->getLine(2));
 	}
 
 	/**
@@ -26,12 +26,12 @@ class SourceFileTokenizerTest extends UnitTestCase {
 	public function windowsLineEndingsAreCorrectlyStripped() {
 		$subject = new SourceFileTokenizer();
 
-		$lines = $subject->getSourceLinesInFile(__DIR__ . '/Fixtures/WindowsLineEndings.php');
+		$result = $subject->getSourceLinesInFile(__DIR__ . '/Fixtures/WindowsLineEndings.php');
 
-		$this->assertCount(3, $lines);
-		$this->assertEquals('This file', $lines[0]);
-		$this->assertEquals('has Windows', $lines[1]);
-		$this->assertEquals('line endings', $lines[2]);
+		$this->assertEquals(3, $result->countLines());
+		$this->assertEquals('This file', $result->getLine(1));
+		$this->assertEquals('has Windows', $result->getLine(2));
+		$this->assertEquals('line endings', $result->getLine(3));
 	}
 
 }

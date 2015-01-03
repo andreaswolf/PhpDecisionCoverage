@@ -6,7 +6,7 @@ class SourceFileTokenizer {
 
 	/**
 	 * @param $filePath
-	 * @return array An array of the lines, with the offset for each line
+	 * @return TokenizationResult
 	 */
 	public function getSourceLinesInFile($filePath) {
 		$fileHandle = fopen($filePath, 'r');
@@ -16,7 +16,7 @@ class SourceFileTokenizer {
 			$lines[] = rtrim($line, "\r\n");
 		}
 
-		return $lines;
+		return new TokenizationResult($lines);
 	}
 
 }
