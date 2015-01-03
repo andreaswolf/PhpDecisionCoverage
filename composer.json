@@ -13,7 +13,7 @@
 	"description": "A tool for measuring the coverage of decision statements (e.g. if statements) of (unit) tests.",
 	"license": "BSD-3-Clause",
 	"require": {
-		"php": ">=5.3.3",
+		"php": ">=5.4",
 		"nikic/php-parser": ">=1.0.0",
 		"symfony/yaml": "*",
 		"symfony/dependency-injection": "*",
