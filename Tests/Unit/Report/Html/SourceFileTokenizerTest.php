@@ -34,4 +34,32 @@ class SourceFileTokenizerTest extends UnitTestCase {
 		$this->assertEquals('line endings', $result->getLine(3));
 	}
 
+	/**
+	 * @test
+	 */
+	public function offsetsForFileWithUnixLineEndingsAreCorrectlyRetrieved() {
+		$subject = new SourceFileTokenizer();
+
+		$result = $subject->getSourceLinesInFile(__DIR__ . '/Fixtures/SimpleTestFile.php');
+
+		$this->assertEquals(0, $result->getLineOffset(1));
+		$this->assertEquals(4, $result->getLineOffset(2));
+	}
+
+	/**
+	 * @test
+	 */
+	public function offsetsForFileWithWindowsLineEndingsAreCorrectlyRetrieved() {
+		$subject = new SourceFileTokenizer();
+
+		$result = $subject->getSourceLinesInFile(__DIR__ . '/Fixtures/WindowsLineEndings.php');
+
+		// "This file\r\n" = 11
+		// "has Windows\r\n" = 13
+		// "line endings" = 12
+		$this->assertEquals(0, $result->getLineOffset(1));
+		$this->assertEquals(11, $result->getLineOffset(2));
+		$this->assertEquals(24, $result->getLineOffset(3));
+	}
+
 }

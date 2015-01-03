@@ -9,6 +9,11 @@ class TokenizationResult {
 	 */
 	protected $lines;
 
+	/**
+	 * @var int[]
+	 */
+	protected $offsets;
+
 
 	public function __construct($lines, $lineOffsets) {
 		$this->lines = $lines;
@@ -21,6 +26,10 @@ class TokenizationResult {
 
 	public function getLine($number) {
 		return $this->lines[$number - 1];
+	}
+
+	public function getLineOffset($number) {
+		return $this->offsets[$number - 1];
 	}
 
 }
