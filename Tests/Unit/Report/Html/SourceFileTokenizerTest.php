@@ -13,7 +13,7 @@ class SourceFileTokenizerTest extends UnitTestCase {
 	public function tokenizeReturnsAllLinesFromFile() {
 		$subject = new SourceFileTokenizer();
 
-		$result = $subject->getSourceLinesInFile(__DIR__ . '/Fixtures/SimpleTestFile.php');
+		$result = $subject->getSourceLinesInFile(__DIR__ . '/Fixtures/SimpleTextFile.php');
 
 		$this->assertEquals(2, $result->countLines());
 		$this->assertEquals('foo', $result->getLine(1));
@@ -40,7 +40,7 @@ class SourceFileTokenizerTest extends UnitTestCase {
 	public function offsetsForFileWithUnixLineEndingsAreCorrectlyRetrieved() {
 		$subject = new SourceFileTokenizer();
 
-		$result = $subject->getSourceLinesInFile(__DIR__ . '/Fixtures/SimpleTestFile.php');
+		$result = $subject->getSourceLinesInFile(__DIR__ . '/Fixtures/SimpleTextFile.php');
 
 		$this->assertEquals(0, $result->getLineOffset(1));
 		$this->assertEquals(4, $result->getLineOffset(2));
