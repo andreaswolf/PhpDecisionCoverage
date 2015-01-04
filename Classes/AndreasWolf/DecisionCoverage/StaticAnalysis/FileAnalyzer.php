@@ -50,7 +50,13 @@ class FileAnalyzer {
 			}
 		));
 
-		$parser = new \PhpParser\Parser(new \PhpParser\Lexer());
+		$parser = new \PhpParser\Parser(
+			new \PhpParser\Lexer(
+				array('usedAttributes' => array(
+					'comments', 'startLine', 'endLine', 'startFilePos', 'endFilePos'
+				))
+			)
+		);
 		$resultSet = new ResultSet();
 		foreach ($fileIterator as $file) {
 			$sourceFile = new SourceFile($file->getPathname());
