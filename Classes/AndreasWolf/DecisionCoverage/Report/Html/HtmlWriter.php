@@ -10,6 +10,16 @@ use TheSeer\fXSL\fXSLTProcessor;
 class HtmlWriter implements Writer {
 
 	/**
+	 * @var string
+	 */
+	protected $basePath;
+
+	/**
+	 * @var string
+	 */
+	protected $fileExtension = '.html';
+
+	/**
 	 * @var fDOMDocument
 	 */
 	protected $document;
@@ -18,6 +28,11 @@ class HtmlWriter implements Writer {
 	 * @var fDOMElement
 	 */
 	protected $linesNode;
+
+
+	public function __construct($basePath) {
+		$this->basePath = rtrim($basePath, '/') . '/';
+	}
 
 	public function writeReportForSourceFile(SourceFile $file) {
 		$this->document = new fDOMDocument();
@@ -33,7 +48,9 @@ class HtmlWriter implements Writer {
 		$xslSource->load(__DIR__ . '/../../../../../Resources/Templates/Html/SourceFile.xsl');
 		$xslProcessor = new fXSLTProcessor($xslSource);
 
-		echo $xslProcessor->transformToXml($this->document);
+		$contents = $xslProcessor->transformToXml($this->document);
+		$reportFile = $this->basePath . $this->getReportTargetFilename($file);
+		file_put_contents($reportFile, $contents);
 	}
 
 	/**
@@ -61,6 +78,17 @@ class HtmlWriter implements Writer {
 		$lineNode->setAttribute('number', $lineNumber);
 
 		$this->linesNode->appendChild($lineNode);
+	}
+
+	protected function getReportTargetFilename(SourceFile $sourceFile) {
+		$filePath = $sourceFile->getPath();
+
+		$filePath = substr($filePath, 1);
+		$filePath = str_replace(DIRECTORY_SEPARATOR, '_', $filePath);
+
+		$filePath .= $this->fileExtension;
+
+		return $filePath;
 	}
 
 }

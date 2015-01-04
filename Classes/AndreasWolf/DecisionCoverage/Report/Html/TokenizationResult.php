@@ -5,6 +5,11 @@ namespace AndreasWolf\DecisionCoverage\Report\Html;
 class TokenizationResult {
 
 	/**
+	 * @var string
+	 */
+	protected $filePath;
+
+	/**
 	 * @var string[]
 	 */
 	protected $lines;
@@ -15,9 +20,17 @@ class TokenizationResult {
 	protected $offsets;
 
 
-	public function __construct($lines, $lineOffsets) {
+	public function __construct($filePath, $lines, $lineOffsets) {
+		$this->filePath = $filePath;
 		$this->lines = $lines;
 		$this->offsets = $lineOffsets;
+	}
+
+	/**
+	 * @return string
+	 */
+	public function getFilePath() {
+		return $this->filePath;
 	}
 
 	public function countLines() {

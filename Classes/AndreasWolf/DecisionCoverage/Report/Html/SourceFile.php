@@ -5,15 +5,22 @@ namespace AndreasWolf\DecisionCoverage\Report\Html;
 class SourceFile {
 
 	/**
+	 * @var string
+	 */
+	protected $path;
+
+	/**
 	 * @var SourceLine[]
 	 */
 	protected $lines;
 
 
 	/**
+	 * @param string $path
 	 * @param SourceLine[] $lines
 	 */
-	public function __construct($lines) {
+	public function __construct($path, $lines) {
+		$this->path = $path;
 		$this->lines = $lines;
 	}
 
@@ -24,7 +31,14 @@ class SourceFile {
 			$lines[] = SourceLine::createFromTokenizationResult($result, $i);
 		}
 
-		return new self($lines);
+		return new self($result->getFilePath(), $lines);
+	}
+
+	/**
+	 * @return string
+	 */
+	public function getPath() {
+		return $this->path;
 	}
 
 	/**

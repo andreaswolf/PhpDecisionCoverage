@@ -19,7 +19,7 @@ class SourceFileTokenizer {
 			$offset += strlen($line);
 		}
 
-		return new TokenizationResult($lines, $offsets);
+		return new TokenizationResult($filePath, $lines, $offsets);
 	}
 
 }
