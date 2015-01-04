@@ -24,7 +24,9 @@
 		"symfony/console": "~2.6@dev",
 		"symfony/process": "~3.0@dev",
 		"rhumsaa/uuid": "~2.8@dev",
-		"monolog/monolog": "~1.11@dev"
+		"monolog/monolog": "~1.11@dev",
+		"theseer/fxsl": "~1.0@dev",
+		"theseer/fdomdocument": "dev-master"
 	},
 	"require-dev": {
 		"phpunit/phpunit": "*",
