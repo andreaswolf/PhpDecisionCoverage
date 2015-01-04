@@ -1,13 +1,13 @@
 <?php
 namespace AndreasWolf\DecisionCoverage\Report\Html;
 
-
+use AndreasWolf\DecisionCoverage\Report\Writer;
 use TheSeer\fDOM\fDOMDocument;
 use TheSeer\fDOM\fDOMElement;
 use TheSeer\fXSL\fXSLTProcessor;
 
 
-class HtmlWriter {
+class HtmlWriter implements Writer {
 
 	/**
 	 * @var fDOMDocument
