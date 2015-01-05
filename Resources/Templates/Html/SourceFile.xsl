@@ -36,7 +36,22 @@
 	<xsl:template name="sourceline" match="lines/line">
 		<div class="source-line">
 			<div class="line-number"><xsl:value-of select="attribute::number" /></div>
-			<div class="line-contents"><xsl:value-of select="."/></div>
+			<div class="line-contents"><xsl:call-template name="line-contents" /></div>
 		</div>
+	</xsl:template>
+
+	<xsl:template name="line-contents">
+		<xsl:choose>
+			<xsl:when test="fragment">
+				<xsl:for-each select="fragment"><xsl:call-template name="line-fragment" /></xsl:for-each>
+			</xsl:when>
+			<xsl:otherwise>
+				<xsl:value-of select="."/>
+			</xsl:otherwise>
+		</xsl:choose>
+	</xsl:template>
+
+	<xsl:template name="line-fragment">
+		<span class="line-fragment"><xsl:value-of select="."/></span>
 	</xsl:template>
 </xsl:stylesheet>

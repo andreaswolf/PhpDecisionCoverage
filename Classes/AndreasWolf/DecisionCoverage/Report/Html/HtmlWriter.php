@@ -1,6 +1,7 @@
 <?php
 namespace AndreasWolf\DecisionCoverage\Report\Html;
 
+use AndreasWolf\DecisionCoverage\Report\Annotation\DecisionCoverageAnnotation;
 use AndreasWolf\DecisionCoverage\Report\Writer;
 use TheSeer\fDOM\fDOMDocument;
 use TheSeer\fDOM\fDOMElement;
@@ -53,9 +54,6 @@ class HtmlWriter implements Writer {
 		file_put_contents($reportFile, $contents);
 	}
 
-	/**
-	 * @param fDOMDocument $document
-	 */
 	protected function createLinesNode() {
 		$sourcesNode = $this->document->createElement('source');
 		$sourcesNode->setAttribute('file', 'FIXMEsomeFile.php');
@@ -70,14 +68,62 @@ class HtmlWriter implements Writer {
 	 * @throws \TheSeer\fDOM\fDOMException
 	 */
 	protected function createNodeForLine($line, $lineNumber) {
-		$rawLineContents = $line->getContents();
-		$rawLineContents = str_replace("\t", "»   ", $rawLineContents);
-		$lineContentsNode = $this->document->createCDATASection($rawLineContents);
 		$lineNode = $this->linesNode->createElement('line', NULL, TRUE);
-		$lineNode->appendChild($lineContentsNode);
 		$lineNode->setAttribute('number', $lineNumber);
 
+		$rawLineContents = $line->getContents();
+		if (!$line->hasAnnotations()) {
+			$rawLineContents = $this->prepareCodeForHtmlFile($rawLineContents);
+			$lineContentsNode = $this->document->createCDATASection($rawLineContents);
+			$lineNode->appendChild($lineContentsNode);
+		} else {
+			// TODO we now assume that the annotations are not overlapping; this might not always be the case
+			$startOffset = $line->getOffset();
+			$annotations = $line->getAnnotations();
+			// make sure the annotations are ordered by their start offsets
+			usort($annotations, function($left, $right) {
+				return $right['startOffset'] - $left['startOffset'];
+			});
+
+			$lastOffset = $startOffset;
+			/** @var DecisionCoverageAnnotation $annotation */
+			foreach ($annotations as $annotation) {
+				$currentOffset = $annotation['start'];
+				if ($lastOffset < $currentOffset) {
+					// add fragment for the space in between the last and this element
+					$fragmentNode = $this->createFragmentNode(
+						substr($rawLineContents,
+							$lastOffset - $startOffset,
+							$currentOffset - $lastOffset
+						)
+					);
+					$lineNode->appendChild($fragmentNode);
+				}
+
+				$fragmentNode = $this->createFragmentNode(
+					substr($rawLineContents,
+						$currentOffset - $startOffset,
+						$annotation['end'] - $currentOffset + 1
+					)
+				);
+				$lineNode->appendChild($fragmentNode);
+
+				$lastOffset = $annotation['end'] + 1;
+			}
+
+			$fragmentNode = $this->createFragmentNode(substr($rawLineContents, $lastOffset - $startOffset));
+			$lineNode->appendChild($fragmentNode);
+		}
+
 		$this->linesNode->appendChild($lineNode);
+	}
+
+	protected function createFragmentNode($contents) {
+		$contentsNode = $this->document->createCDATASection($this->prepareCodeForHtmlFile($contents));
+		$fragmentNode = $this->linesNode->createElement('fragment');
+		$fragmentNode->appendChild($contentsNode);
+
+		return $fragmentNode;
 	}
 
 	protected function getReportTargetFilename(SourceFile $sourceFile) {
@@ -89,6 +135,16 @@ class HtmlWriter implements Writer {
 		$filePath .= $this->fileExtension;
 
 		return $filePath;
+	}
+
+	/**
+	 * @param string $contents
+	 * @return string
+	 */
+	protected function prepareCodeForHtmlFile($contents) {
+		$contents = str_replace("\t", "    ", $contents);
+
+		return $contents;
 	}
 
 }
