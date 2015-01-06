@@ -23,7 +23,7 @@
 					]]></xsl:text>
 				</script>
 				<title>File »<xsl:value-of select="/source/attribute::file" />«</title>
-				<style>
+				<style type="text/css">
 					div.line-fragment {
 						display:inline;
 					}
@@ -44,6 +44,8 @@
 						position:relative;
 					}
 					.annotations {
+						font-family:Arial, Helvetica, sans-serif;
+						white-space: normal;
 						border:1px solid;
 						background:#ececec;
 						padding:0.2em;
@@ -53,6 +55,9 @@
 						top: 1.2em;
 						z-index: 10;
 						visibility:hidden;
+					}
+					.coverage-tests {
+						margin-top:0.5em;
 					}
 				</style>
 			</head>
@@ -97,6 +102,7 @@
 		</div>
 	</xsl:template>
 
+	<xsl:key name="test-id" match="covered-by" use="@test" />
 	<xsl:template name="inline-annotation">
 		<xsl:choose>
 			<xsl:when test="@type='coverage'">
@@ -104,7 +110,16 @@
 				<xsl:variable name="inputs-total" select="count(//coverages/coverage[@id=$coverageId]/inputs/input)" />
 				<xsl:variable name="inputs-covered" select="count(//coverages/coverage[@id=$coverageId]/inputs/input[@covered='true'])" />
 				<xsl:variable name="coverage" select="format-number($inputs-covered div $inputs-total * 100, '0.##')" />
-				<span class="inline-annotation"><xsl:value-of select="$coverage" /> %</span>
+				<div class="coverage-value">Coverage: <xsl:value-of select="$coverage" /> % (<xsl:value-of
+						select="$inputs-covered" /> of <xsl:value-of select="$inputs-total" /> inputs)</div>
+				<div class="coverage-tests">Covered by these tests:
+				<ul>
+					<!-- make the list of test names unique; see <https://stackoverflow.com/questions/2199676/finding-unique-nodes-with-xslt> -->
+					<xsl:for-each select="//coverages/coverage[@id=$coverageId]//covered-by[generate-id() = generate-id(key('test-id', @test)[1]) = true()]">
+						<li><xsl:value-of select="@test" /></li>
+					</xsl:for-each>
+				</ul>
+				</div>
 			</xsl:when>
 		</xsl:choose>
 	</xsl:template>

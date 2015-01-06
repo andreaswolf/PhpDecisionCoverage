@@ -23,6 +23,7 @@
 					<covered-by test="someTestClass::someTest" />
 				</input>
 				<input covered="true">
+					<covered-by test="someTestClass::someTest" />
 					<covered-by test="someTestClass::someOtherTest" />
 				</input>
 				<input covered="false" />
