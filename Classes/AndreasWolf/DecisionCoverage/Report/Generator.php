@@ -65,6 +65,8 @@ class Generator {
 				$this->attachCoverageAnnotationsToSourceFile($subcoverage, $sourceFile);
 			}
 		} elseif ($coverage instanceof DecisionCoverage) {
+			$sourceFile->addCoverage($coverage->getId(), $coverage);
+
 			$expression = $coverage->getExpression();
 			$startPosition = $expression->getAttribute('startFilePos');
 			$endPosition = $expression->getAttribute('endFilePos');

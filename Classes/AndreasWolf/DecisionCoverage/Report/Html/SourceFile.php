@@ -2,6 +2,9 @@
 namespace AndreasWolf\DecisionCoverage\Report\Html;
 
 
+use AndreasWolf\DecisionCoverage\Coverage\Coverage;
+
+
 class SourceFile {
 
 	/**
@@ -13,6 +16,11 @@ class SourceFile {
 	 * @var SourceLine[]
 	 */
 	protected $lines;
+
+	/**
+	 * @var Coverage[]
+	 */
+	protected $coverages;
 
 
 	/**
@@ -68,6 +76,23 @@ class SourceFile {
 			}
 			$lastLine = $line;
 		}
+	}
+
+	/**
+	 * Adds a coverage for this source file
+	 *
+	 * @param string $id
+	 * @param Coverage $coverage
+	 */
+	public function addCoverage($id, $coverage) {
+		$this->coverages[$id] = $coverage;
+	}
+
+	/**
+	 * @return \AndreasWolf\DecisionCoverage\Coverage\Coverage[]
+	 */
+	public function getCoverages() {
+		return $this->coverages;
 	}
 
 }
