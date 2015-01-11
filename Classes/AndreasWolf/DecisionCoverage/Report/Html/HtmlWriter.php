@@ -1,6 +1,9 @@
 <?php
 namespace AndreasWolf\DecisionCoverage\Report\Html;
 
+use AndreasWolf\DecisionCoverage\Coverage\Coverage;
+use AndreasWolf\DecisionCoverage\Coverage\CoverageAggregate;
+use AndreasWolf\DecisionCoverage\Coverage\MCDC\DecisionCoverage;
 use AndreasWolf\DecisionCoverage\Report\Annotation\DecisionCoverageAnnotation;
 use AndreasWolf\DecisionCoverage\Report\Writer;
 use TheSeer\fDOM\fDOMDocument;
@@ -30,6 +33,11 @@ class HtmlWriter implements Writer {
 	 */
 	protected $linesNode;
 
+	/**
+	 * @var fDOMElement
+	 */
+	protected $coverageNode;
+
 
 	public function __construct($basePath) {
 		$this->basePath = rtrim($basePath, '/') . '/';
@@ -37,13 +45,14 @@ class HtmlWriter implements Writer {
 
 	public function writeReportForSourceFile(SourceFile $file) {
 		$this->document = new fDOMDocument();
-		$this->createLinesNode();
+		$this->createTopLevelNodes();
 		$lineNumber = 0;
 		foreach ($file->getLines() as $line) {
 			++$lineNumber;
 
 			$this->createNodeForLine($line, $lineNumber);
 		}
+		$this->createCoverageNodes($file->getCoverages());
 
 		$xslSource = new fDOMDocument();
 		$xslSource->load(__DIR__ . '/../../../../../Resources/Templates/Html/SourceFile.xsl');
@@ -54,12 +63,22 @@ class HtmlWriter implements Writer {
 		file_put_contents($reportFile, $contents);
 	}
 
-	protected function createLinesNode() {
+	/**
+	 * Creates the basic document structure, namely the document root node and the group nodes for lines and additional
+	 * metadata.
+	 *
+	 * @throws \TheSeer\fDOM\fDOMException
+	 */
+	protected function createTopLevelNodes() {
 		$sourcesNode = $this->document->createElement('source');
 		$sourcesNode->setAttribute('file', 'FIXMEsomeFile.php');
+		$this->document->appendChild($sourcesNode);
+
 		$this->linesNode = $sourcesNode->createElement('lines');
 		$sourcesNode->appendChild($this->linesNode);
-		$this->document->appendChild($sourcesNode);
+
+		$this->coverageNode = $sourcesNode->createElement('coverages');
+		$sourcesNode->appendChild($this->coverageNode);
 	}
 
 	/**
@@ -104,7 +123,8 @@ class HtmlWriter implements Writer {
 					substr($rawLineContents,
 						$currentOffset - $startOffset,
 						$annotation['end'] - $currentOffset + 1
-					)
+					),
+					$annotation['annotation']
 				);
 				$lineNode->appendChild($fragmentNode);
 
@@ -118,10 +138,66 @@ class HtmlWriter implements Writer {
 		$this->linesNode->appendChild($lineNode);
 	}
 
-	protected function createFragmentNode($contents) {
-		$contentsNode = $this->document->createCDATASection($this->prepareCodeForHtmlFile($contents));
+	/**
+	 * Adds coverage nodes for the given coverage(s).
+	 *
+	 * Currently, this method only supports decision coverages.
+	 *
+	 * @param Coverage[] $coverages
+	 */
+	protected function createCoverageNodes($coverages) {
+		foreach ($coverages as $coverage) {
+			if ($coverage instanceof CoverageAggregate) {
+				$this->createCoverageNodes($coverage->getCoverages());
+
+				continue;
+			} elseif ($coverage instanceof DecisionCoverage) {
+				$coverageNode = $this->coverageNode->appendElement('coverage');
+				$coverageNode->setAttribute('type', 'decision');
+				$coverageNode->setAttribute('id', $coverage->getId());
+
+				$inputsNodes = $coverageNode->appendElement('inputs');
+
+				foreach ($coverage->getFeasibleInputs() as $input) {
+					$inputNode = $inputsNodes->appendElement('input');
+					$inputNode->setAttribute('covered', $coverage->isCovered($input) ? 'true' : 'false');
+
+					// TODO add the tests covering this input as subnodes
+				}
+			} else {
+				throw new \RuntimeException('Unsupported coverage type ' . get_class($coverage));
+			}
+		}
+	}
+
+	/**
+	 * Creates a node for the given fragment contents.
+	 *
+	 * If an annotation is given, the contents are wrapped in a <contents> child with the <annotation> node as a
+	 * sibling.
+	 *
+	 * @param string $contents
+	 * @param null $annotation
+	 * @return fDOMElement
+	 * @throws \TheSeer\fDOM\fDOMException
+	 */
+	protected function createFragmentNode($contents, $annotation = NULL) {
 		$fragmentNode = $this->linesNode->createElement('fragment');
-		$fragmentNode->appendChild($contentsNode);
+		$fragmentContentNode = $this->document->createCDATASection($this->prepareCodeForHtmlFile($contents));
+
+		if (is_object($annotation)) {
+			if ($annotation instanceof DecisionCoverageAnnotation) {
+				$coverage = $annotation->getCoverage();
+				$annotationNode = $fragmentNode->appendElement('annotation');
+				$annotationNode->setAttribute('type', 'coverage');
+				$annotationNode->setAttribute('coverage', $coverage->getId());
+
+				$contentsNode = $fragmentNode->appendElement('contents');
+				$contentsNode->appendChild($fragmentContentNode);
+			}
+		} else {
+			$fragmentNode->appendChild($fragmentContentNode);
+		}
 
 		return $fragmentNode;
 	}
