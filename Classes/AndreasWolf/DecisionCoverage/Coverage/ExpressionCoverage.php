@@ -27,6 +27,16 @@ abstract class ExpressionCoverage implements Coverage {
 	}
 
 	/**
+	 * Returns the unique ID of this coverage.
+	 * FIXME this currently fails if more than one coverage is calculated for an expression!
+	 *
+	 * @return string
+	 */
+	public function getId() {
+		return $this->expression->getAttribute('coverage__nodeId');
+	}
+
+	/**
 	 * @param ExpressionValue $value
 	 * @return void
 	 */
