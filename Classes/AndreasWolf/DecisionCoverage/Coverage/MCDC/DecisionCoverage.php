@@ -33,7 +33,7 @@ class DecisionCoverage extends ExpressionCoverage {
 	 *
 	 * @var DecisionSample[]
 	 */
-	protected $samples;
+	protected $samples = array();
 
 	/**
 	 * Mapping from the index of a sample to the index of the feasible input.
@@ -75,6 +75,22 @@ class DecisionCoverage extends ExpressionCoverage {
 				$this->sampleToInputMap[] = $inputIndex;
 			}
 		}
+	}
+
+	/**
+	 * @param DecisionInput $input
+	 * @return bool
+	 */
+	public function isCovered(DecisionInput $input) {
+		foreach ($this->sampleToInputMap as $inputIndex) {
+			$coveredInput = $this->feasibleInputs[$inputIndex];
+
+			if ($coveredInput->equalTo($input)) {
+				return TRUE;
+			}
+		}
+		// no sample matched
+		return FALSE;
 	}
 
 	/**
