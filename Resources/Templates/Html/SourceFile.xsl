@@ -10,17 +10,17 @@
 			<head>
 				<meta charset="UTF-8" />
 				<script type="application/javascript">
-					<xsl:text disable-output-escaping="yes"><![CDATA[
+					<xsl:text disable-output-escaping="yes">
 					function addClickListener() {
 						var sources = document.getElementById('sources');
 						sources.addEventListener('click', function(e) {
-							if (e.target && e.target.className.split(" ").indexOf("annotated") > 0) {
+							if (e.target &amp;&amp; e.target.className.split(" ").indexOf("annotated") > 0) {
 								var annotations = e.target.getElementsByClassName('annotations');
 								annotations[0].style.visibility = "visible";
 							}
 						});
 					}
-					]]></xsl:text>
+					</xsl:text>
 				</script>
 				<title>File »<xsl:value-of select="/source/attribute::file" />«</title>
 				<style type="text/css">
