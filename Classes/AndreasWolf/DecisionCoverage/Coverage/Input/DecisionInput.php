@@ -7,6 +7,8 @@ use PhpParser\Node\Expr;
 /**
  * A feasible combination of input values for a decision.
  *
+ * All inputs without a value are treated as being short-circuit.
+ *
  * @author Andreas Wolf <aw@foundata.net>
  */
 class DecisionInput {
@@ -36,17 +38,44 @@ class DecisionInput {
 
 
 	/**
+	 * @param array $conditionValues The condition values to store
+	 */
+	public function __construct(array $conditionValues = array()) {
+		$this->inputs = $conditionValues;
+	}
+
+	/**
 	 * @param Expr|string $condition The condition (or its node id)
 	 * @param boolean $input
 	 * @return DecisionInput A new instance of this class, with the new value added
 	 */
 	public function addInputForCondition($condition, $input) {
-		$newInput = new self();
-		$newInput->inputs = array_merge($this->inputs, [$this->getNodeId($condition) => $input]);
+		$newInput = new self(array_merge($this->inputs, [$this->getNodeId($condition) => $input]));
 		$newInput->shortCircuit = $this->shortCircuit;
 		$newInput->decisionValues = $this->decisionValues;
 
 		return $newInput;
+	}
+
+	/**
+	 * Checks if the given input matches this input.
+	 *
+	 * An input "A" matches this one iff:
+	 * - all variables set in this input have the same value in the input A
+	 * - additional variables set in input A can have any value
+	 *
+	 * @param DecisionInput $input
+	 * @return bool
+	 */
+	public function equalTo(DecisionInput $input) {
+		foreach ($this->inputs as $name => $value) {
+			if (!$input->hasValueForCondition($name)) {
+				return FALSE;
+			} elseif ($input->getValueForCondition($name) !== $value) {
+				return FALSE;
+			}
+		}
+		return TRUE;
 	}
 
 	/**
@@ -75,6 +104,15 @@ class DecisionInput {
 	}
 
 	/**
+	 * @param Expr|string $condition
+	 * @return bool
+	 */
+	public function hasValueForCondition($condition) {
+		$id = $this->getNodeId($condition);
+		return (isset($this->inputs[$id]) || isset($this->decisionValues[$id]));
+	}
+
+	/**
 	 * @return boolean[]
 	 */
 	public function getInputs() {
@@ -96,7 +134,7 @@ class DecisionInput {
 	}
 
 	/**
-	 * @param $condition
+	 * @param Expr|string $condition
 	 * @return string
 	 */
 	protected function getNodeId($condition) {
