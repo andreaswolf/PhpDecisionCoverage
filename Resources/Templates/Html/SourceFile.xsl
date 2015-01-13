@@ -112,14 +112,14 @@
 				<xsl:variable name="coverage" select="format-number($inputs-covered div $inputs-total * 100, '0.##')" />
 				<div class="coverage-value">Coverage: <xsl:value-of select="$coverage" /> % (<xsl:value-of
 						select="$inputs-covered" /> of <xsl:value-of select="$inputs-total" /> inputs)</div>
-				<div class="coverage-tests">Covered by these tests:
+				<xsl:if test="$inputs-covered > 0"><div class="coverage-tests">Covered by these tests:
 				<ul>
 					<!-- make the list of test names unique; see <https://stackoverflow.com/questions/2199676/finding-unique-nodes-with-xslt> -->
 					<xsl:for-each select="//coverages/coverage[@id=$coverageId]//covered-by[generate-id() = generate-id(key('test-id', @test)[1]) = true()]">
 						<li><xsl:value-of select="@test" /></li>
 					</xsl:for-each>
 				</ul>
-				</div>
+				</div></xsl:if>
 			</xsl:when>
 		</xsl:choose>
 	</xsl:template>
