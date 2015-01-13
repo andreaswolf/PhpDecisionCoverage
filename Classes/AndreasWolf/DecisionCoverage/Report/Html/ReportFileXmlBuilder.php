@@ -101,13 +101,16 @@ class ReportFileXmlBuilder {
 				$coverageNode->setAttribute('type', 'decision');
 				$coverageNode->setAttribute('id', $coverage->getId());
 
-				$inputsNodes = $coverageNode->appendElement('inputs');
+				$inputNodes = $coverageNode->appendElement('inputs');
 
 				foreach ($coverage->getFeasibleInputs() as $input) {
-					$inputNode = $inputsNodes->appendElement('input');
+					$inputNode = $inputNodes->appendElement('input');
 					$inputNode->setAttribute('covered', $coverage->isCovered($input) ? 'true' : 'false');
 
-					// TODO add the tests covering this input as subnodes
+					foreach ($coverage->getSamplesForInput($input) as $sample) {
+						$coveredByNode = $inputNode->appendElement('covered-by');
+						$coveredByNode->setAttribute('test', $sample->getTest());
+					}
 				}
 			} else {
 				throw new \RuntimeException('Unsupported coverage type ' . get_class($coverage));
