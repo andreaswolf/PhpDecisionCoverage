@@ -89,6 +89,7 @@ class DecisionCoverage extends ExpressionCoverage {
 				return TRUE;
 			}
 		}
+
 		// no sample matched
 		return FALSE;
 	}
@@ -115,10 +116,29 @@ class DecisionCoverage extends ExpressionCoverage {
 	/**
 	 * Returns the samples for this decision that were fetched from the program.
 	 *
-	 * @return \AndreasWolf\DecisionCoverage\Coverage\Evaluation\DecisionSample[]
+	 * @return DecisionSample[]
 	 */
 	public function getSamples() {
 		return $this->samples;
+	}
+
+	/**
+	 * Returns all samples that cover the given decision input.
+	 *
+	 * @param DecisionInput $input The input to cover. This must exactly match one of the decision’s feasible inputs,
+	 *   otherwise the input will not be found.
+	 * @return DecisionSample[]
+	 */
+	public function getSamplesForInput(DecisionInput $input) {
+		$searchedInputIndex = array_search($input, $this->feasibleInputs);
+		$samples = [];
+		foreach ($this->sampleToInputMap as $sampleIndex => $inputIndex) {
+			if ($inputIndex == $searchedInputIndex) {
+				$samples[] = $this->samples[$sampleIndex];
+			}
+		}
+
+		return $samples;
 	}
 
 	/**
