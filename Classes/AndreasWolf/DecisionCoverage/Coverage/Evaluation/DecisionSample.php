@@ -86,6 +86,15 @@ class DecisionSample {
 	}
 
 	/**
+	 * Returns the test this sample was fetched in.
+	 *
+	 * @return \AndreasWolf\DecisionCoverage\DynamicAnalysis\PhpUnit\Test
+	 */
+	public function getTest() {
+		return $this->dataSample->getTest();
+	}
+
+	/**
 	 * Checks if the given input is covered by this sample.
 	 *
 	 * @param DecisionInput|array $input An input object or an array of condition ids and values.
