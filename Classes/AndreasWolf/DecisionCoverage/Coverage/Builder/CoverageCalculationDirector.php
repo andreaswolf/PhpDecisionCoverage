@@ -10,7 +10,6 @@ use AndreasWolf\DecisionCoverage\DynamicAnalysis\Data\CoverageDataSet;
 use AndreasWolf\DecisionCoverage\Service\ExpressionService;
 use AndreasWolf\DecisionCoverage\Source\RecursiveSyntaxTreeIterator;
 use AndreasWolf\DecisionCoverage\StaticAnalysis\FileResult;
-use AndreasWolf\DecisionCoverage\StaticAnalysis\Probe;
 use AndreasWolf\DecisionCoverage\StaticAnalysis\SyntaxTree\SyntaxTreeStack;
 use PhpParser\Node;
 use Psr\Log\LoggerInterface;
@@ -23,11 +22,6 @@ use Symfony\Component\EventDispatcher\EventDispatcherInterface;
  * @author Andreas Wolf <aw@foundata.net>
  */
 class CoverageCalculationDirector {
-
-	/**
-	 * @var Probe[]
-	 */
-	protected $knownProbes = array();
 
 	/**
 	 * @var CoverageSet

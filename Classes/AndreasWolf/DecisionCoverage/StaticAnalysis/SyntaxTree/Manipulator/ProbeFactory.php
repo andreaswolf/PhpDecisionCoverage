@@ -3,6 +3,7 @@ namespace AndreasWolf\DecisionCoverage\StaticAnalysis\SyntaxTree\Manipulator;
 
 use AndreasWolf\DecisionCoverage\Service\ExpressionService;
 use AndreasWolf\DecisionCoverage\Source\SyntaxTreeIterator;
+use AndreasWolf\DecisionCoverage\StaticAnalysis\DataCollectionProbe;
 use AndreasWolf\DecisionCoverage\StaticAnalysis\Probe;
 use AndreasWolf\DecisionCoverage\StaticAnalysis\FileResult;
 use AndreasWolf\DecisionCoverage\StaticAnalysis\SyntaxTree\NodeVisitor;
@@ -42,21 +43,21 @@ class ProbeFactory extends AbstractProbeFactory {
 		}
 
 		$conditionNode = $node->cond;
-		$probe = $this->createBreakpoint($node);
+		$probe = $this->createDataCollectionProbe($node);
 		$this->addWatchExpressionsToBreakpoint($probe, $conditionNode);
 		if (!$conditionNode->hasAttribute('coverage__cover')) {
 			$conditionNode->setAttribute('coverage__cover', TRUE);
 			$probe->addWatchedExpression($conditionNode);
 		}
 
-		$this->analysis->addBreakpoint($probe);
+		$this->analysis->addProbe($probe);
 	}
 
 	/**
-	 * @param Probe $probe
+	 * @param DataCollectionProbe $probe
 	 * @param Node $rootNode
 	 */
-	protected function addWatchExpressionsToBreakpoint(Probe $probe, Node $rootNode) {
+	protected function addWatchExpressionsToBreakpoint(DataCollectionProbe $probe, Node $rootNode) {
 		$nodeIterator = new \RecursiveIteratorIterator(
 			new SyntaxTreeIterator(array($rootNode), TRUE), \RecursiveIteratorIterator::SELF_FIRST
 		);
@@ -77,10 +78,10 @@ class ProbeFactory extends AbstractProbeFactory {
 
 	/**
 	 * @param Node $node
-	 * @return Probe
+	 * @return DataCollectionProbe
 	 */
-	protected function createBreakpoint(Node $node) {
-		$probe = new Probe($node->getLine());
+	protected function createDataCollectionProbe(Node $node) {
+		$probe = new DataCollectionProbe($node->getLine());
 		$node->setAttribute('coverage__probe', $probe);
 
 		return $probe;

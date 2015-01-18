@@ -91,7 +91,7 @@ class ClientEventSubscriber implements EventSubscriberInterface {
 
 		$promises = array();
 		foreach ($this->staticAnalysisData->getFileResults() as $fileResult) {
-			$promises[] = $breakpointService->addBreakpointsForFile($fileResult->getFilePath(), $fileResult->getBreakpoints());
+			$promises[] = $breakpointService->addBreakpointsForFile($fileResult->getFilePath(), $fileResult->getProbes());
 		}
 
 		\React\Promise\all($promises)->then(function() use ($session) {

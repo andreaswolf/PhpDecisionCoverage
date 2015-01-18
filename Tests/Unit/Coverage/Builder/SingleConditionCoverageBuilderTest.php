@@ -77,7 +77,7 @@ class SingleConditionCoverageBuilderTest extends UnitTestCase {
 	}
 
 	protected function mockProbe() {
-		return $this->getMockBuilder('AndreasWolf\DecisionCoverage\StaticAnalysis\Probe')
+		return $this->getMockBuilder('AndreasWolf\DecisionCoverage\StaticAnalysis\DataCollectionProbe')
 			->disableOriginalConstructor()->getMock();
 	}
 

@@ -3,7 +3,7 @@ namespace AndreasWolf\DecisionCoverage\Tests\Helpers;
 
 use AndreasWolf\DebuggerClient\Protocol\Response\ExpressionValue;
 use AndreasWolf\DecisionCoverage\DynamicAnalysis\Data\DataSample;
-use AndreasWolf\DecisionCoverage\StaticAnalysis\Probe;
+use AndreasWolf\DecisionCoverage\StaticAnalysis\DataCollectionProbe;
 use AndreasWolf\DecisionCoverage\Tests\Helpers\PhpParser\ExpressionMockBuilder;
 use PhpParser\Node\Expr;
 
@@ -22,7 +22,7 @@ class DataSampleBuilder {
 
 
 	public function __construct() {
-		$this->dataSample = new DataSample(new Probe(1));
+		$this->dataSample = new DataSample(new DataCollectionProbe(1));
 	}
 
 	public function addMockedExpression($id, $class = '') {

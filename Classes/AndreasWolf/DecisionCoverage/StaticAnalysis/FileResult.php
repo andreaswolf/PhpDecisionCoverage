@@ -24,7 +24,7 @@ class FileResult {
 	/**
 	 * @var Probe[]
 	 */
-	protected $breakpoints = array();
+	protected $probes = array();
 
 
 	public function __construct($filePath, SyntaxTree $syntaxTree) {
@@ -39,15 +39,15 @@ class FileResult {
 		return $this->filePath;
 	}
 
-	public function addBreakpoint(Probe $breakpoint) {
-		$this->breakpoints[] = $breakpoint;
+	public function addProbe(Probe $probe) {
+		$this->probes[] = $probe;
 	}
 
 	/**
 	 * @return Probe[]
 	 */
-	public function getBreakpoints() {
-		return $this->breakpoints;
+	public function getProbes() {
+		return $this->probes;
 	}
 
 	/**
