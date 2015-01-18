@@ -42,9 +42,31 @@ class DecisionCoverageTest extends UnitTestCase {
 	}
 
 	/**
+	 * This test checks if the coverage of short-circuited input combinations is determined correctly.
+	 *
+	 * For a boolean AND, if the left branch is FALSE, evaluation is aborted and the two possible values TRUE/FALSE
+	 * for the right branch are summarized to one don’t care.
+	 *
 	 * @test
 	 */
-	public function booleanAnd() {
+	public function coverageDoesNotChangeIfAShortCircuitedVariableIsCoveredWithDifferentValues() {
+		$expression = new Expr\BinaryOp\BooleanAnd($this->mockSimpleExpression(), $this->mockSimpleExpression());
+
+		$subject = new DecisionCoverage($expression, array('A'), array(
+			new DecisionInput(array('A' => FALSE)),
+			new DecisionInput(array('A' => TRUE, 'B' => FALSE)),
+			new DecisionInput(array('A' => TRUE, 'B' => TRUE)),
+		));
+		$subject->addSample($this->createDecisionSample(array('A' => FALSE, 'B' => FALSE)));
+		$subject->addSample($this->createDecisionSample(array('A' => FALSE, 'B' => TRUE)));
+
+		$this->assertEquals(1 / 3, $subject->getCoverage(), '', 0.01);
+	}
+
+	/**
+	 * @test
+	 */
+	public function coverageIsCalculatedCorrectlyForTwoCoveredFeasibleInputsOfBooleanAnd() {
 		$expression = new Expr\BinaryOp\BooleanAnd($this->mockSimpleExpression(), $this->mockSimpleExpression());
 
 		$subject = new DecisionCoverage($expression, array('A'), array(
@@ -56,6 +78,38 @@ class DecisionCoverageTest extends UnitTestCase {
 		$subject->addSample($this->createDecisionSample(array('A' => TRUE, 'B' => TRUE)));
 
 		$this->assertEquals(2 / 3, $subject->getCoverage(), '', 0.01);
+	}
+
+	/**
+	 * @test
+	 */
+	public function isCoveredReturnsTrueForCoveredInput() {
+		$expression = new Expr\BinaryOp\BooleanAnd($this->mockSimpleExpression(), $this->mockSimpleExpression());
+
+		$subject = new DecisionCoverage($expression, array('A'), array(
+			new DecisionInput(array('A' => FALSE)),
+			new DecisionInput(array('A' => TRUE, 'B' => FALSE)),
+			new DecisionInput(array('A' => TRUE, 'B' => TRUE)),
+		));
+		$subject->addSample($this->createDecisionSample(array('A' => FALSE)));
+
+		$this->assertTrue($subject->isCovered(new DecisionInput(array('A' => FALSE))));
+	}
+
+	/**
+	 * @test
+	 */
+	public function isCoveredReturnsTrueIfShortCircuitedVariableHasDifferentValueThanCoveredVariable() {
+		$expression = new Expr\BinaryOp\BooleanAnd($this->mockSimpleExpression(), $this->mockSimpleExpression());
+
+		$subject = new DecisionCoverage($expression, array('A'), array(
+			new DecisionInput(array('A' => FALSE)),
+			new DecisionInput(array('A' => TRUE, 'B' => FALSE)),
+			new DecisionInput(array('A' => TRUE, 'B' => TRUE)),
+		));
+		$subject->addSample($this->createDecisionSample(array('A' => FALSE, 'B' => FALSE)));
+
+		$this->assertTrue($subject->isCovered(new DecisionInput(array('A' => FALSE, 'B' => TRUE))));
 	}
 
 	/**

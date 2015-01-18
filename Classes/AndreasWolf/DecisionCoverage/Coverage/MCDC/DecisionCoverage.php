@@ -33,7 +33,7 @@ class DecisionCoverage extends ExpressionCoverage {
 	 *
 	 * @var DecisionSample[]
 	 */
-	protected $samples;
+	protected $samples = array();
 
 	/**
 	 * Mapping from the index of a sample to the index of the feasible input.
@@ -78,6 +78,23 @@ class DecisionCoverage extends ExpressionCoverage {
 	}
 
 	/**
+	 * @param DecisionInput $input
+	 * @return bool
+	 */
+	public function isCovered(DecisionInput $input) {
+		foreach ($this->sampleToInputMap as $inputIndex) {
+			$coveredInput = $this->feasibleInputs[$inputIndex];
+
+			if ($coveredInput->equalTo($input)) {
+				return TRUE;
+			}
+		}
+
+		// no sample matched
+		return FALSE;
+	}
+
+	/**
 	 * @return float The coverage as a value between 0 and 1.
 	 */
 	public function getCoverage() {
@@ -99,10 +116,29 @@ class DecisionCoverage extends ExpressionCoverage {
 	/**
 	 * Returns the samples for this decision that were fetched from the program.
 	 *
-	 * @return \AndreasWolf\DecisionCoverage\Coverage\Evaluation\DecisionSample[]
+	 * @return DecisionSample[]
 	 */
 	public function getSamples() {
 		return $this->samples;
+	}
+
+	/**
+	 * Returns all samples that cover the given decision input.
+	 *
+	 * @param DecisionInput $input The input to cover. This must exactly match one of the decision’s feasible inputs,
+	 *   otherwise the input will not be found.
+	 * @return DecisionSample[]
+	 */
+	public function getSamplesForInput(DecisionInput $input) {
+		$searchedInputIndex = array_search($input, $this->feasibleInputs);
+		$samples = [];
+		foreach ($this->sampleToInputMap as $sampleIndex => $inputIndex) {
+			if ($inputIndex == $searchedInputIndex) {
+				$samples[] = $this->samples[$sampleIndex];
+			}
+		}
+
+		return $samples;
 	}
 
 	/**

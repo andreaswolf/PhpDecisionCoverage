@@ -5,6 +5,8 @@ use AndreasWolf\DecisionCoverage\Coverage\Builder\CoverageCalculationDirector;
 use AndreasWolf\DecisionCoverage\Coverage\CoverageSet;
 use AndreasWolf\DecisionCoverage\DynamicAnalysis\Data\CoverageDataSet;
 use AndreasWolf\DecisionCoverage\DynamicAnalysis\Persistence\SerializedObjectMapper;
+use AndreasWolf\DecisionCoverage\Report\Generator;
+use AndreasWolf\DecisionCoverage\Report\Html\HtmlWriter;
 use Monolog\Handler\StreamHandler;
 use Monolog\Logger;
 use Symfony\Component\Console\Command\Command;
@@ -15,7 +17,7 @@ use Symfony\Component\Console\Output\OutputInterface;
 
 
 /**
- *
+ * Command for building the coverage report from a dynamic analysis result.
  *
  * @author Andreas Wolf <aw@foundata.net>
  */
@@ -36,11 +38,19 @@ class BuildCoverageCommand extends Command {
 		$coverageDataSet = $this->loadCoverageData($input->getArgument('coverage-file'));
 
 		$log = new Logger('BuildCoverage');
-		$log->pushHandler(new StreamHandler(STDOUT));
+		$log->pushHandler(new StreamHandler('/tmp/debug.log'));
 
 		$coverageSet = new CoverageSet($coverageDataSet);
 		$director = new CoverageCalculationDirector($coverageSet, NULL, NULL, NULL, $log);
 		$director->build($coverageDataSet);
+
+		$tempDir = $this->makeTemporaryDirectory();
+		$writers = array(new HtmlWriter($tempDir));
+
+		$reportGenerator = new Generator($writers, $log);
+		$reportGenerator->generateCoverageReport($coverageSet);
+
+		file_put_contents($input->getOption('output'), serialize($coverageSet));
 	}
 
 	/**
@@ -54,6 +64,17 @@ class BuildCoverageCommand extends Command {
 		return $coverageDataSet;
 	}
 
+	/**
+	 * @return string
+	 */
+	protected function makeTemporaryDirectory() {
+		// did not test this for real randomness, but should be enough for this purpose
+		$randomHash = sha1((string)microtime() . (string)mt_rand(0, 10000));
+		$directory = sys_get_temp_dir() . '/coverage-' . substr($randomHash, 0, 10);
+		mkdir($directory);
+
+		return $directory;
+}
 
 }
  

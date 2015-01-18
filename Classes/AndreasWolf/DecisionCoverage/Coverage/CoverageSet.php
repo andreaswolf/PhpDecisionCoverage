@@ -49,4 +49,21 @@ class CoverageSet {
 		$this->coveredFiles[$coverage->getFilePath()] = $coverage;
 	}
 
+	/**
+	 * @param string $path
+	 * @return FileCoverage
+	 */
+	public function getByPath($path) {
+		return $this->coveredFiles[$path];
+	}
+
+	/**
+	 * Returns all files coverages stored in this set.
+	 *
+	 * @return FileCoverage[]
+	 */
+	public function getAll() {
+		return $this->coveredFiles;
+	}
+
 }

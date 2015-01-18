@@ -1,0 +1,33 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<source file="/path/to/someFile.php">
+	<!-- this is an example XML file with the mapping instructions for a two-condition if-statement -->
+	<!-- to create the HTML output, run this command in the package’s top directory:
+	    xsltproc Resources/Templates/Html/SourceFile.xsl Tests/Unit/Report/Html/Fixtures/SimpleAnnotation.xml
+	-->
+	<lines>
+		<line number="1">
+			<fragment>if (</fragment>
+			<fragment>
+				<annotation type="coverage" coverage="123" />
+				<contents>$foo == "bar" &amp;&amp; $bar == "baz"</contents>
+			</fragment>
+			<fragment>) {</fragment>
+		</line>
+		<line number="2">    echo "baz";</line>
+		<line number="3">}</line>
+	</lines>
+	<coverages>
+		<coverage id="123" type="decision">
+			<inputs><!-- this decision has three input combinations, of which two are covered -->
+				<input covered="true">
+					<covered-by test="someTestClass::someTest" />
+				</input>
+				<input covered="true">
+					<covered-by test="someTestClass::someTest" />
+					<covered-by test="someTestClass::someOtherTest" />
+				</input>
+				<input covered="false" />
+			</inputs>
+		</coverage>
+	</coverages>
+</source>
