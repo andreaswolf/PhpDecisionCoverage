@@ -10,16 +10,11 @@ use PhpParser\Node;
 
 
 /**
- * Node visitor that creates breakpoints for each statement where values should be fetched.
+ * Node visitor that creates a breakpoint and value probe for decision statements.
  *
  * @author Andreas Wolf <aw@foundata.net>
  */
-class ProbeFactory implements NodeVisitor {
-
-	/**
-	 * @var FileResult
-	 */
-	protected $analysis;
+class ProbeFactory extends AbstractProbeFactory {
 
 	/**
 	 * @var ExpressionService
@@ -28,30 +23,13 @@ class ProbeFactory implements NodeVisitor {
 
 
 	public function __construct(FileResult $analysis, ExpressionService $expressionService = NULL) {
+		parent::__construct($analysis);
+
 		if (!$expressionService) {
 			$expressionService = new ExpressionService();
 		}
 
-		$this->analysis = $analysis;
 		$this->expressionService = $expressionService;
-	}
-
-	/**
-	 * Signal for the start of an instrumentation run.
-	 *
-	 * @param Node[] $rootNodes
-	 * @return void
-	 */
-	public function startInstrumentation($rootNodes) {
-	}
-
-	/**
-	 * Signal for the end of an instrumentation run.
-	 *
-	 * @param Node[] $rootNodes
-	 * @return void
-	 */
-	public function endInstrumentation($rootNodes) {
 	}
 
 	/**
