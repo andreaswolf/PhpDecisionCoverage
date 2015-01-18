@@ -121,6 +121,10 @@ class BreakpointService implements EventSubscriberInterface {
 			} else {
 				$promise = new Promise\FulfilledPromise();
 			}
+		} elseif ($probe instanceof CounterProbe) {
+			$probe->countInvocation();
+
+			$promise = new Promise\FulfilledPromise();
 		} else {
 			throw new \InvalidArgumentException('Unsupported probe type! ' . get_class($probe));
 		}
