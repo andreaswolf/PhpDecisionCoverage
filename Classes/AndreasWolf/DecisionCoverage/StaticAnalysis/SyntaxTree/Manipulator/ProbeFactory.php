@@ -4,7 +4,6 @@ namespace AndreasWolf\DecisionCoverage\StaticAnalysis\SyntaxTree\Manipulator;
 use AndreasWolf\DecisionCoverage\Service\ExpressionService;
 use AndreasWolf\DecisionCoverage\Source\SyntaxTreeIterator;
 use AndreasWolf\DecisionCoverage\StaticAnalysis\DataCollectionProbe;
-use AndreasWolf\DecisionCoverage\StaticAnalysis\Probe;
 use AndreasWolf\DecisionCoverage\StaticAnalysis\FileResult;
 use AndreasWolf\DecisionCoverage\StaticAnalysis\SyntaxTree\NodeVisitor;
 use PhpParser\Node;
@@ -42,6 +41,7 @@ class ProbeFactory extends AbstractProbeFactory {
 			return;
 		}
 
+		/** @var Node\Expr $conditionNode */
 		$conditionNode = $node->cond;
 		$probe = $this->createDataCollectionProbe($node);
 		$this->addWatchExpressionsToBreakpoint($probe, $conditionNode);

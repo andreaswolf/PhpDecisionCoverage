@@ -1,8 +1,12 @@
 <?php
 namespace AndreasWolf\DecisionCoverage\StaticAnalysis\SyntaxTree;
 
+use AndreasWolf\DecisionCoverage\Source\RecursiveSyntaxTreeIterator;
 use AndreasWolf\DecisionCoverage\Source\SyntaxTreeIterator;
 use PhpParser\Node;
+use Symfony\Component\EventDispatcher\EventDispatcher;
+use Symfony\Component\EventDispatcher\EventDispatcherInterface;
+use Symfony\Component\EventDispatcher\EventSubscriberInterface;
 
 
 /**
@@ -18,12 +22,27 @@ class Instrumenter {
 	protected $visitors;
 
 	/**
+	 * @var EventDispatcherInterface
+	 */
+	protected $eventDispatcher;
+
+
+	public function __construct(EventDispatcherInterface $eventDispatcher = NULL) {
+		if (!$eventDispatcher) {
+			$eventDispatcher = new EventDispatcher();
+		}
+
+		$this->eventDispatcher = $eventDispatcher;
+	}
+
+	/**
 	 * @param Node[] $nodes
 	 */
 	public function instrument(&$nodes) {
-		$iterator = new \RecursiveIteratorIterator(
-			new SyntaxTreeIterator($nodes, TRUE), \RecursiveIteratorIterator::SELF_FIRST
+		$iterator = new RecursiveSyntaxTreeIterator(
+			new SyntaxTreeIterator($nodes, TRUE), $this->eventDispatcher, \RecursiveIteratorIterator::SELF_FIRST
 		);
+		$syntaxTreeStack = new SyntaxTreeStack($this->eventDispatcher);
 
 		foreach ($this->visitors as $manipulator) {
 			$manipulator->startInstrumentation($nodes);
@@ -46,6 +65,10 @@ class Instrumenter {
 	 */
 	public function addVisitor(NodeVisitor $visitor, $precedence = 0) {
 		$this->visitors[$precedence] = $visitor;
+
+		if ($visitor instanceof EventSubscriberInterface) {
+			$this->eventDispatcher->addSubscriber($visitor);
+		}
 	}
 
 }

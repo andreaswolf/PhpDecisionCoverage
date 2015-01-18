@@ -29,7 +29,7 @@ class FileAnalyzer {
 		$nodes = $file->getTopLevelStatements();
 		$result = new FileResult($file->getFilePath(), new SyntaxTree($nodes));
 
-		$instrumenter = new Instrumenter();
+		$instrumenter = new Instrumenter($this->eventDispatcher);
 		$instrumenter->addVisitor(new NodeIdGenerator(), 0);
 		$instrumenter->addVisitor(new ProbeFactory($result), 1);
 		$instrumenter->instrument($nodes);

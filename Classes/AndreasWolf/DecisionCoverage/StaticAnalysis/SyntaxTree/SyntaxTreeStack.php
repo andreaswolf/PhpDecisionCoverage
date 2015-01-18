@@ -7,6 +7,14 @@ use Symfony\Component\EventDispatcher\EventDispatcherInterface;
 use Symfony\Component\EventDispatcher\EventSubscriberInterface;
 
 
+/**
+ * Keeps a stack of visited syntax tree nodes, dispatching events when certain nodes are entered/left.
+ *
+ * This can e.g. be used in conjunction with a RecursiveSyntaxTreeIterator instance, which dispatches the required
+ * events on level entry/exit.
+ *
+ * @author Andreas Wolf <aw@foundata.net>
+ */
 class SyntaxTreeStack implements EventSubscriberInterface {
 
 	/**
@@ -22,6 +30,8 @@ class SyntaxTreeStack implements EventSubscriberInterface {
 
 	public function __construct(EventDispatcherInterface $eventDispatcher) {
 		$this->eventDispatcher = $eventDispatcher;
+		// do not register this object with the passed event dispatcher; this way, the passed dispatcher
+		// can completely isolate this stack from the outer world
 	}
 
 	/**
@@ -35,6 +45,9 @@ class SyntaxTreeStack implements EventSubscriberInterface {
 		$this->triggerEventForStackElement('entered', $event, $newElement);
 	}
 
+	/**
+	 * @param SyntaxTreeIteratorEvent $event
+	 */
 	public function levelLeftHandler(SyntaxTreeIteratorEvent $event) {
 		$removedElement = array_pop($this->stack);
 
@@ -42,11 +55,12 @@ class SyntaxTreeStack implements EventSubscriberInterface {
 	}
 
 	/**
+	 * @param string $eventType
 	 * @param SyntaxTreeIteratorEvent $event
-	 * @param Node $newItem
+	 * @param Node $affectedNode
 	 */
-	protected function triggerEventForStackElement($eventType, SyntaxTreeIteratorEvent $event, $newItem) {
-		switch ($newItem->getType()) {
+	protected function triggerEventForStackElement($eventType, SyntaxTreeIteratorEvent $event, $affectedNode) {
+		switch ($affectedNode->getType()) {
 			case 'Stmt_Class':
 				$this->eventDispatcher->dispatch('syntaxtree.class.' . $eventType, $event);
 				break;
@@ -65,7 +79,6 @@ class SyntaxTreeStack implements EventSubscriberInterface {
 	 * Returns an array of event names this subscriber wants to listen to.
 	 *
 	 * @return array The event names to listen to
-	 *
 	 * @api
 	 */
 	public static function getSubscribedEvents() {
@@ -76,4 +89,3 @@ class SyntaxTreeStack implements EventSubscriberInterface {
 	}
 
 }
- 
