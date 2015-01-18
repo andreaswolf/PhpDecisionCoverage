@@ -7,9 +7,19 @@ use AndreasWolf\DecisionCoverage\StaticAnalysis\SyntaxTree\Instrumenter;
 use AndreasWolf\DecisionCoverage\StaticAnalysis\SyntaxTree\Manipulator\ProbeFactory;
 use AndreasWolf\DecisionCoverage\StaticAnalysis\SyntaxTree\Manipulator\NodeIdGenerator;
 use AndreasWolf\DecisionCoverage\StaticAnalysis\SyntaxTree\SyntaxTree;
+use Symfony\Component\EventDispatcher\EventDispatcherInterface;
 
 
 class FileAnalyzer {
+
+	/**
+	 * @var EventDispatcherInterface
+	 */
+	protected $eventDispatcher;
+
+	public function __construct(EventDispatcherInterface $eventDispatcher) {
+		$this->eventDispatcher = $eventDispatcher;
+	}
 
 	/**
 	 * @param SourceFile $file

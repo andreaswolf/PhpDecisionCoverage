@@ -7,6 +7,7 @@ use Symfony\Component\Console\Input\InputArgument;
 use Symfony\Component\Console\Input\InputInterface;
 use Symfony\Component\Console\Input\InputOption;
 use Symfony\Component\Console\Output\OutputInterface;
+use Symfony\Component\EventDispatcher\EventDispatcher;
 
 
 /**
@@ -50,7 +51,7 @@ class AnalyzeCommand extends Command {
 		$this->project = $input->getOption('project') ?: str_replace(DIRECTORY_SEPARATOR, '_', ltrim($this->basePath, '/'));
 		$this->input = $input;
 
-		$analyzer = new FileAnalyzer();
+		$analyzer = new FileAnalyzer(new EventDispatcher());
 		$analysisResult = $analyzer->analyzeFolder($this->basePath);
 
 		$analyzer->writeAnalysisResultsToFile($this->getOutputFilePath(), $analysisResult);
