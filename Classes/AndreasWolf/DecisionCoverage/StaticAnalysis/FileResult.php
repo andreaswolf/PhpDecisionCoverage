@@ -22,7 +22,7 @@ class FileResult {
 	protected $syntaxTree;
 
 	/**
-	 * @var Probe[]
+	 * @var DataCollectionProbe[]
 	 */
 	protected $probes = array();
 

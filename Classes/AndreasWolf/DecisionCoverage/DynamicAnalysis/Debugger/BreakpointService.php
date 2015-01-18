@@ -8,9 +8,9 @@ use AndreasWolf\DebuggerClient\Protocol\Command\BreakpointSet;
 use AndreasWolf\DebuggerClient\Session\DebugSession;
 use AndreasWolf\DecisionCoverage\DynamicAnalysis\Data\DataSample;
 use AndreasWolf\DecisionCoverage\DynamicAnalysis\Data\DebuggerEngineDataFetcher;
-use AndreasWolf\DecisionCoverage\DynamicAnalysis\Data\PropertyValueFetcher;
 use AndreasWolf\DecisionCoverage\DynamicAnalysis\Data\CoverageDataSet;
-use AndreasWolf\DecisionCoverage\DynamicAnalysis\Data\ValueFetch;
+use AndreasWolf\DecisionCoverage\StaticAnalysis\CounterProbe;
+use AndreasWolf\DecisionCoverage\StaticAnalysis\DataCollectionProbe;
 use AndreasWolf\DecisionCoverage\StaticAnalysis\Probe;
 use React\Promise;
 use Symfony\Component\EventDispatcher\EventSubscriberInterface;
@@ -34,7 +34,7 @@ class BreakpointService implements EventSubscriberInterface {
 	protected $session;
 
 	/**
-	 * @var [Probe,DebuggerBreakpoint]
+	 * @var ProbeConnector[]
 	 */
 	protected $probes = array();
 
@@ -50,7 +50,7 @@ class BreakpointService implements EventSubscriberInterface {
 	}
 
 	/**
-	 * Sends commands to the debugger engine to set all given breakpoints.
+	 * Sends commands to the debugger engine to set breakpoints for all given probes.
 	 *
 	 * The returned promise is resolved as soon as all breakpoints have been confirmed by the debugger engine.
 	 *
@@ -60,53 +60,72 @@ class BreakpointService implements EventSubscriberInterface {
 	 */
 	public function addBreakpointsForFile($filePath, $probes) {
 		$promises = array();
-		$breakpointCollection = $this->session->getBreakpointCollection();
 
-		foreach ($probes as $probe) {
-			// TODO we should somehow attach the probe to the breakpoint to be able to have multiple probes for one
-			// breakpoint -> it might be good to have e.g. invocation counting separated from actual data fetching
-			$debuggerBreakpoint = new LineBreakpoint($filePath, $probe->getLine());
-			$this->probes[] = array($probe, $debuggerBreakpoint);
+		$probesByLine = $this->arrangeProbesByLine($probes);
 
-			// TODO this turns the process of adding the breakpoints in DebuggingSession kind of upside-down
-			// we should find a better way to get the promises
-			$setCommand = new BreakpointSet($this->session, $debuggerBreakpoint);
-			$breakpointCollection->add($debuggerBreakpoint);
-			$promises[] = $setCommand->promise();
-			$this->session->sendCommand($setCommand);
+		/** @var int $lineNumber  @var Probe[] $probes */
+		foreach ($probesByLine as $lineNumber => $probes) {
+			$debuggerBreakpoint = new LineBreakpoint($filePath, $lineNumber);
+
+			$this->probes[] = new ProbeConnector($debuggerBreakpoint, $probes);
+
+			$promises[] = $this->setBreakpoint($debuggerBreakpoint);
 		}
 
 		return Promise\all($promises);
 	}
 
+	/**
+	 * Handles a hit to a breakpoint (i.e. initializes the data fetching).
+	 *
+	 * @param BreakpointEvent $event
+	 * @return void
+	 */
 	public function breakpointHitHandler(BreakpointEvent $event) {
 		$debuggerBreakpoint = $event->getBreakpoint();
-		/** @var Probe $probe */
-		$probe = NULL;
-		foreach ($this->probes as $probeAndBreakpoint) {
-			if ($probeAndBreakpoint[1] === $debuggerBreakpoint) {
-				$probe = $probeAndBreakpoint[0];
-			}
-		}
-		if ($probe === NULL) {
-			throw new \RuntimeException('Could not find breakpoint.');
+		$probeConnector = $this->findProbesForBreakpoint($debuggerBreakpoint);
+
+		$promises = [];
+		foreach ($probeConnector->getProbes() as $probe) {
+			$promises[] = $this->collectProbeData($probe);
 		}
 
-		if ($probe->hasWatchedExpressions()) {
-			// TODO if we ever need to handle multiple probes per breakpoint, this is the place to implement it…
-			$fetcher = $this->getDataFetcher();
-			$dataSet = new DataSample($probe);
-			$fetchPromise = $fetcher->fetchValuesForExpressions($probe->getWatchedExpressions(), $dataSet);
-
-			$fetchPromise->then(function() use ($dataSet, $event) {
-				$this->coverageData->addSample($dataSet);
-
-				// all data was fetched, proceed with session…
+		if (count($promises) > 0) {
+			$overallPromise = Promise\all($promises)->then(function() use ($event) {
 				$event->getSession()->run();
 			});
 		} else {
 			$event->getSession()->run();
 		}
+	}
+
+	/**
+	 * Collects data from the given probe during a program run.
+	 *
+	 * @param Probe $probe
+	 * @return Promise\Promise
+	 */
+	protected function collectProbeData(Probe $probe) {
+		$promise = NULL;
+		if ($probe instanceof DataCollectionProbe) {
+			if ($probe->hasWatchedExpressions()) {
+				$fetcher = $this->getDataFetcher();
+				$dataSet = new DataSample($probe);
+				$fetchPromise = $fetcher->fetchValuesForExpressions($probe->getWatchedExpressions(), $dataSet);
+
+				$fetchPromise->then(function() use ($dataSet) {
+					$this->coverageData->addSample($dataSet);
+				});
+
+				$promise = $fetchPromise;
+			} else {
+				$promise = new Promise\FulfilledPromise();
+			}
+		} else {
+			throw new \InvalidArgumentException('Unsupported probe type! ' . get_class($probe));
+		}
+
+		return $promise;
 	}
 
 	protected function getDataFetcher() {
@@ -116,6 +135,60 @@ class BreakpointService implements EventSubscriberInterface {
 			$fetcher = new DebuggerEngineDataFetcher($this->session);
 		}
 		return $fetcher;
+	}
+
+	/**
+	 * Looks at the breakpoints registered with the debugger and returns the probe connected
+	 * with the matching breakpoint.
+	 *
+	 * @param DebuggerBreakpoint $breakpoint
+	 * @return ProbeConnector The probe
+	 * @throws \RuntimeException If no breakpoint was found.
+	 */
+	protected function findProbesForBreakpoint(DebuggerBreakpoint $breakpoint) {
+		foreach ($this->probes as $probeConnector) {
+			if ($probeConnector->getBreakpoint() === $breakpoint) {
+				return $probeConnector;
+			}
+		}
+
+		// no breakpoint was found
+		throw new \RuntimeException('Could not find breakpoint.');
+	}
+
+	/**
+	 * @param Probe[] $probes
+	 * @return Probe[][] An array of probes, sorted by line. The first-level array keys are the line numbers
+	 */
+	protected function arrangeProbesByLine($probes) {
+		$sortedProbes = [];
+		foreach ($probes as $probe) {
+			$line = $probe->getLine();
+			if (!isset($sortedProbes[$line])) {
+				$sortedProbes[$line] = [];
+			}
+
+			$sortedProbes[$line][] = $probe;
+		}
+
+		return $sortedProbes;
+	}
+
+	/**
+	 * @param DebuggerBreakpoint $breakpoint
+	 * @return Promise\Promise|Promise\PromiseInterface
+	 */
+	protected function setBreakpoint(DebuggerBreakpoint $breakpoint) {
+		// TODO this turns the process of adding the breakpoints in DebuggingSession kind of upside-down
+		// we should find a better way to get the promises
+		$setCommand = new BreakpointSet($this->session, $breakpoint);
+
+		$breakpointCollection = $this->session->getBreakpointCollection();
+		$breakpointCollection->add($breakpoint);
+		$promise = $setCommand->promise();
+		$this->session->sendCommand($setCommand);
+
+		return $promise;
 	}
 
 	/**

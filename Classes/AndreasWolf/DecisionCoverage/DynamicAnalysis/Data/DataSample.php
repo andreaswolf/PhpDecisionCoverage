@@ -3,7 +3,7 @@ namespace AndreasWolf\DecisionCoverage\DynamicAnalysis\Data;
 
 use AndreasWolf\DebuggerClient\Protocol\Response\ExpressionValue;
 use AndreasWolf\DecisionCoverage\DynamicAnalysis\PhpUnit\Test;
-use AndreasWolf\DecisionCoverage\StaticAnalysis\Probe;
+use AndreasWolf\DecisionCoverage\StaticAnalysis\DataCollectionProbe;
 use PhpParser\Node\Expr;
 
 
@@ -15,7 +15,7 @@ use PhpParser\Node\Expr;
 class DataSample {
 
 	/**
-	 * @var Probe
+	 * @var DataCollectionProbe
 	 */
 	protected $breakpoint;
 
@@ -37,7 +37,7 @@ class DataSample {
 	protected $test;
 
 
-	public function __construct(Probe $breakpoint) {
+	public function __construct(DataCollectionProbe $breakpoint) {
 		$this->breakpoint = $breakpoint;
 	}
 
@@ -56,7 +56,7 @@ class DataSample {
 	}
 
 	/**
-	 * @return Probe
+	 * @return DataCollectionProbe
 	 */
 	public function getProbe() {
 		return $this->breakpoint;
