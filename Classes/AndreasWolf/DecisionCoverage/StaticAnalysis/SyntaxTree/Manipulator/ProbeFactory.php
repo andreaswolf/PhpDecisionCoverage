@@ -5,8 +5,8 @@ use AndreasWolf\DecisionCoverage\Service\ExpressionService;
 use AndreasWolf\DecisionCoverage\Source\SyntaxTreeIterator;
 use AndreasWolf\DecisionCoverage\StaticAnalysis\DataCollectionProbe;
 use AndreasWolf\DecisionCoverage\StaticAnalysis\FileResult;
-use AndreasWolf\DecisionCoverage\StaticAnalysis\SyntaxTree\NodeVisitor;
 use PhpParser\Node;
+use Psr\Log\LoggerInterface;
 
 
 /**
@@ -22,8 +22,9 @@ class ProbeFactory extends AbstractProbeFactory {
 	protected $expressionService;
 
 
-	public function __construct(FileResult $analysis, ExpressionService $expressionService = NULL) {
-		parent::__construct($analysis);
+	public function __construct(FileResult $analysis, ExpressionService $expressionService = NULL,
+	                            LoggerInterface $logger = NULL) {
+		parent::__construct($analysis, $logger);
 
 		if (!$expressionService) {
 			$expressionService = new ExpressionService();

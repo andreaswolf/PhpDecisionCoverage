@@ -4,6 +4,8 @@ namespace AndreasWolf\DecisionCoverage\StaticAnalysis\SyntaxTree;
 use AndreasWolf\DecisionCoverage\Source\RecursiveSyntaxTreeIterator;
 use AndreasWolf\DecisionCoverage\Source\SyntaxTreeIterator;
 use PhpParser\Node;
+use Psr\Log\LoggerInterface;
+use Psr\Log\NullLogger;
 use Symfony\Component\EventDispatcher\EventDispatcher;
 use Symfony\Component\EventDispatcher\EventDispatcherInterface;
 use Symfony\Component\EventDispatcher\EventSubscriberInterface;
@@ -26,13 +28,22 @@ class Instrumenter {
 	 */
 	protected $eventDispatcher;
 
+	/**
+	 * @var LoggerInterface
+	 */
+	protected $logger;
 
-	public function __construct(EventDispatcherInterface $eventDispatcher = NULL) {
+
+	public function __construct(EventDispatcherInterface $eventDispatcher = NULL, LoggerInterface $logger = NULL) {
 		if (!$eventDispatcher) {
 			$eventDispatcher = new EventDispatcher();
 		}
+		if (!$logger) {
+			$logger = new NullLogger();
+		}
 
 		$this->eventDispatcher = $eventDispatcher;
+		$this->logger = $logger;
 	}
 
 	/**

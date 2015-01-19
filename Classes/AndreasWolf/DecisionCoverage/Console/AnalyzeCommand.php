@@ -2,6 +2,8 @@
 namespace AndreasWolf\DecisionCoverage\Console;
 
 use AndreasWolf\DecisionCoverage\StaticAnalysis\FileAnalyzer;
+use Monolog\Handler\StreamHandler;
+use Monolog\Logger;
 use Symfony\Component\Console\Command\Command;
 use Symfony\Component\Console\Input\InputArgument;
 use Symfony\Component\Console\Input\InputInterface;
@@ -51,7 +53,10 @@ class AnalyzeCommand extends Command {
 		$this->project = $input->getOption('project') ?: str_replace(DIRECTORY_SEPARATOR, '_', ltrim($this->basePath, '/'));
 		$this->input = $input;
 
-		$analyzer = new FileAnalyzer(new EventDispatcher());
+		$log = new Logger('Analyze');
+		$log->pushHandler(new StreamHandler(STDOUT));
+
+		$analyzer = new FileAnalyzer(new EventDispatcher(), $log);
 		$analysisResult = $analyzer->analyzeFolder($this->basePath);
 
 		$analyzer->writeAnalysisResultsToFile($this->getOutputFilePath(), $analysisResult);

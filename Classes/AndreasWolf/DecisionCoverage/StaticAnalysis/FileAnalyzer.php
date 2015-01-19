@@ -4,9 +4,12 @@ namespace AndreasWolf\DecisionCoverage\StaticAnalysis;
 use AndreasWolf\DecisionCoverage\Source\SourceFile;
 use AndreasWolf\DecisionCoverage\StaticAnalysis\Persistence\SerializedObjectMapper;
 use AndreasWolf\DecisionCoverage\StaticAnalysis\SyntaxTree\Instrumenter;
+use AndreasWolf\DecisionCoverage\StaticAnalysis\SyntaxTree\Manipulator\MethodEntryProbeFactory;
 use AndreasWolf\DecisionCoverage\StaticAnalysis\SyntaxTree\Manipulator\ProbeFactory;
 use AndreasWolf\DecisionCoverage\StaticAnalysis\SyntaxTree\Manipulator\NodeIdGenerator;
 use AndreasWolf\DecisionCoverage\StaticAnalysis\SyntaxTree\SyntaxTree;
+use Psr\Log\LoggerInterface;
+use Psr\Log\NullLogger;
 use Symfony\Component\EventDispatcher\EventDispatcherInterface;
 
 
@@ -17,8 +20,19 @@ class FileAnalyzer {
 	 */
 	protected $eventDispatcher;
 
-	public function __construct(EventDispatcherInterface $eventDispatcher) {
+	/**
+	 * @var LoggerInterface
+	 */
+	protected $logger;
+
+
+	public function __construct(EventDispatcherInterface $eventDispatcher, LoggerInterface $logger = NULL) {
+		if (!$logger) {
+			$logger = new NullLogger();
+		}
+
 		$this->eventDispatcher = $eventDispatcher;
+		$this->logger = $logger;
 	}
 
 	/**
@@ -29,9 +43,10 @@ class FileAnalyzer {
 		$nodes = $file->getTopLevelStatements();
 		$result = new FileResult($file->getFilePath(), new SyntaxTree($nodes));
 
-		$instrumenter = new Instrumenter($this->eventDispatcher);
+		$instrumenter = new Instrumenter($this->eventDispatcher, $this->logger);
 		$instrumenter->addVisitor(new NodeIdGenerator(), 0);
 		$instrumenter->addVisitor(new ProbeFactory($result), 1);
+		$instrumenter->addVisitor(new MethodEntryProbeFactory($result, $this->logger), 2);
 		$instrumenter->instrument($nodes);
 
 		return $result;

@@ -4,6 +4,8 @@ namespace AndreasWolf\DecisionCoverage\StaticAnalysis\SyntaxTree\Manipulator;
 use AndreasWolf\DecisionCoverage\StaticAnalysis\FileResult;
 use AndreasWolf\DecisionCoverage\StaticAnalysis\SyntaxTree\NodeVisitor;
 use PhpParser\Node;
+use Psr\Log\LoggerInterface;
+use Psr\Log\NullLogger;
 
 
 abstract class AbstractProbeFactory implements NodeVisitor {
@@ -13,9 +15,19 @@ abstract class AbstractProbeFactory implements NodeVisitor {
 	 */
 	protected $analysis;
 
+	/**
+	 * @var LoggerInterface
+	 */
+	protected $logger;
 
-	public function __construct(FileResult $analysis) {
+
+	public function __construct(FileResult $analysis, LoggerInterface $logger = NULL) {
+		if (!$logger) {
+			$logger = new NullLogger();
+		}
+
 		$this->analysis = $analysis;
+		$this->logger = $logger;
 	}
 
 	/**
