@@ -34,6 +34,16 @@ class Generator {
 		$this->log = $log !== NULL ? $log : new NullLogger();
 	}
 
+	/**
+	 * Creates a report for all coverages within the given set.
+	 *
+	 * The report generation is actually a three-step process:
+	 *  1. the source file is read and split in lines
+	 *  2. the source lines are annotated if they contain coverage information
+	 *  3. the report is generated from the annotated lines
+	 *
+	 * @param CoverageSet $coverageSet
+	 */
 	public function generateCoverageReport(CoverageSet $coverageSet) {
 		foreach ($coverageSet->getAll() as $fileCoverage) {
 			$this->log->debug('Generating coverage report for ' . $fileCoverage->getFilePath());
@@ -47,6 +57,13 @@ class Generator {
 		}
 	}
 
+	/**
+	 * Returns a SourceFile object which contains all lines of a file with their relative character offsets
+	 * within the file.
+	 *
+	 * @param FileCoverage $coverage
+	 * @return SourceFile
+	 */
 	protected function generateSourceFile(FileCoverage $coverage) {
 		$filePath = $coverage->getFilePath();
 
@@ -58,7 +75,15 @@ class Generator {
 		return $sourceFile;
 	}
 
-
+	/**
+	 * Attaches coverage annotations to source lines where appropriate.
+	 *
+	 * These annotations are later on transformed into XML fragment nodes and will be rendered specially in the final
+	 * report.
+	 *
+	 * @param Coverage|CoverageAggregate $coverage
+	 * @param SourceFile $sourceFile
+	 */
 	protected function attachCoverageAnnotationsToSourceFile($coverage, SourceFile $sourceFile) {
 		if ($coverage instanceof CoverageAggregate) {
 			foreach ($coverage->getCoverages() as $subcoverage) {
