@@ -84,7 +84,12 @@ class SingleConditionCoverageBuilder implements EventSubscriberInterface, Covera
 	 * @param SampleEvent $event
 	 */
 	public function dataSampleReceivedHandler(SampleEvent $event) {
-		$this->handleSample($event->getSample());
+		$sample = $event->getSample();
+		// if there was more than one probe for the line our expression was in, we might also get samples of other types
+		if (!$sample instanceof DataSample) {
+			return;
+		}
+		$this->handleSample($sample);
 	}
 
 	/**
