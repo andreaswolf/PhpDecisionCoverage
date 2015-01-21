@@ -2,7 +2,7 @@
 namespace AndreasWolf\DecisionCoverage\Coverage\Builder;
 
 use AndreasWolf\DecisionCoverage\Coverage\CoverageSet;
-use AndreasWolf\DecisionCoverage\Coverage\Event\DataSampleEvent;
+use AndreasWolf\DecisionCoverage\Coverage\Event\SampleEvent;
 use AndreasWolf\DecisionCoverage\Coverage\FileCoverage;
 use AndreasWolf\DecisionCoverage\Coverage\MethodCoverage;
 use AndreasWolf\DecisionCoverage\Coverage\Weighting\ExpressionWeightBuilder;
@@ -87,7 +87,7 @@ class CoverageCalculationDirector {
 		$this->createCoverageBuildersForDataSet($this->coverageSet->getDataSet());
 
 		foreach ($this->coverageSet->getDataSet()->getSamples() as $dataSample) {
-			$this->eventDispatcher->dispatch('coverage.sample.received', new DataSampleEvent($dataSample));
+			$this->eventDispatcher->dispatch('coverage.sample.received', new SampleEvent($dataSample));
 		}
 	}
 

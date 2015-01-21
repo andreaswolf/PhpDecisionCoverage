@@ -9,6 +9,7 @@ use AndreasWolf\DebuggerClient\Session\DebugSession;
 use AndreasWolf\DecisionCoverage\DynamicAnalysis\Data\DataSample;
 use AndreasWolf\DecisionCoverage\DynamicAnalysis\Data\DebuggerEngineDataFetcher;
 use AndreasWolf\DecisionCoverage\DynamicAnalysis\Data\CoverageDataSet;
+use AndreasWolf\DecisionCoverage\DynamicAnalysis\Data\InvocationSample;
 use AndreasWolf\DecisionCoverage\StaticAnalysis\CounterProbe;
 use AndreasWolf\DecisionCoverage\StaticAnalysis\DataCollectionProbe;
 use AndreasWolf\DecisionCoverage\StaticAnalysis\Probe;
@@ -123,6 +124,8 @@ class BreakpointService implements EventSubscriberInterface {
 			}
 		} elseif ($probe instanceof CounterProbe) {
 			$probe->countInvocation();
+			$sample = new InvocationSample($probe);
+			$this->coverageData->addSample($sample);
 
 			$promise = new Promise\FulfilledPromise();
 		} else {

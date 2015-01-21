@@ -3,7 +3,7 @@ namespace AndreasWolf\DecisionCoverage\Tests\Unit\Coverage\Builder;
 
 use AndreasWolf\DebuggerClient\Protocol\Response\ExpressionValue;
 use AndreasWolf\DecisionCoverage\Coverage\Builder\SingleConditionCoverageBuilder;
-use AndreasWolf\DecisionCoverage\Coverage\Event\DataSampleEvent;
+use AndreasWolf\DecisionCoverage\Coverage\Event\SampleEvent;
 use AndreasWolf\DecisionCoverage\DynamicAnalysis\Data\DataSample;
 use AndreasWolf\DecisionCoverage\Tests\Unit\UnitTestCase;
 
@@ -22,7 +22,7 @@ class SingleConditionCoverageBuilderTest extends UnitTestCase {
 		$dataSample->addValue($expression, new ExpressionValue(ExpressionValue::TYPE_BOOLEAN, TRUE));
 
 		$subject = new SingleConditionCoverageBuilder($expression, $mockedCoverage, $this->mockEventDispatcher());
-		$subject->dataSampleReceivedHandler(new DataSampleEvent($dataSample));
+		$subject->dataSampleReceivedHandler(new SampleEvent($dataSample));
 	}
 
 	/**
@@ -36,7 +36,7 @@ class SingleConditionCoverageBuilderTest extends UnitTestCase {
 		$eventDispatcher->expects($this->once())->method('dispatch')->with($this->equalTo('coverage.builder.part.covered'));
 
 		$subject = new SingleConditionCoverageBuilder($expression, $mockedCoverage, $eventDispatcher);
-		$subject->dataSampleReceivedHandler(new DataSampleEvent($dataSample));
+		$subject->dataSampleReceivedHandler(new SampleEvent($dataSample));
 	}
 
 	/**
@@ -52,7 +52,7 @@ class SingleConditionCoverageBuilderTest extends UnitTestCase {
 		$dataSample->addValue($anotherExpression, new ExpressionValue(ExpressionValue::TYPE_BOOLEAN, TRUE));
 
 		$subject = new SingleConditionCoverageBuilder($expression, $mockedCoverage, $this->mockEventDispatcher());
-		$subject->dataSampleReceivedHandler(new DataSampleEvent($dataSample));
+		$subject->dataSampleReceivedHandler(new SampleEvent($dataSample));
 	}
 
 	/**
@@ -68,7 +68,7 @@ class SingleConditionCoverageBuilderTest extends UnitTestCase {
 		$eventDispatcher->expects($this->never())->method('dispatch');
 
 		$subject = new SingleConditionCoverageBuilder($expression, $mockedCoverage, $eventDispatcher);
-		$subject->dataSampleReceivedHandler(new DataSampleEvent($dataSample));
+		$subject->dataSampleReceivedHandler(new SampleEvent($dataSample));
 	}
 
 

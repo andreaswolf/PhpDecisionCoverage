@@ -8,11 +8,11 @@ use PhpParser\Node\Expr;
 
 
 /**
- * A set of values collected for one measurement.
+ * A set of values collected for one measurement, i.e. one breakpoint hit.
  *
  * @author Andreas Wolf <aw@foundata.net>
  */
-class DataSample {
+class DataSample implements Sample {
 
 	/**
 	 * @var DataCollectionProbe
@@ -51,7 +51,7 @@ class DataSample {
 	/**
 	 * @param Test $test
 	 */
-	public function setTest($test) {
+	public function setTest(Test $test) {
 		$this->test = $test;
 	}
 

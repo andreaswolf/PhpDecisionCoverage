@@ -3,7 +3,7 @@ namespace AndreasWolf\DecisionCoverage\Coverage\Builder;
 
 use AndreasWolf\DecisionCoverage\Coverage\Coverage;
 use AndreasWolf\DecisionCoverage\Coverage\Event\CoverageBuilderEvent;
-use AndreasWolf\DecisionCoverage\Coverage\Event\DataSampleEvent;
+use AndreasWolf\DecisionCoverage\Coverage\Event\SampleEvent;
 use AndreasWolf\DecisionCoverage\Coverage\SingleConditionCoverage;
 use AndreasWolf\DecisionCoverage\DynamicAnalysis\Data\DataSample;
 use PhpParser\Node;
@@ -81,10 +81,10 @@ class SingleConditionCoverageBuilder implements EventSubscriberInterface, Covera
 	}
 
 	/**
-	 * @param DataSampleEvent $event
+	 * @param SampleEvent $event
 	 */
-	public function dataSampleReceivedHandler(DataSampleEvent $event) {
-		$this->handleSample($event->getDataSample());
+	public function dataSampleReceivedHandler(SampleEvent $event) {
+		$this->handleSample($event->getSample());
 	}
 
 	/**
