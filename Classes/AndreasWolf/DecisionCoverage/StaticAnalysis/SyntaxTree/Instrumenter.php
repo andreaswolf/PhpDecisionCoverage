@@ -54,6 +54,8 @@ class Instrumenter {
 			new SyntaxTreeIterator($nodes, TRUE), $this->eventDispatcher, \RecursiveIteratorIterator::SELF_FIRST
 		);
 		$syntaxTreeStack = new SyntaxTreeStack($this->eventDispatcher);
+		$this->logger->debug('Starting instrumentation');
+		$this->eventDispatcher->addSubscriber($syntaxTreeStack);
 
 		foreach ($this->visitors as $manipulator) {
 			$manipulator->startInstrumentation($nodes);
@@ -68,6 +70,8 @@ class Instrumenter {
 		foreach ($this->visitors as $manipulator) {
 			$manipulator->endInstrumentation($nodes);
 		}
+
+		$this->eventDispatcher->removeSubscriber($syntaxTreeStack);
 	}
 
 	/**

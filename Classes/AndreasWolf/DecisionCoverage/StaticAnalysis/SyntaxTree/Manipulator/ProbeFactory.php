@@ -50,8 +50,6 @@ class ProbeFactory extends AbstractProbeFactory {
 			$conditionNode->setAttribute('coverage__cover', TRUE);
 			$probe->addWatchedExpression($conditionNode);
 		}
-
-		$this->analysis->addProbe($probe);
 	}
 
 	/**
@@ -63,7 +61,7 @@ class ProbeFactory extends AbstractProbeFactory {
 			new SyntaxTreeIterator(array($rootNode), TRUE), \RecursiveIteratorIterator::SELF_FIRST
 		);
 
-		/** @var Node $node */
+		/** @var Node\Expr $node */
 		foreach ($nodeIterator as $node) {
 			if (!$node instanceof Node\Expr) {
 				continue;
@@ -83,7 +81,7 @@ class ProbeFactory extends AbstractProbeFactory {
 	 */
 	protected function createDataCollectionProbe(Node $node) {
 		$probe = new DataCollectionProbe($node->getLine());
-		$node->setAttribute('coverage__probe', $probe);
+		$this->attachProbeToNodeAndAnalysis($node, $probe);
 
 		return $probe;
 	}
