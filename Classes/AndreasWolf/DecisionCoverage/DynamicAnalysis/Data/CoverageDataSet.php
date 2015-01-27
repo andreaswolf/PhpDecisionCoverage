@@ -38,7 +38,11 @@ class CoverageDataSet {
 
 	public function addSample(Sample $dataSet) {
 		$this->samples[] = $dataSet;
-		$dataSet->setTest($this->currentTest);
+		if ($this->currentTest !== NULL) {
+			$dataSet->setTest($this->currentTest);
+		} else {
+			// This should not happen TODO probably log it?
+		}
 	}
 
 	/**
