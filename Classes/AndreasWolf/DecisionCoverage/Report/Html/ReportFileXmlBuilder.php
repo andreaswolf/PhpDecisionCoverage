@@ -4,6 +4,7 @@ namespace AndreasWolf\DecisionCoverage\Report\Html;
 use AndreasWolf\DecisionCoverage\Coverage\Coverage;
 use AndreasWolf\DecisionCoverage\Coverage\CoverageAggregate;
 use AndreasWolf\DecisionCoverage\Coverage\MCDC\DecisionCoverage;
+use AndreasWolf\DecisionCoverage\Coverage\MethodCoverage;
 use AndreasWolf\DecisionCoverage\Report\Annotation\DecisionCoverageAnnotation;
 use Psr\Log\LoggerInterface;
 use Psr\Log\NullLogger;
@@ -18,22 +19,19 @@ use TheSeer\fDOM\fDOMElement;
  */
 class ReportFileXmlBuilder {
 
-	/**
-	 * @var fDOMDocument
-	 */
+	/** @var string */
+	protected $filename;
+
+	/** @var fDOMDocument */
 	protected $document;
 
-	/**
-	 * @var fDOMElement
-	 */
+	/** @var fDOMElement */
 	protected $linesNode;
 
 	/** @var fDOMElement */
 	protected $coverageNode;
 
-	/**
-	 * @var LoggerInterface
-	 */
+	/** @var LoggerInterface */
 	protected $logger;
 
 
@@ -47,6 +45,10 @@ class ReportFileXmlBuilder {
 		$this->document->formatOutput = TRUE;
 
 		$this->createTopLevelNodes();
+	}
+
+	public function setSourceFilename($filename) {
+		$this->filename = $filename;
 	}
 
 	/**
@@ -105,9 +107,7 @@ class ReportFileXmlBuilder {
 			$this->logger->debug('Creating coverage node for coverage ' . $coverage->getId()
 				. ' (type ' . get_class($coverage) . ')');
 			if ($coverage instanceof CoverageAggregate) {
-				$this->createCoverageNodes($coverage->getCoverages());
-
-				continue;
+				$this->createCoverageNodesForAggregate($coverage);
 			} elseif ($coverage instanceof DecisionCoverage) {
 				$coverageNode = $this->coverageNode->appendElement('coverage');
 				$coverageNode->setAttribute('type', 'decision');
@@ -125,8 +125,24 @@ class ReportFileXmlBuilder {
 					}
 				}
 			} else {
-				throw new \RuntimeException('Unsupported coverage type ' . get_class($coverage));
+				// ignore unknown types like SingleConditionCoverage for now
+				//throw new \RuntimeException('Unsupported coverage type ' . get_class($coverage));
 			}
+		}
+	}
+
+	protected function createCoverageNodesForAggregate(CoverageAggregate $coverage) {
+		// no need to trigger coverage generation for the aggregated coverages here, as the hierarchy has been flattened
+		// out for the SourceFile instance by Generator
+
+		if ($coverage instanceof MethodCoverage) {
+			$coverageNode = $this->coverageNode->appendElement('coverage');
+			$coverageNode->setAttribute('type', 'method');
+			$coverageNode->setAttribute('id', 'methodCoverageFIXME');
+			$coverageNode->setAttribute('method', $coverage->getMethodName());
+
+			$entryPointNode = $coverageNode->appendElement('entry-point');
+			$entryPointNode->setAttribute('covered', $coverage->getEntryPointCoverage() === 1.0 ? 'true' : 'false');
 		}
 	}
 

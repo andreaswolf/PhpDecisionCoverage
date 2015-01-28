@@ -6,6 +6,7 @@ use AndreasWolf\DecisionCoverage\Coverage\CoverageAggregate;
 use AndreasWolf\DecisionCoverage\Coverage\CoverageSet;
 use AndreasWolf\DecisionCoverage\Coverage\FileCoverage;
 use AndreasWolf\DecisionCoverage\Coverage\MCDC\DecisionCoverage;
+use AndreasWolf\DecisionCoverage\Coverage\MethodCoverage;
 use AndreasWolf\DecisionCoverage\Report\Annotation\DecisionCoverageAnnotation;
 use AndreasWolf\DecisionCoverage\Report\Html\SourceFile;
 use AndreasWolf\DecisionCoverage\Report\Html\SourceFileTokenizer;
@@ -86,11 +87,17 @@ class Generator {
 	 * @param SourceFile $sourceFile
 	 */
 	protected function attachCoverageAnnotationsToSourceFile($coverage, SourceFile $sourceFile) {
+		if ($coverage instanceof MethodCoverage) {
+			$sourceFile->addCoverage($coverage->getId(), $coverage);
+		}
+
 		if ($coverage instanceof CoverageAggregate) {
 			foreach ($coverage->getCoverages() as $subcoverage) {
 				$this->attachCoverageAnnotationsToSourceFile($subcoverage, $sourceFile);
 			}
-		} elseif ($coverage instanceof DecisionCoverage) {
+		}
+
+		if ($coverage instanceof DecisionCoverage) {
 			$sourceFile->addCoverage($coverage->getId(), $coverage);
 
 			$expression = $coverage->getExpression();
