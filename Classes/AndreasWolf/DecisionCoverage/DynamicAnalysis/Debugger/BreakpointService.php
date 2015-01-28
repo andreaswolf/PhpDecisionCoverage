@@ -13,6 +13,8 @@ use AndreasWolf\DecisionCoverage\DynamicAnalysis\Data\InvocationSample;
 use AndreasWolf\DecisionCoverage\StaticAnalysis\CounterProbe;
 use AndreasWolf\DecisionCoverage\StaticAnalysis\DataCollectionProbe;
 use AndreasWolf\DecisionCoverage\StaticAnalysis\Probe;
+use Psr\Log\LoggerInterface;
+use Psr\Log\NullLogger;
 use React\Promise;
 use Symfony\Component\EventDispatcher\EventSubscriberInterface;
 
@@ -44,10 +46,20 @@ class BreakpointService implements EventSubscriberInterface {
 	 */
 	protected $coverageData;
 
+	/**
+	 * @var LoggerInterface
+	 */
+	protected $logger;
 
-	public function __construct(DebugSession $session, CoverageDataSet $dataSet) {
+
+	public function __construct(DebugSession $session, CoverageDataSet $dataSet, LoggerInterface $logger = NULL) {
+		if (!$logger) {
+			$logger = new NullLogger();
+		}
+
 		$this->session = $session;
 		$this->coverageData = $dataSet;
+		$this->logger = $logger;
 	}
 
 	/**
@@ -67,6 +79,7 @@ class BreakpointService implements EventSubscriberInterface {
 		/** @var int $lineNumber  @var Probe[] $probes */
 		foreach ($probesByLine as $lineNumber => $probes) {
 			$debuggerBreakpoint = new LineBreakpoint($filePath, $lineNumber);
+			$this->logger->debug('Setting breakpoint for line ' . $filePath . '[' . $lineNumber . '] with ' . count($probes) . ' probes');
 
 			$this->probes[] = new ProbeConnector($debuggerBreakpoint, $probes);
 
@@ -109,6 +122,7 @@ class BreakpointService implements EventSubscriberInterface {
 	protected function collectProbeData(Probe $probe) {
 		$promise = NULL;
 		if ($probe instanceof DataCollectionProbe) {
+			$this->logger->debug('Collecting data.');
 			if ($probe->hasWatchedExpressions()) {
 				$fetcher = $this->getDataFetcher();
 				$dataSet = new DataSample($probe);
@@ -126,6 +140,7 @@ class BreakpointService implements EventSubscriberInterface {
 			$probe->countInvocation();
 			$sample = new InvocationSample($probe);
 			$this->coverageData->addSample($sample);
+			$this->logger->debug('Counted invocation.');
 
 			$promise = new Promise\FulfilledPromise();
 		} else {

@@ -8,6 +8,8 @@ use AndreasWolf\DecisionCoverage\DynamicAnalysis\Data\CoverageDataSet;
 use AndreasWolf\DecisionCoverage\DynamicAnalysis\PhpUnit\ProcessTestRunner;
 use AndreasWolf\DecisionCoverage\DynamicAnalysis\PhpUnit\TestEventHandler;
 use AndreasWolf\DecisionCoverage\StaticAnalysis\ResultSet;
+use Psr\Log\LoggerInterface;
+use Psr\Log\NullLogger;
 use Symfony\Component\EventDispatcher\Event;
 use Symfony\Component\EventDispatcher\EventSubscriberInterface;
 
@@ -43,10 +45,17 @@ class ClientEventSubscriber implements EventSubscriberInterface {
 	 */
 	protected $testRunner;
 
+	/** @var LoggerInterface */
+	protected $logger;
 
-	public function __construct(Client $client, CoverageDataSet $coverageDataSet) {
+
+	public function __construct(Client $client, CoverageDataSet $coverageDataSet, LoggerInterface $logger = NULL) {
+		if (!$logger) {
+			$logger = new NullLogger();
+		}
 		$this->client = $client;
 		$this->dataSet = $coverageDataSet;
+		$this->logger = $logger;
 
 		$this->testRunner = new ProcessTestRunner($client);
 	}
@@ -83,7 +92,7 @@ class ClientEventSubscriber implements EventSubscriberInterface {
 	public function sessionInitializedHandler(SessionEvent $event) {
 		$session = $event->getSession();
 
-		$breakpointService = new BreakpointService($session, $this->dataSet);
+		$breakpointService = new BreakpointService($session, $this->dataSet, $this->logger);
 		$this->client->addSubscriber($breakpointService);
 
 		$testEventHandler = new TestEventHandler($this->dataSet);
