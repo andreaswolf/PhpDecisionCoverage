@@ -6,7 +6,6 @@ use AndreasWolf\DecisionCoverage\Coverage\Event\SampleEvent;
 use AndreasWolf\DecisionCoverage\Coverage\FileCoverage;
 use AndreasWolf\DecisionCoverage\Coverage\MethodCoverage;
 use AndreasWolf\DecisionCoverage\Coverage\Weighting\ExpressionWeightBuilder;
-use AndreasWolf\DecisionCoverage\DynamicAnalysis\Data\CoverageDataSet;
 use AndreasWolf\DecisionCoverage\Service\ExpressionService;
 use AndreasWolf\DecisionCoverage\Source\RecursiveSyntaxTreeIterator;
 use AndreasWolf\DecisionCoverage\StaticAnalysis\FileResult;
@@ -123,6 +122,8 @@ class CoverageCalculationDirector {
 				$currentMethodCoverage = new MethodCoverage($syntaxTreeNode->name, $syntaxTreeNode->getAttribute('coverage__nodeId'));
 
 				$fileCoverage->addCoverage($currentMethodCoverage);
+
+				$this->createMethodEntryCoverageBuilder($currentMethodCoverage, $syntaxTreeNode);
 			}
 
 			if ($syntaxTreeNode instanceof Node\Stmt\If_) {
@@ -138,6 +139,16 @@ class CoverageCalculationDirector {
 				}
 			}
 		}
+	}
+
+	protected function createMethodEntryCoverageBuilder(MethodCoverage $methodCoverage, Node\Stmt\ClassMethod $methodNode) {
+		if (count($methodNode->stmts) == 0) {
+			return;
+		}
+
+		$entryBuilder = new MethodEntryCoverageBuilder($methodCoverage, $this->log);
+		$this->eventDispatcher->addSubscriber($entryBuilder);
+		$this->log->debug('Added coverage builder for method entry of method ' . $methodNode->name);
 	}
 
 	/**
