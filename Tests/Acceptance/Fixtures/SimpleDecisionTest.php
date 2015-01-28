@@ -8,6 +8,7 @@ use AndreasWolf\DecisionCoverage\Tests\Fixtures\Acceptance\SimpleDecisions;
  *
  *
  * @author Andreas Wolf <aw@foundata.net>
+ * TODO rename to UncoupledConditionsTest
  */
 class SimpleDecisionTest extends \PHPUnit_Framework_TestCase {
 

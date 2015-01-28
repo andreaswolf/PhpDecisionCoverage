@@ -16,8 +16,6 @@ class SingleConditionCoverageTest extends AcceptanceTestCase {
 	 */
 	public function coverageForSingleTestRunIsCorrectlyCalculated() {
 		$results = $this->runTestAndCollectResults('testSingleConditionCoverageWithTrue');
-
-		print_r($results);
 	}
 
 }
