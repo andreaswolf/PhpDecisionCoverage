@@ -5,6 +5,8 @@ use AndreasWolf\DecisionCoverage\Coverage\Coverage;
 use AndreasWolf\DecisionCoverage\Coverage\CoverageAggregate;
 use AndreasWolf\DecisionCoverage\Coverage\MCDC\DecisionCoverage;
 use AndreasWolf\DecisionCoverage\Report\Annotation\DecisionCoverageAnnotation;
+use Psr\Log\LoggerInterface;
+use Psr\Log\NullLogger;
 use TheSeer\fDOM\fDOMDocument;
 use TheSeer\fDOM\fDOMElement;
 
@@ -26,13 +28,21 @@ class ReportFileXmlBuilder {
 	 */
 	protected $linesNode;
 
-	/**
-	 * @var fDOMElement
-	 */
+	/** @var fDOMElement */
 	protected $coverageNode;
 
+	/**
+	 * @var LoggerInterface
+	 */
+	protected $logger;
 
-	public function __construct() {
+
+	public function __construct(LoggerInterface $logger = NULL) {
+		if (!$logger) {
+			$logger = new NullLogger();
+		}
+		$this->logger = $logger;
+
 		$this->document = new fDOMDocument();
 		$this->document->formatOutput = TRUE;
 
@@ -92,6 +102,8 @@ class ReportFileXmlBuilder {
 	 */
 	public function createCoverageNodes($coverages) {
 		foreach ($coverages as $coverage) {
+			$this->logger->debug('Creating coverage node for coverage ' . $coverage->getId()
+				. ' (type ' . get_class($coverage) . ')');
 			if ($coverage instanceof CoverageAggregate) {
 				$this->createCoverageNodes($coverage->getCoverages());
 

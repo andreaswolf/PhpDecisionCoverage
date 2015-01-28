@@ -45,6 +45,7 @@ class Generator {
 	 * @param CoverageSet $coverageSet
 	 */
 	public function generateCoverageReport(CoverageSet $coverageSet) {
+		$this->log->debug('Started generating coverage report');
 		foreach ($coverageSet->getAll() as $fileCoverage) {
 			$this->log->debug('Generating coverage report for ' . $fileCoverage->getFilePath());
 			$sourceFile = $this->generateSourceFile($fileCoverage);

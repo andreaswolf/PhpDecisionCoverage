@@ -48,7 +48,7 @@ class BuildCoverageCommand extends Command {
 		$director->build($coverageDataSet);
 
 		$tempDir = $this->makeTemporaryDirectory();
-		$writers = array(new HtmlWriter($tempDir));
+		$writers = array(new HtmlWriter($tempDir, $log));
 
 		$reportGenerator = new Generator($writers, $log);
 		$reportGenerator->generateCoverageReport($coverageSet);
