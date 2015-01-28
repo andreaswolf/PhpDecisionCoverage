@@ -120,7 +120,7 @@ class CoverageCalculationDirector {
 
 			if ($syntaxTreeNode instanceof Node\Stmt\ClassMethod) {
 				// TODO this will break if there is code outside the class after the first method
-				$currentMethodCoverage = new MethodCoverage($syntaxTreeNode->name);
+				$currentMethodCoverage = new MethodCoverage($syntaxTreeNode->name, $syntaxTreeNode->getAttribute('coverage__nodeId'));
 
 				$fileCoverage->addCoverage($currentMethodCoverage);
 			}

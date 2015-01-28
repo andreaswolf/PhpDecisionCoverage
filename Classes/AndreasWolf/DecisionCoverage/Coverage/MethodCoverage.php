@@ -20,13 +20,26 @@ class MethodCoverage implements CoverageAggregate, Coverage {
 	protected $methodName;
 
 	/**
+	 * @var string
+	 */
+	protected $id;
+
+	/**
 	 * @var Coverage[]
 	 */
 	protected $coverages = array();
 
 
-	public function __construct($methodName) {
+	public function __construct($methodName, $methodNodeId) {
 		$this->methodName = $methodName;
+		$this->id = $methodNodeId;
+	}
+
+	/**
+	 * @return string
+	 */
+	public function getId() {
+		return $this->id;
 	}
 
 	/**
