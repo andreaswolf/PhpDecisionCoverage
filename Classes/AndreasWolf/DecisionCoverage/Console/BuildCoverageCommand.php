@@ -39,6 +39,9 @@ class BuildCoverageCommand extends Command {
 
 		$log = new Logger('BuildCoverage');
 		$log->pushHandler(new StreamHandler('/tmp/debug.log'));
+		if ($input->getOption('verbose') === TRUE) {
+			$log->pushHandler(new StreamHandler(STDOUT));
+		}
 
 		$coverageSet = new CoverageSet($coverageDataSet);
 		$director = new CoverageCalculationDirector($coverageSet, NULL, NULL, NULL, $log);
