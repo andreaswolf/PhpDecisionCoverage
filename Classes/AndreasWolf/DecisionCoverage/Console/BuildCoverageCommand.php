@@ -53,7 +53,12 @@ class BuildCoverageCommand extends Command {
 		$reportGenerator = new Generator($writers, $log);
 		$reportGenerator->generateCoverageReport($coverageSet);
 
-		file_put_contents($input->getOption('output'), serialize($coverageSet));
+		$outputFile = $input->getOption('output');
+		if (!$outputFile) {
+			$outputFile = tempnam(sys_get_temp_dir(), 'coverage-output-');
+			$log->warn('No log file defined. Outputting generated coverage to ' . $outputFile);
+		}
+		file_put_contents($outputFile, serialize($coverageSet));
 	}
 
 	/**
