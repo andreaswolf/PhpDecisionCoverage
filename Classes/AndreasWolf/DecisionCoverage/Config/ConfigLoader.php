@@ -19,14 +19,14 @@ class ConfigLoader {
 		}
 
 		try {
-			$configNode = new fDOMDocument();
-			$configNode->load($fileName);
+			$document = new fDOMDocument();
+			$document->load($fileName);
 
-			if ($configNode->documentElement->localName != 'decision-coverage') {
+			if ($document->documentElement->localName != 'decision-coverage') {
 				throw new ConfigLoaderException('Invalid namespace', ConfigLoaderException::INVALID_NAMESPACE);
 			}
 
-			$configObject = new ApplicationConfig();
+			$configObject = new ApplicationConfig($document);
 		} catch (fDOMException $e) {
 			throw new ConfigLoaderException('Error while parsing config file: ' . $e->getMessage(),
 				ConfigLoaderException::PARSE_ERROR);

@@ -1,0 +1,13 @@
+<?xml version="1.0" encoding="utf-8" ?>
+<decision-coverage>
+	<project name="" source="..." workdir="...">
+		<tests>
+			<argument name="--filter" value="" />
+		</tests>
+		<report format="html" path="..." />
+	</project>
+	<log>
+		<!-- "level" is the same as in LogLevel class -->
+		<handler type="file" path="file:///tmp/decisioncoverage.log" level="debug" />
+	</log>
+</decision-coverage>
