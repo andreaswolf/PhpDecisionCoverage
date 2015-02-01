@@ -176,7 +176,9 @@ class CoverageCalculationDirector {
 	 * @return RecursiveSyntaxTreeIterator
 	 */
 	protected function createFileIterator(FileResult $file) {
-		return new RecursiveSyntaxTreeIterator($file->getSyntaxTree()->getIterator(), $this->eventDispatcher);
+		return new RecursiveSyntaxTreeIterator($file->getSyntaxTree()->getIterator(), $this->eventDispatcher,
+			\RecursiveIteratorIterator::SELF_FIRST
+		);
 	}
 
 }
