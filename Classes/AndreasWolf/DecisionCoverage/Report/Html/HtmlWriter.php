@@ -2,6 +2,8 @@
 namespace AndreasWolf\DecisionCoverage\Report\Html;
 
 use AndreasWolf\DecisionCoverage\Report\Writer;
+use Psr\Log\LoggerInterface;
+use Psr\Log\NullLogger;
 use TheSeer\fDOM\fDOMDocument;
 use TheSeer\fXSL\fXSLTProcessor;
 
@@ -18,13 +20,23 @@ class HtmlWriter implements Writer {
 	 */
 	protected $fileExtension = '.html';
 
+	/**
+	 * @var LoggerInterface
+	 */
+	protected $logger;
 
-	public function __construct($basePath) {
+
+	public function __construct($basePath, LoggerInterface $logger = NULL) {
+		if (!$logger) {
+			$logger = new NullLogger();
+		}
+		$this->logger = $logger;
+
 		$this->basePath = rtrim($basePath, '/') . '/';
 	}
 
 	public function writeReportForSourceFile(SourceFile $file) {
-		$xmlFileBuilder = new ReportFileXmlBuilder();
+		$xmlFileBuilder = new ReportFileXmlBuilder($this->logger);
 
 		$lineNumber = 0;
 		foreach ($file->getLines() as $line) {
@@ -41,6 +53,8 @@ class HtmlWriter implements Writer {
 		$xmlDocument = $xmlFileBuilder->build();
 
 		$reportFile = $this->basePath . $this->getReportTargetFilename($file);
+		file_put_contents($reportFile . '.xml', $xmlDocument->saveXML());
+
 		$contents = $xslProcessor->transformToXml($xmlDocument);
 		file_put_contents($reportFile, $contents);
 	}

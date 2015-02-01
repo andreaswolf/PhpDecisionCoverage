@@ -3,19 +3,19 @@ namespace AndreasWolf\DecisionCoverage\DynamicAnalysis\Data;
 
 use AndreasWolf\DebuggerClient\Protocol\Response\ExpressionValue;
 use AndreasWolf\DecisionCoverage\DynamicAnalysis\PhpUnit\Test;
-use AndreasWolf\DecisionCoverage\StaticAnalysis\Probe;
+use AndreasWolf\DecisionCoverage\StaticAnalysis\DataCollectionProbe;
 use PhpParser\Node\Expr;
 
 
 /**
- * A set of values collected for one measurement.
+ * A set of values collected for one measurement, i.e. one breakpoint hit.
  *
  * @author Andreas Wolf <aw@foundata.net>
  */
-class DataSample {
+class DataSample implements Sample {
 
 	/**
-	 * @var Probe
+	 * @var DataCollectionProbe
 	 */
 	protected $breakpoint;
 
@@ -37,7 +37,7 @@ class DataSample {
 	protected $test;
 
 
-	public function __construct(Probe $breakpoint) {
+	public function __construct(DataCollectionProbe $breakpoint) {
 		$this->breakpoint = $breakpoint;
 	}
 
@@ -51,12 +51,12 @@ class DataSample {
 	/**
 	 * @param Test $test
 	 */
-	public function setTest($test) {
+	public function setTest(Test $test) {
 		$this->test = $test;
 	}
 
 	/**
-	 * @return Probe
+	 * @return DataCollectionProbe
 	 */
 	public function getProbe() {
 		return $this->breakpoint;

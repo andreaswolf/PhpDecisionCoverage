@@ -1,7 +1,7 @@
 <?php
 namespace AndreasWolf\DecisionCoverage\Tests\Acceptance;
 
-use AndreasWolf\DecisionCoverage\DynamicAnalysis\Data\CoverageDataSet;
+use AndreasWolf\DecisionCoverage\Coverage\CoverageSet;
 
 
 /**
@@ -18,10 +18,10 @@ abstract class AcceptanceTestCase extends \PHPUnit_Framework_TestCase {
 
 
 	/**
-	 * Runs the given test and returns the results as a deserialized array.
+	 * Runs the given test and returns the results as a coverage set object.
 	 *
 	 * @param string $testName
-	 * @return CoverageDataSet The data gathered from the test
+	 * @return CoverageSet The data gathered from the test
 	 */
 	protected function runTestAndCollectResults($testName) {
 		$helper = new TestRunner();

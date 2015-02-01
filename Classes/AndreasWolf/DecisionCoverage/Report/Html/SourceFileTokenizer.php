@@ -2,10 +2,17 @@
 namespace AndreasWolf\DecisionCoverage\Report\Html;
 
 
+/**
+ * (Line-based) tokenizer for PHP code files.
+ *
+ * @author Andreas Wolf <aw@foundata.net>
+ */
 class SourceFileTokenizer {
 
 	/**
-	 * @param $filePath
+	 * Splits a file by line endings and calculates the relative offset of each line.
+	 *
+	 * @param string $filePath
 	 * @return TokenizationResult
 	 */
 	public function getSourceLinesInFile($filePath) {

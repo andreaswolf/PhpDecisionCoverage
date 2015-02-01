@@ -20,13 +20,33 @@ class MethodCoverage implements CoverageAggregate, Coverage {
 	protected $methodName;
 
 	/**
+	 * @var string
+	 */
+	protected $id;
+
+	/**
+	 * @var InvocationCoverage
+	 */
+	protected $entryPointCoverage;
+
+	/**
 	 * @var Coverage[]
 	 */
 	protected $coverages = array();
 
 
-	public function __construct($methodName) {
+	public function __construct($methodName, $methodNodeId) {
 		$this->methodName = $methodName;
+		$this->id = $methodNodeId;
+
+		$this->entryPointCoverage = new InvocationCoverage();
+	}
+
+	/**
+	 * @return string
+	 */
+	public function getId() {
+		return $this->id;
 	}
 
 	/**
@@ -48,6 +68,20 @@ class MethodCoverage implements CoverageAggregate, Coverage {
 	 */
 	public function getCoverages() {
 		return $this->coverages;
+	}
+
+	/**
+	 * @return void
+	 */
+	public function recordMethodEntry() {
+		$this->entryPointCoverage->record();
+	}
+
+	/**
+	 * @return float
+	 */
+	public function getEntryPointCoverage() {
+		return $this->entryPointCoverage->getCoverage();
 	}
 
 	/**

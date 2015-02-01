@@ -18,4 +18,13 @@ class DecisionCoverageTest extends AcceptanceTestCase {
 		$results = $this->runTestAndCollectResults('testSimpleDecisionCoverageWithTF');
 	}
 
+	/**
+	 * @test
+	 */
+	public function coverageForBooleanOrsNestedInBooleanAndIsCorrectlyCalculated() {
+		$results = $this->runTestAndCollectResults('testBooleanOrNestedInBooleanAndWithTFTF');
+
+		$this->markTestIncomplete('This test needs assertions on the results.');
+	}
+
 }

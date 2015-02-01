@@ -1,7 +1,7 @@
 <?php
 namespace AndreasWolf\DecisionCoverage\Tests\Unit\StaticAnalysis;
 
-use AndreasWolf\DecisionCoverage\StaticAnalysis\Probe;
+use AndreasWolf\DecisionCoverage\StaticAnalysis\DataCollectionProbe;
 use AndreasWolf\DecisionCoverage\Tests\Unit\UnitTestCase;
 use PhpParser\Node\Expr;
 
@@ -12,7 +12,7 @@ class ProbeTest extends UnitTestCase {
 	 * @test
 	 */
 	public function addedExpressionsCanBeRetrieved(){
-		$subject = new Probe(1);
+		$subject = new DataCollectionProbe(1);
 
 		$expression = $this->mockExpression();
 		$subject->addWatchedExpression($expression);
@@ -24,7 +24,7 @@ class ProbeTest extends UnitTestCase {
 	 * @test
 	 */
 	public function addedExpressionsAreCountedCorrectly() {
-		$subject = new Probe(1);
+		$subject = new DataCollectionProbe(1);
 
 		$this->assertEquals(0, $subject->countWatchedExpressions());
 
@@ -37,7 +37,7 @@ class ProbeTest extends UnitTestCase {
 	 * @test
 	 */
 	public function expressionIsNotAddedAgainIfAlreadyPresent() {
-		$subject = new Probe(1);
+		$subject = new DataCollectionProbe(1);
 
 		$expression = $this->mockExpression();
 		$subject->addWatchedExpression($expression);

@@ -22,7 +22,7 @@ class CoverageDataSet {
 	protected $codeAnalysis;
 
 	/**
-	 * @var DataSample[]
+	 * @var Sample[]
 	 */
 	protected $samples = array();
 
@@ -36,13 +36,17 @@ class CoverageDataSet {
 		$this->codeAnalysis = $analysisResults;
 	}
 
-	public function addSample(DataSample $dataSet) {
+	public function addSample(Sample $dataSet) {
 		$this->samples[] = $dataSet;
-		$dataSet->setTest($this->currentTest);
+		if ($this->currentTest !== NULL) {
+			$dataSet->setTest($this->currentTest);
+		} else {
+			// This should not happen TODO probably log it?
+		}
 	}
 
 	/**
-	 * @return DataSample[]
+	 * @return Sample[]
 	 */
 	public function getSamples() {
 		return $this->samples;

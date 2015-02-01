@@ -2,15 +2,13 @@
 namespace AndreasWolf\DecisionCoverage\Coverage\Builder;
 
 use AndreasWolf\DecisionCoverage\Coverage\CoverageSet;
-use AndreasWolf\DecisionCoverage\Coverage\Event\DataSampleEvent;
+use AndreasWolf\DecisionCoverage\Coverage\Event\SampleEvent;
 use AndreasWolf\DecisionCoverage\Coverage\FileCoverage;
 use AndreasWolf\DecisionCoverage\Coverage\MethodCoverage;
 use AndreasWolf\DecisionCoverage\Coverage\Weighting\ExpressionWeightBuilder;
-use AndreasWolf\DecisionCoverage\DynamicAnalysis\Data\CoverageDataSet;
 use AndreasWolf\DecisionCoverage\Service\ExpressionService;
 use AndreasWolf\DecisionCoverage\Source\RecursiveSyntaxTreeIterator;
 use AndreasWolf\DecisionCoverage\StaticAnalysis\FileResult;
-use AndreasWolf\DecisionCoverage\StaticAnalysis\Probe;
 use AndreasWolf\DecisionCoverage\StaticAnalysis\SyntaxTree\SyntaxTreeStack;
 use PhpParser\Node;
 use Psr\Log\LoggerInterface;
@@ -23,11 +21,6 @@ use Symfony\Component\EventDispatcher\EventDispatcherInterface;
  * @author Andreas Wolf <aw@foundata.net>
  */
 class CoverageCalculationDirector {
-
-	/**
-	 * @var Probe[]
-	 */
-	protected $knownProbes = array();
 
 	/**
 	 * @var CoverageSet
@@ -93,7 +86,7 @@ class CoverageCalculationDirector {
 		$this->createCoverageBuildersForDataSet($this->coverageSet->getDataSet());
 
 		foreach ($this->coverageSet->getDataSet()->getSamples() as $dataSample) {
-			$this->eventDispatcher->dispatch('coverage.sample.received', new DataSampleEvent($dataSample));
+			$this->eventDispatcher->dispatch('coverage.sample.received', new SampleEvent($dataSample));
 		}
 	}
 
@@ -126,9 +119,11 @@ class CoverageCalculationDirector {
 
 			if ($syntaxTreeNode instanceof Node\Stmt\ClassMethod) {
 				// TODO this will break if there is code outside the class after the first method
-				$currentMethodCoverage = new MethodCoverage($syntaxTreeNode->name);
+				$currentMethodCoverage = new MethodCoverage($syntaxTreeNode->name, $syntaxTreeNode->getAttribute('coverage__nodeId'));
 
 				$fileCoverage->addCoverage($currentMethodCoverage);
+
+				$this->createMethodEntryCoverageBuilder($currentMethodCoverage, $syntaxTreeNode);
 			}
 
 			if ($syntaxTreeNode instanceof Node\Stmt\If_) {
@@ -144,6 +139,16 @@ class CoverageCalculationDirector {
 				}
 			}
 		}
+	}
+
+	protected function createMethodEntryCoverageBuilder(MethodCoverage $methodCoverage, Node\Stmt\ClassMethod $methodNode) {
+		if (count($methodNode->stmts) == 0) {
+			return;
+		}
+
+		$entryBuilder = new MethodEntryCoverageBuilder($methodCoverage, $this->log);
+		$this->eventDispatcher->addSubscriber($entryBuilder);
+		$this->log->debug('Added coverage builder for method entry of method ' . $methodNode->name);
 	}
 
 	/**
@@ -171,7 +176,9 @@ class CoverageCalculationDirector {
 	 * @return RecursiveSyntaxTreeIterator
 	 */
 	protected function createFileIterator(FileResult $file) {
-		return new RecursiveSyntaxTreeIterator($file->getSyntaxTree()->getIterator(), $this->eventDispatcher);
+		return new RecursiveSyntaxTreeIterator($file->getSyntaxTree()->getIterator(), $this->eventDispatcher,
+			\RecursiveIteratorIterator::SELF_FIRST
+		);
 	}
 
 }

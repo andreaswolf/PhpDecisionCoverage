@@ -39,18 +39,26 @@ class BuildCoverageCommand extends Command {
 
 		$log = new Logger('BuildCoverage');
 		$log->pushHandler(new StreamHandler('/tmp/debug.log'));
+		if ($input->getOption('verbose') === TRUE) {
+			$log->pushHandler(new StreamHandler(STDOUT));
+		}
 
 		$coverageSet = new CoverageSet($coverageDataSet);
 		$director = new CoverageCalculationDirector($coverageSet, NULL, NULL, NULL, $log);
 		$director->build($coverageDataSet);
 
 		$tempDir = $this->makeTemporaryDirectory();
-		$writers = array(new HtmlWriter($tempDir));
+		$writers = array(new HtmlWriter($tempDir, $log));
 
 		$reportGenerator = new Generator($writers, $log);
 		$reportGenerator->generateCoverageReport($coverageSet);
 
-		file_put_contents($input->getOption('output'), serialize($coverageSet));
+		$outputFile = $input->getOption('output');
+		if (!$outputFile) {
+			$outputFile = tempnam(sys_get_temp_dir(), 'coverage-output-');
+			$log->warn('No log file defined. Outputting generated coverage to ' . $outputFile);
+		}
+		file_put_contents($outputFile, serialize($coverageSet));
 	}
 
 	/**

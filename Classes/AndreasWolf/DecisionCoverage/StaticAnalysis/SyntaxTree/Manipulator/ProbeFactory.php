@@ -3,10 +3,10 @@ namespace AndreasWolf\DecisionCoverage\StaticAnalysis\SyntaxTree\Manipulator;
 
 use AndreasWolf\DecisionCoverage\Service\ExpressionService;
 use AndreasWolf\DecisionCoverage\Source\SyntaxTreeIterator;
-use AndreasWolf\DecisionCoverage\StaticAnalysis\Probe;
+use AndreasWolf\DecisionCoverage\StaticAnalysis\DataCollectionProbe;
 use AndreasWolf\DecisionCoverage\StaticAnalysis\FileResult;
-use AndreasWolf\DecisionCoverage\StaticAnalysis\SyntaxTree\NodeVisitor;
 use PhpParser\Node;
+use Psr\Log\LoggerInterface;
 
 
 /**
@@ -22,8 +22,9 @@ class ProbeFactory extends AbstractProbeFactory {
 	protected $expressionService;
 
 
-	public function __construct(FileResult $analysis, ExpressionService $expressionService = NULL) {
-		parent::__construct($analysis);
+	public function __construct(FileResult $analysis, ExpressionService $expressionService = NULL,
+	                            LoggerInterface $logger = NULL) {
+		parent::__construct($analysis, $logger);
 
 		if (!$expressionService) {
 			$expressionService = new ExpressionService();
@@ -41,27 +42,26 @@ class ProbeFactory extends AbstractProbeFactory {
 			return;
 		}
 
+		/** @var Node\Expr $conditionNode */
 		$conditionNode = $node->cond;
-		$probe = $this->createBreakpoint($node);
+		$probe = $this->createDataCollectionProbe($node);
 		$this->addWatchExpressionsToBreakpoint($probe, $conditionNode);
 		if (!$conditionNode->hasAttribute('coverage__cover')) {
 			$conditionNode->setAttribute('coverage__cover', TRUE);
 			$probe->addWatchedExpression($conditionNode);
 		}
-
-		$this->analysis->addBreakpoint($probe);
 	}
 
 	/**
-	 * @param Probe $probe
+	 * @param DataCollectionProbe $probe
 	 * @param Node $rootNode
 	 */
-	protected function addWatchExpressionsToBreakpoint(Probe $probe, Node $rootNode) {
+	protected function addWatchExpressionsToBreakpoint(DataCollectionProbe $probe, Node $rootNode) {
 		$nodeIterator = new \RecursiveIteratorIterator(
 			new SyntaxTreeIterator(array($rootNode), TRUE), \RecursiveIteratorIterator::SELF_FIRST
 		);
 
-		/** @var Node $node */
+		/** @var Node\Expr $node */
 		foreach ($nodeIterator as $node) {
 			if (!$node instanceof Node\Expr) {
 				continue;
@@ -77,11 +77,11 @@ class ProbeFactory extends AbstractProbeFactory {
 
 	/**
 	 * @param Node $node
-	 * @return Probe
+	 * @return DataCollectionProbe
 	 */
-	protected function createBreakpoint(Node $node) {
-		$probe = new Probe($node->getLine());
-		$node->setAttribute('coverage__probe', $probe);
+	protected function createDataCollectionProbe(Node $node) {
+		$probe = new DataCollectionProbe($node->getLine());
+		$this->attachProbeToNodeAndAnalysis($node, $probe);
 
 		return $probe;
 	}

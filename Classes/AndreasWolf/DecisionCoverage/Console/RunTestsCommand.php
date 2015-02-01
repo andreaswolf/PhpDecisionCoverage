@@ -8,6 +8,9 @@ use AndreasWolf\DecisionCoverage\DynamicAnalysis\Debugger\ClientEventSubscriber;
 use AndreasWolf\DecisionCoverage\DynamicAnalysis\Persistence\SerializedObjectMapper as DynamicSerializedObjectMapper;
 use AndreasWolf\DecisionCoverage\StaticAnalysis\Persistence\SerializedObjectMapper as StaticSerializedObjectMapper;
 use AndreasWolf\DecisionCoverage\StaticAnalysis\ResultSet;
+use Monolog\Handler\StreamHandler;
+use Monolog\Logger;
+use Psr\Log\LoggerInterface;
 use Symfony\Component\Console\Command\Command;
 use Symfony\Component\Console\Input\InputArgument;
 use Symfony\Component\Console\Input\InputInterface;
@@ -21,6 +24,11 @@ use Symfony\Component\Console\Output\OutputInterface;
  * @author Andreas Wolf <aw@foundata.net>
  */
 class RunTestsCommand extends Command {
+
+	/**
+	 * @var LoggerInterface
+	 */
+	protected $logger;
 
 	/**
 	 */
@@ -42,6 +50,8 @@ class RunTestsCommand extends Command {
 	protected function execute(InputInterface $input, OutputInterface $output) {
 		$this->assertOptionHasValue($input, 'phpunit-arguments');
 		$this->assertOptionHasValue($input, 'output');
+
+		$this->logger = new Logger('RunTests', [new StreamHandler('/tmp/debug.log')]);
 
 		$debuggerClient = new Client();
 		// we only need one session, not continuous listening
@@ -97,7 +107,7 @@ class RunTestsCommand extends Command {
 	 */
 	protected function createAndAttachEventSubscriber(InputInterface $input, Client $debuggerClient,
 	                                                  CoverageDataSet $dataSet, ResultSet $staticAnalysisResults) {
-		$clientEventSubscriber = new ClientEventSubscriber($debuggerClient, $dataSet);
+		$clientEventSubscriber = new ClientEventSubscriber($debuggerClient, $dataSet, $this->logger);
 		$clientEventSubscriber->setStaticAnalysisResults($staticAnalysisResults);
 		$clientEventSubscriber->setPhpUnitArguments($input->getOption('phpunit-arguments'));
 

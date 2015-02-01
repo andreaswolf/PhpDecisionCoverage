@@ -36,8 +36,7 @@ class PropertyValueFetcher implements ValueFetchStrategy {
 
 		if ($expression instanceof Expr\Variable) {
 			$result = TRUE;
-		}
-		if ($expression instanceof Expr\PropertyFetch) {
+		} elseif ($expression instanceof Expr\PropertyFetch) {
 			$result = !EvalValueFetcher::expressionContainsMethodCall($expression);
 		}
 

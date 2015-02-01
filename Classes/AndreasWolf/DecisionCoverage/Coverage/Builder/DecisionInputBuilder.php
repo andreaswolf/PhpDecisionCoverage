@@ -3,7 +3,7 @@ namespace AndreasWolf\DecisionCoverage\Coverage\Builder;
 
 use AndreasWolf\DecisionCoverage\Coverage\Evaluation\BooleanAndEvaluator;
 use AndreasWolf\DecisionCoverage\Coverage\Evaluation\BooleanOrEvaluator;
-use AndreasWolf\DecisionCoverage\Coverage\Event\DataSampleEvent;
+use AndreasWolf\DecisionCoverage\Coverage\Event\SampleEvent;
 use AndreasWolf\DecisionCoverage\Coverage\Input\DecisionInput;
 use AndreasWolf\DecisionCoverage\Coverage\Input\SyntaxTreeMarker;
 use AndreasWolf\DecisionCoverage\DynamicAnalysis\Data\DataSample;

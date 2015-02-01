@@ -21,5 +21,11 @@ class SimpleDecisions {
 		}
 	}
 
+	public function coverDecisionWithBooleanOrsNestedInBooleanAnd($A, $B, $C, $D) {
+		if (($A == TRUE || $B == TRUE) && ($C == TRUE || $D == TRUE)) {
+			echo "foo";
+		}
+	}
+
 
 }

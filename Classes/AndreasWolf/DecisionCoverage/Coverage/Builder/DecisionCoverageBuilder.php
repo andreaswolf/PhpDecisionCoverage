@@ -5,8 +5,9 @@ use AndreasWolf\DecisionCoverage\Coverage\Coverage;
 use AndreasWolf\DecisionCoverage\Coverage\Evaluation\DecisionEvaluationDirector;
 use AndreasWolf\DecisionCoverage\Coverage\Event\CoverageBuilderEvent;
 use AndreasWolf\DecisionCoverage\Coverage\Event\CoverageEvent;
-use AndreasWolf\DecisionCoverage\Coverage\Event\DataSampleEvent;
+use AndreasWolf\DecisionCoverage\Coverage\Event\SampleEvent;
 use AndreasWolf\DecisionCoverage\Coverage\MCDC\DecisionCoverage;
+use AndreasWolf\DecisionCoverage\DynamicAnalysis\Data\DataSample;
 use PhpParser\Node\Expr;
 use Psr\Log\LoggerInterface;
 use Psr\Log\NullLogger;
@@ -56,16 +57,21 @@ class DecisionCoverageBuilder implements EventSubscriberInterface, CoverageBuild
 		return $this->coverage;
 	}
 
-	public function sampleReceivedHandler(DataSampleEvent $event) {
+	public function sampleReceivedHandler(SampleEvent $event) {
+		// if there was more than one probe for the line our expression was in, we might also get samples of other types
+		$sample = $event->getSample();
+		if (!$sample instanceof DataSample) {
+			return;
+		}
 		// TODO simplify the expression check -> make DataSample aware of the watched expressions.
-		if (!in_array($this->coverage->getExpression(), $event->getDataSample()->getProbe()->getWatchedExpressions())) {
+		if (!in_array($this->coverage->getExpression(), $sample->getProbe()->getWatchedExpressions())) {
 			return;
 		}
 
 		// TODO create in constructor and add as an object property
 		$inputSampleBuilder = new DecisionEvaluationDirector($this->coverage->getExpression());
 
-		$decisionSample = $inputSampleBuilder->evaluate($event->getDataSample());
+		$decisionSample = $inputSampleBuilder->evaluate($sample);
 
 		$this->coverage->addSample($decisionSample);
 	}

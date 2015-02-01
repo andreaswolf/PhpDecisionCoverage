@@ -105,13 +105,13 @@ class ProbeFactoryTest extends UnitTestCase {
 	protected function mockProbeFactory($mockedAnalysis, $probes) {
 		$subject = $this->getMockBuilder('AndreasWolf\DecisionCoverage\StaticAnalysis\SyntaxTree\Manipulator\ProbeFactory')
 			->setConstructorArgs(array($mockedAnalysis))
-			->setMethods(array('createBreakpoint'))
+			->setMethods(array('createDataCollectionProbe'))
 			->getMock();
 
 		$i = 0;
 		foreach ($probes as $breakpoint) {
 			$subject->expects($this->at($i))
-				->method('createBreakpoint')->will($this->returnValue($breakpoint));
+				->method('createDataCollectionProbe')->will($this->returnValue($breakpoint));
 			++$i;
 		}
 
