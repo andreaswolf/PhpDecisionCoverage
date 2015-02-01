@@ -1,0 +1,38 @@
+<?php
+namespace AndreasWolf\DecisionCoverage\Config;
+
+use TheSeer\fDOM\fDOMDocument;
+use TheSeer\fDOM\fDOMException;
+
+
+class ConfigLoader {
+
+	/**
+	 * @param $fileName
+	 * @return ApplicationConfig
+	 * @throws ConfigLoaderException
+	 * @throws \TheSeer\fDOM\fDOMException
+	 */
+	public function load($fileName) {
+		if (!file_exists($fileName)) {
+			throw new ConfigLoaderException('File not found', ConfigLoaderException::NOT_FOUND);
+		}
+
+		try {
+			$configNode = new fDOMDocument();
+			$configNode->load($fileName);
+
+			if ($configNode->documentElement->localName != 'decision-coverage') {
+				throw new ConfigLoaderException('Invalid namespace', ConfigLoaderException::INVALID_NAMESPACE);
+			}
+
+			$configObject = new ApplicationConfig();
+		} catch (fDOMException $e) {
+			throw new ConfigLoaderException('Error while parsing config file: ' . $e->getMessage(),
+				ConfigLoaderException::PARSE_ERROR);
+		}
+
+		return $configObject;
+	}
+
+}

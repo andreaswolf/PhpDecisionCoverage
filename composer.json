@@ -29,6 +29,7 @@
 		"theseer/fdomdocument": "dev-master"
 	},
 	"require-dev": {
+		"php": ">=5.5",
 		"phpunit/phpunit": "*",
 		"php-vfs/php-vfs": "*@stable"
 	},
