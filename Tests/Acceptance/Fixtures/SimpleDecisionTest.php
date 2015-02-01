@@ -39,5 +39,13 @@ class SimpleDecisionTest extends \PHPUnit_Framework_TestCase {
 		$subject->coverDecisionWithBooleanAnd('A', 11);
 	}
 
+	/**
+	 * @test
+	 */
+	public function testBooleanOrNestedInBooleanAndWithTFTF() {
+		$subject = new SimpleDecisions();
+		$subject->coverDecisionWithBooleanOrsNestedInBooleanAnd(TRUE, FALSE, TRUE, FALSE);
+	}
+
 }
  
