@@ -53,6 +53,8 @@ class HtmlWriter implements Writer {
 		$xmlDocument = $xmlFileBuilder->build();
 
 		$reportFile = $this->basePath . $this->getReportTargetFilename($file);
+		file_put_contents($reportFile . '.xml', $xmlDocument->saveXML());
+
 		$contents = $xslProcessor->transformToXml($xmlDocument);
 		file_put_contents($reportFile, $contents);
 	}
