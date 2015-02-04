@@ -21,6 +21,12 @@ class ApplicationConfig {
 		$this->root = $root;
 	}
 
+	public function getProjectConfig() {
+		$projectNode = $this->root->queryOne('//project');
+
+		return new ProjectConfig($projectNode);
+	}
+
 	/**
 	 * @return LogConfig
 	 */

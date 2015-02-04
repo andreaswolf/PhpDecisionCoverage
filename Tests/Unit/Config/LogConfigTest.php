@@ -1,11 +1,11 @@
 <?php
 namespace AndreasWolf\DecisionCoverage\Tests\Unit\Config;
 
-use AndreasWolf\DecisionCoverage\Config\ConfigLoader;
 use AndreasWolf\DecisionCoverage\Tests\Unit\UnitTestCase;
 
 
 class LogConfigTest extends UnitTestCase {
+	use ConfigLoaderTrait;
 
 	/**
 	 * @test
@@ -31,20 +31,6 @@ class LogConfigTest extends UnitTestCase {
 			'path' => 'file:///tmp/decisioncoverage.log',
 			'level' => 'debug'
 		), $handlers[0]);
-	}
-
-	/**
-	 * @param string $fixture
-	 * @return \AndreasWolf\DecisionCoverage\Config\LogConfig
-	 * @throws \AndreasWolf\DecisionCoverage\Config\ConfigLoaderException
-	 */
-	protected function loadLogConfiguration($fixture) {
-		$subject = new ConfigLoader();
-
-		$appConfig = $subject->load(__DIR__ . '/../../Fixtures/Configuration/' . $fixture . '.xml');
-		$logConfig = $appConfig->getLogConfig();
-
-		return $logConfig;
 	}
 
 }

@@ -1,6 +1,6 @@
 <?xml version="1.0" encoding="utf-8" ?>
 <decision-coverage>
-	<project name="" source="..." workdir="...">
+	<project name="someProject" source="/tmp/coverage/projectSource" workdir="/tmp/coverage/workDir">
 		<tests>
 			<argument name="--filter" value="" />
 		</tests>
