@@ -22,6 +22,18 @@ trait ConfigLoaderTrait {
 	}
 
 	/**
+	 * @param $fixture
+	 * @return \AndreasWolf\DecisionCoverage\Config\ProjectConfig
+	 * @throws ConfigLoaderException
+	 */
+	protected function loadProjectConfiguration($fixture) {
+		$appConfig = $this->loadConfiguration($fixture);
+		$projectConfig = $appConfig->getProjectConfig();
+
+		return $projectConfig;
+	}
+
+	/**
 	 * @param string $fixture
 	 * @return ApplicationConfig
 	 * @throws ConfigLoaderException

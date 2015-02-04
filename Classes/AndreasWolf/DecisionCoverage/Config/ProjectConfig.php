@@ -31,4 +31,10 @@ class ProjectConfig {
 		return $this->cfg->attributes->getNamedItem('workdir')->textContent;
 	}
 
+	public function getReportConfig() {
+		$reportNode = $this->cfg->queryOne('//project/report');
+
+		return new ReportConfig($reportNode);
+	}
+
 }

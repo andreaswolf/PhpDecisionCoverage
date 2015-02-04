@@ -4,7 +4,9 @@
 		<tests>
 			<argument name="--filter" value="" />
 		</tests>
-		<report format="html" path="..." />
+		<report>
+			<writer format="html" outputdir="/tmp/coverage/report/html/" />
+		</report>
 	</project>
 	<log>
 		<!-- "level" is the same as in LogLevel class -->
