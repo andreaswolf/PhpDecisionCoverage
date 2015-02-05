@@ -17,6 +17,8 @@ class ConfigLoader {
 		if (!file_exists($fileName)) {
 			throw new ConfigLoaderException('File not found', ConfigLoaderException::NOT_FOUND);
 		}
+		$oldDir = getcwd();
+		chdir(dirname($fileName));
 
 		try {
 			$document = new fDOMDocument();

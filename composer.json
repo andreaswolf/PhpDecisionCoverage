@@ -31,7 +31,8 @@
 	"require-dev": {
 		"php": ">=5.5",
 		"phpunit/phpunit": "*",
-		"php-vfs/php-vfs": "*@stable"
+		"php-vfs/php-vfs": "*@stable",
+		"symfony/filesystem": "~2.6"
 	},
 	"autoload": {
 		"psr-0": {

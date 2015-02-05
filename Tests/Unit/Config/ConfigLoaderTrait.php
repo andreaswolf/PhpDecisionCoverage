@@ -41,7 +41,10 @@ trait ConfigLoaderTrait {
 	protected function loadConfiguration($fixture) {
 		$subject = new ConfigLoader();
 
-		$appConfig = $subject->load(__DIR__ . '/../../Fixtures/Configuration/' . $fixture . '.xml');
+		if (strpos($fixture, '/') === FALSE) {
+			$fixture = __DIR__ . '/../../Fixtures/Configuration/' . $fixture . '.xml';
+		}
+		$appConfig = $subject->load($fixture);
 
 		return $appConfig;
 	}
