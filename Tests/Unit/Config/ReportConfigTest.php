@@ -22,7 +22,7 @@ class ReportConfigTest extends UnitTestCase {
 	public function outputDirCanBeRetrieved() {
 		$reportConfig = $this->loadProjectConfiguration('SimpleConfiguration')->getReportConfig();
 
-		$this->assertEquals('/tmp/coverage/report/html/', $reportConfig->getOutputDirectory());
+		$this->assertEquals('/tmp/coverage/report/html', $reportConfig->getOutputDirectory()->getPathname());
 	}
 
 }

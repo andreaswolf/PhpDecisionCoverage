@@ -24,11 +24,11 @@ class ProjectConfig {
 	}
 
 	public function getSourceDirectory() {
-		return $this->cfg->attributes->getNamedItem('source')->textContent;
+		return new \SplFileInfo($this->cfg->attributes->getNamedItem('source')->textContent);
 	}
 
 	public function getWorkingDirectory() {
-		return $this->cfg->attributes->getNamedItem('workdir')->textContent;
+		return new \SplFileInfo($this->cfg->attributes->getNamedItem('workdir')->textContent);
 	}
 
 	public function getReportConfig() {

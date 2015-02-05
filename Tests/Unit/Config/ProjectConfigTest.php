@@ -24,8 +24,8 @@ class ProjectConfigTest extends UnitTestCase {
 		$applicationConfig = $this->loadConfiguration('SimpleConfiguration');
 		$projectConfig = $applicationConfig->getProjectConfig();
 
-		$this->assertEquals('/tmp/coverage/projectSource', $projectConfig->getSourceDirectory());
-		$this->assertEquals('/tmp/coverage/workDir', $projectConfig->getWorkingDirectory());
+		$this->assertEquals('/tmp/coverage/projectSource', $projectConfig->getSourceDirectory()->getPathname());
+		$this->assertEquals('/tmp/coverage/workDir', $projectConfig->getWorkingDirectory()->getPathname());
 	}
 
 }

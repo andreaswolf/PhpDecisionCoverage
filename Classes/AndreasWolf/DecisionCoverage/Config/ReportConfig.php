@@ -24,7 +24,7 @@ class ReportConfig {
 	}
 
 	public function getOutputDirectory() {
-		return (string)$this->cfg->queryOne('//writer')->getAttribute('outputdir');
+		return new \SplFileInfo((string)$this->cfg->queryOne('//writer')->getAttribute('outputdir'));
 	}
 
 }
