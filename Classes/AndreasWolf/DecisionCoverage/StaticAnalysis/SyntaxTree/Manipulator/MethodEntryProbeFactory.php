@@ -52,9 +52,9 @@ class MethodEntryProbeFactory extends AbstractProbeFactory implements EventSubsc
 	/**
 	 * Creates a method entry point probe for the given method
 	 *
-	 * @param Node\Stmt $statementInMethod
+	 * @param Node $statementInMethod
 	 */
-	protected function addMethodEntryProbe(Node\Stmt $statementInMethod) {
+	protected function addMethodEntryProbe(Node $statementInMethod) {
 		$probe = new CounterProbe($statementInMethod->getLine());
 		$this->attachProbeToNodeAndAnalysis($statementInMethod, $probe);
 
