@@ -68,10 +68,18 @@ class ClientEventSubscriber implements EventSubscriberInterface {
 	}
 
 	/**
-	 * @param string $phpUnitArguments
+	 * @param array|string $phpUnitArguments
 	 */
 	public function setPhpUnitArguments($phpUnitArguments) {
-		$this->testRunner->setPhpUnitArguments(str_replace('\\', '', $phpUnitArguments));
+		if (is_string($phpUnitArguments)) {
+			$argumentsString = $phpUnitArguments;
+		} else {
+			$argumentsString = '';
+			foreach ($phpUnitArguments as $name => $value) {
+				$argumentsString .= $name . ' ' . $value;
+			}
+		}
+		$this->testRunner->setPhpUnitArguments($argumentsString);
 	}
 
 	/**
