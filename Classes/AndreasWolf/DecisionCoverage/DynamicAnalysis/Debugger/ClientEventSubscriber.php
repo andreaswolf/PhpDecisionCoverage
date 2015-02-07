@@ -99,6 +99,7 @@ class ClientEventSubscriber implements EventSubscriberInterface {
 	 */
 	public function sessionInitializedHandler(SessionEvent $event) {
 		$session = $event->getSession();
+		$session->disableAutorun();
 
 		$breakpointService = new BreakpointService($session, $this->dataSet, $this->logger);
 		$this->client->addSubscriber($breakpointService);
@@ -113,6 +114,7 @@ class ClientEventSubscriber implements EventSubscriberInterface {
 
 		\React\Promise\all($promises)->then(function() use ($session) {
 			echo "All breakpoints set\n";
+			$session->run();
 		}, function() {
 			echo "Setting breakpoints failed\n";
 		});
