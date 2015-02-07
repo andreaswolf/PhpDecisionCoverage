@@ -4,6 +4,8 @@ namespace AndreasWolf\DecisionCoverage\DynamicAnalysis\Data;
 use AndreasWolf\DebuggerClient\Protocol\Response\ExpressionValue;
 use AndreasWolf\DebuggerClient\Session\DebugSession;
 use PhpParser\Node\Expr;
+use Psr\Log\LoggerInterface;
+use Psr\Log\NullLogger;
 use React\Promise;
 
 
@@ -19,13 +21,23 @@ class DebuggerEngineDataFetcher {
 	 */
 	protected $valueFetchers = array();
 
+	/**
+	 * @var LoggerInterface
+	 */
+	protected $logger;
 
 
-	public function __construct(DebugSession $session) {
+
+	public function __construct(DebugSession $session, LoggerInterface $logger = NULL) {
 		$this->valueFetchers = array(
 			new PropertyValueFetcher($session),
 			new EvalValueFetcher($session),
 		);
+		if (!$logger) {
+			$logger = new NullLogger();
+		}
+
+		$this->logger = $logger;
 	}
 
 	/**
@@ -40,13 +52,17 @@ class DebuggerEngineDataFetcher {
 	public function fetchValuesForExpressions($expressions, DataSample $dataSet) {
 		$promises = array();
 
+		$this->logger->debug('Fetching values for ' . count($expressions) . ' expressions.');
+		$i = 0;
 		/** @var Expr $expression */
 		foreach ($expressions as $expression) {
+			++$i;
 			$fetch = new ValueFetch($expression);
 			$fetcher = $this->getFetcherForExpression($expression);
 
 			$promise = $fetcher->fetch($fetch);
-			$promise->then(function(ExpressionValue $value) use ($expression, $fetch, $dataSet) {
+			$promise->then(function(ExpressionValue $value) use ($expression, $fetch, $dataSet, $i) {
+				$this->logger->debug('Received value for expression ' . $i);
 				// add the value to the data set when it was returned by the debugger engine
 				$dataSet->addValue($expression, $value);
 			});

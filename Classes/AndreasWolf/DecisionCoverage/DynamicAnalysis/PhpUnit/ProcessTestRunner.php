@@ -1,6 +1,8 @@
 <?php
 namespace AndreasWolf\DecisionCoverage\DynamicAnalysis\PhpUnit;
 use AndreasWolf\DebuggerClient\Core\Client;
+use Psr\Log\LoggerInterface;
+use Psr\Log\NullLogger;
 use Symfony\Component\Process\PhpProcess;
 use Symfony\Component\Process\Process;
 use Symfony\Component\Process\ProcessBuilder;
@@ -25,6 +27,19 @@ class ProcessTestRunner {
 	 */
 	protected $phpUnitArguments;
 
+	/**
+	 * @var LoggerInterface
+	 */
+	protected $logger;
+
+
+	public function __construct(LoggerInterface $logger = NULL) {
+		if (!$logger) {
+			$logger = new NullLogger();
+		}
+
+		$this->logger = $logger;
+	}
 
 	public function run(Client $client) {
 		$this->fifoFile = sys_get_temp_dir() . '/fifo-' . uniqid();
@@ -76,7 +91,7 @@ class ProcessTestRunner {
 		$fifo = posix_mkfifo($this->fifoFile, 0600);
 
 		$fifoHandle = fopen($this->fifoFile, 'r+');
-		$listenerOutputStream = new TestListenerOutputStream($fifoHandle, $client);
+		$listenerOutputStream = new TestListenerOutputStream($fifoHandle, $client, $this->logger);
 
 		$client->attachStream($listenerOutputStream);
 	}

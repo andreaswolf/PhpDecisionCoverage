@@ -57,7 +57,7 @@ class ClientEventSubscriber implements EventSubscriberInterface {
 		$this->dataSet = $coverageDataSet;
 		$this->logger = $logger;
 
-		$this->testRunner = new ProcessTestRunner($client);
+		$this->testRunner = new ProcessTestRunner($this->logger);
 	}
 
 	/**
@@ -123,6 +123,8 @@ class ClientEventSubscriber implements EventSubscriberInterface {
 			if ($e->getSession() != $session) {
 				return;
 			}
+
+			$this->logger->debug('Test process status: ' . $this->testRunner->getProcessStatus());
 
 			// session has ended, so remove breakpoint service
 			if ($session->getStatus() == DebugSession::STATUS_STOPPED) {

@@ -76,6 +76,7 @@ class BreakpointService implements EventSubscriberInterface {
 
 		$probesByLine = $this->arrangeProbesByLine($probes);
 
+		echo "[DEBUG] Setting breakpoints for ", count($probesByLine), "\n";
 		/** @var int $lineNumber  @var Probe[] $probes */
 		foreach ($probesByLine as $lineNumber => $probes) {
 			$debuggerBreakpoint = new LineBreakpoint($filePath, $lineNumber);
@@ -98,6 +99,7 @@ class BreakpointService implements EventSubscriberInterface {
 	public function breakpointHitHandler(BreakpointEvent $event) {
 		$debuggerBreakpoint = $event->getBreakpoint();
 		$probeConnector = $this->findProbesForBreakpoint($debuggerBreakpoint);
+		$this->logger->debug('Hit breakpoint ' . $debuggerBreakpoint);
 
 		$promises = [];
 		foreach ($probeConnector->getProbes() as $probe) {
@@ -105,7 +107,9 @@ class BreakpointService implements EventSubscriberInterface {
 		}
 
 		if (count($promises) > 0) {
+			$this->logger->debug('Waiting for data from ' . count($promises) . ' promises.');
 			$overallPromise = Promise\all($promises)->then(function() use ($event) {
+				$this->logger->debug('Received all data. Continuing session.');
 				$event->getSession()->run();
 			});
 		} else {
@@ -122,13 +126,13 @@ class BreakpointService implements EventSubscriberInterface {
 	protected function collectProbeData(Probe $probe) {
 		$promise = NULL;
 		if ($probe instanceof DataCollectionProbe) {
-			$this->logger->debug('Collecting data.');
 			if ($probe->hasWatchedExpressions()) {
 				$fetcher = $this->getDataFetcher();
 				$dataSet = new DataSample($probe);
 				$fetchPromise = $fetcher->fetchValuesForExpressions($probe->getWatchedExpressions(), $dataSet);
 
 				$fetchPromise->then(function() use ($dataSet) {
+					$this->logger->debug('Received all data, adding data sample.');
 					$this->coverageData->addSample($dataSet);
 				});
 
@@ -154,7 +158,7 @@ class BreakpointService implements EventSubscriberInterface {
 		static $fetcher;
 
 		if (!$fetcher) {
-			$fetcher = new DebuggerEngineDataFetcher($this->session);
+			$fetcher = new DebuggerEngineDataFetcher($this->session, $this->logger);
 		}
 		return $fetcher;
 	}

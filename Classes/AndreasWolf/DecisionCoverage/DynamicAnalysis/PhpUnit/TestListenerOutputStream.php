@@ -5,6 +5,8 @@ use AndreasWolf\DebuggerClient\Streams\StreamDataHandler;
 use AndreasWolf\DebuggerClient\Streams\StreamWrapper;
 use AndreasWolf\DecisionCoverage\Core\Bootstrap;
 use AndreasWolf\DecisionCoverage\Event\TestEvent;
+use Psr\Log\LoggerInterface;
+use Psr\Log\NullLogger;
 use Symfony\Component\EventDispatcher\EventDispatcherInterface;
 
 
@@ -20,10 +22,15 @@ class TestListenerOutputStream extends StreamWrapper implements StreamDataHandle
 	 */
 	protected $eventDispatcher;
 
-	public function __construct($stream, EventDispatcherInterface $eventDispatcher) {
+	public function __construct($stream, EventDispatcherInterface $eventDispatcher, LoggerInterface $logger = NULL) {
+		if (!$logger) {
+			$logger = new NullLogger();
+		}
+
 		parent::__construct($stream);
 		$this->dataHandler = $this;
 		$this->eventDispatcher = $eventDispatcher;
+		$this->logger = $logger;
 
 		stream_set_blocking($stream, 0);
 	}
@@ -83,6 +90,7 @@ class TestListenerOutputStream extends StreamWrapper implements StreamDataHandle
 			case 'test.end':
 				$test = new Test($message['testClass'], $message['testName']);
 				$event = new TestEvent($test);
+				$this->logger->debug('Received event ' . $message['event'] . ' from test runner', $message);
 
 				$this->eventDispatcher->dispatch($message['event'], $event);
 		}
