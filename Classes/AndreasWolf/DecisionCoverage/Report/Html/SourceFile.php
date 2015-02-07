@@ -15,12 +15,12 @@ class SourceFile {
 	/**
 	 * @var SourceLine[]
 	 */
-	protected $lines;
+	protected $lines = [];
 
 	/**
 	 * @var Coverage[]
 	 */
-	protected $coverages;
+	protected $coverages = [];
 
 
 	/**

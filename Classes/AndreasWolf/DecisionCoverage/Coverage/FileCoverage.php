@@ -21,7 +21,7 @@ class FileCoverage implements CoverageAggregate {
 	/**
 	 * @var Coverage[]
 	 */
-	protected $coverages;
+	protected $coverages = [];
 
 
 	public function __construct($filePath) {
