@@ -2,7 +2,7 @@
 <decision-coverage>
 	<project name="someProject" source="/tmp/coverage/projectSource" workdir="/tmp/coverage/workDir">
 		<tests>
-			<argument name="--filter" value="" />
+			<argument name="--filter" value="test" />
 		</tests>
 		<report>
 			<writer format="html" outputdir="/tmp/coverage/report/html/" />

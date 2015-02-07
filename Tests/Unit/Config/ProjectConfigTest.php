@@ -28,4 +28,14 @@ class ProjectConfigTest extends UnitTestCase {
 		$this->assertEquals('/tmp/coverage/workDir', $projectConfig->getWorkingDirectory()->getPathname());
 	}
 
+	/**
+	 * @test
+	 */
+	public function phpUnitArgumentsCanBeRetrieved() {
+		$applicationConfig = $this->loadConfiguration('SimpleConfiguration');
+		$projectConfig = $applicationConfig->getProjectConfig();
+
+		$this->assertEquals(array('--filter' => 'test'), $projectConfig->getPhpUnitArguments());
+	}
+
 }

@@ -31,6 +31,18 @@ class ProjectConfig {
 		return new \SplFileInfo($this->cfg->attributes->getNamedItem('workdir')->textContent);
 	}
 
+	public function getPhpUnitArguments() {
+		$argumentNodes = $this->cfg->query('//tests/argument');
+		$arguments = [];
+		/** @var \DOMNode $argumentNode */
+		foreach ($argumentNodes as $argumentNode) {
+			$nodeAttributes = $argumentNode->attributes;
+			$arguments[$nodeAttributes->getNamedItem('name')->textContent] = $nodeAttributes->getNamedItem('value')->textContent;
+		}
+
+		return $arguments;
+	}
+
 	public function getReportConfig() {
 		$reportNode = $this->cfg->queryOne('//project/report');
 
