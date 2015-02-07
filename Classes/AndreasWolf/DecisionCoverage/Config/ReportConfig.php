@@ -20,11 +20,31 @@ class ReportConfig {
 	}
 
 	public function getWriterType() {
-		return (string)$this->cfg->queryOne('//writer')->getAttribute('format');
+		return (string)$this->getWriter()->getAttribute('format');
 	}
 
+	/**
+	 * @return \SplFileInfo
+	 */
 	public function getOutputDirectory() {
-		return new \SplFileInfo((string)$this->cfg->queryOne('//writer')->getAttribute('outputdir'));
+		$outputDir = (string)$this->getWriter()->getAttribute('outputdir');
+		if (!$outputDir) {
+			throw new \InvalidArgumentException('No output dir defined for report writer');
+		}
+
+		return new \SplFileInfo($outputDir);
+	}
+
+	/**
+	 * @return mixed
+	 */
+	protected function getWriter() {
+		$writer = $this->cfg->queryOne('//writer');
+		if (!$writer) {
+			throw new \InvalidArgumentException('No report writer defined');
+		}
+
+		return $writer;
 	}
 
 }
