@@ -62,6 +62,10 @@ class ProcessTestRunner {
 		$this->process->start();
 	}
 
+	public function getProcessStatus() {
+		return $this->process->getStatus();
+	}
+
 	/**
 	 * @param string $phpUnitArguments
 	 */
