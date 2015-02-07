@@ -18,6 +18,11 @@ use Symfony\Component\Process\ProcessBuilder;
 class ProcessTestRunner {
 
 	/**
+	 * @var Process
+	 */
+	protected $process;
+
+	/**
 	 * @var string
 	 */
 	protected $fifoFile;
@@ -48,13 +53,13 @@ class ProcessTestRunner {
 		$arguments = $this->getTestRunArguments();
 		array_unshift($arguments, '/usr/bin/env', 'php');
 
-		$process = ProcessBuilder::create($arguments)
+		$this->process = ProcessBuilder::create($arguments)
 			->addEnvironmentVariables(array('XDEBUG_CONFIG' => 'IDEKEY=DecisionCoverage'))
 			->getProcess();
 
 		// we must use start instead of run() because we need to take back control when the process has started;
 		// otherwise the process would hang indefinitely.
-		$process->start();
+		$this->process->start();
 	}
 
 	/**
