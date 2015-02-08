@@ -1,19 +1,12 @@
 <?php
 namespace AndreasWolf\DecisionCoverage\Console;
+use AndreasWolf\DecisionCoverage\Config\ProjectConfig;
 use AndreasWolf\DecisionCoverage\Core\Bootstrap;
-use AndreasWolf\DecisionCoverage\Coverage\Builder\CoverageCalculationDirector;
-use AndreasWolf\DecisionCoverage\Coverage\CoverageSet;
 use AndreasWolf\DecisionCoverage\DynamicAnalysis\Data\CoverageDataSet;
 use AndreasWolf\DecisionCoverage\DynamicAnalysis\Persistence\SerializedObjectMapper;
-use AndreasWolf\DecisionCoverage\Report\Generator;
-use AndreasWolf\DecisionCoverage\Report\Html\HtmlWriter;
-use Monolog\Handler\StreamHandler;
-use Monolog\Logger;
-use Symfony\Component\Console\Command\Command;
-use Symfony\Component\Console\Input\InputArgument;
 use Symfony\Component\Console\Input\InputInterface;
-use Symfony\Component\Console\Input\InputOption;
 use Symfony\Component\Console\Output\OutputInterface;
+use Symfony\Component\EventDispatcher\EventDispatcher;
 
 
 /**
@@ -21,7 +14,7 @@ use Symfony\Component\Console\Output\OutputInterface;
  *
  * @author Andreas Wolf <aw@foundata.net>
  */
-class BuildCoverageCommand extends Command {
+class BuildCoverageCommand extends BaseCommand {
 
 	/**
 	 */
@@ -29,60 +22,32 @@ class BuildCoverageCommand extends Command {
 		Bootstrap::getInstance()->run();
 
 		$this->setName('build')
-			->setDescription('Calculates coverage.')
-			->addArgument('coverage-file', InputArgument::REQUIRED, 'The analysis file to use.')
-			->addOption('output', null, InputOption::VALUE_REQUIRED, 'The file to use for coverage data gathered from the tests.');
+			->setDescription('Calculates coverage.');
+
+		$this->addGenericOptions();
 	}
 
 	protected function execute(InputInterface $input, OutputInterface $output) {
-		$coverageDataSet = $this->loadCoverageData($input->getArgument('coverage-file'));
+		$configuration = $this->loadConfiguration($input->getOption('config'));
+		$projectConfig = $configuration->getProjectConfig();
+		$this->logger = $this->initLog($configuration, $input->getOption('debug'));
 
-		$log = new Logger('BuildCoverage');
-		$log->pushHandler(new StreamHandler('/tmp/debug.log'));
-		if ($input->getOption('verbose') === TRUE) {
-			$log->pushHandler(new StreamHandler(STDOUT));
-		}
+		$eventDispatcher = new EventDispatcher();
 
-		$coverageSet = new CoverageSet($coverageDataSet);
-		$director = new CoverageCalculationDirector($coverageSet, NULL, NULL, NULL, $log);
-		$director->build($coverageDataSet);
-
-		$tempDir = $this->makeTemporaryDirectory();
-		$writers = array(new HtmlWriter($tempDir, $log));
-
-		$reportGenerator = new Generator($writers, $log);
-		$reportGenerator->generateCoverageReport($coverageSet);
-
-		$outputFile = $input->getOption('output');
-		if (!$outputFile) {
-			$outputFile = tempnam(sys_get_temp_dir(), 'coverage-output-');
-			$log->warn('No log file defined. Outputting generated coverage to ' . $outputFile);
-		}
-		file_put_contents($outputFile, serialize($coverageSet));
+		$dataSet = $this->loadCoverageData($projectConfig);
+		$this->generateCoverageReport($dataSet, $projectConfig);
 	}
 
 	/**
-	 * @param string $fileName
+	 * @param ProjectConfig $config
 	 * @return CoverageDataSet
 	 */
-	protected function loadCoverageData($fileName) {
+	protected function loadCoverageData(ProjectConfig $config) {
 		$dataMapper = new SerializedObjectMapper();
-		$coverageDataSet = $dataMapper->readFromFile($fileName);
+		$coverageDataSet = $dataMapper->readFromFile($config->getWorkingDirectory() . '/dynamic-analysis.bin');
 
 		return $coverageDataSet;
 	}
-
-	/**
-	 * @return string
-	 */
-	protected function makeTemporaryDirectory() {
-		// did not test this for real randomness, but should be enough for this purpose
-		$randomHash = sha1((string)microtime() . (string)mt_rand(0, 10000));
-		$directory = sys_get_temp_dir() . '/coverage-' . substr($randomHash, 0, 10);
-		mkdir($directory);
-
-		return $directory;
-}
 
 }
  

@@ -22,6 +22,7 @@
 		"andreaswolf/php-debugger-client": "dev-master",
 		"andreaswolf/binary-decision-diagrams": "dev-master",
 		"symfony/console": "~2.6@dev",
+		"symfony/filesystem": "~2.6",
 		"symfony/process": "~3.0@dev",
 		"rhumsaa/uuid": "~2.8@dev",
 		"monolog/monolog": "~1.11@dev",
