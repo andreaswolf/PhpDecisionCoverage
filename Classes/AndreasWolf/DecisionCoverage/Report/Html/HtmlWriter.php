@@ -11,7 +11,7 @@ use TheSeer\fXSL\fXSLTProcessor;
 class HtmlWriter implements Writer {
 
 	/**
-	 * @var string
+	 * @var \SplFileInfo
 	 */
 	protected $basePath;
 
@@ -32,7 +32,7 @@ class HtmlWriter implements Writer {
 		}
 		$this->logger = $logger;
 
-		$this->basePath = rtrim($basePath, '/') . '/';
+		$this->basePath = $basePath;
 	}
 
 	public function writeReportForSourceFile(SourceFile $file) {
@@ -52,7 +52,7 @@ class HtmlWriter implements Writer {
 
 		$xmlDocument = $xmlFileBuilder->build();
 
-		$reportFile = $this->basePath . $this->getReportTargetFilename($file);
+		$reportFile = $this->basePath->getPathname() . '/' . $this->getReportTargetFilename($file);
 		file_put_contents($reportFile . '.xml', $xmlDocument->saveXML());
 
 		$contents = $xslProcessor->transformToXml($xmlDocument);
