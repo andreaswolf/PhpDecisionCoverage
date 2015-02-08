@@ -3,6 +3,8 @@ namespace AndreasWolf\DecisionCoverage\Source;
 
 use AndreasWolf\DecisionCoverage\Coverage\StackingIterator;
 use AndreasWolf\DecisionCoverage\Event\IteratorEvent;
+use AndreasWolf\DecisionCoverage\StaticAnalysis\DataCollectionProbe;
+use AndreasWolf\DecisionCoverage\StaticAnalysis\Probe;
 use PhpParser\Node;
 use Symfony\Component\EventDispatcher\EventDispatcher;
 use Symfony\Component\EventDispatcher\EventSubscriberInterface;
@@ -47,8 +49,15 @@ class SyntaxTreePrinter implements EventSubscriberInterface {
 			$probes = $currentItem->getAttribute('coverage__probe');
 			$outputLine("    Probes: " . count($probes));
 
+			/** @var Probe[] $probe */
 			foreach ($probes as $probe) {
 				$outputLine("    - Probe: " . get_class($probe));
+				if ($probe instanceof DataCollectionProbe) {
+					$outputLine("      Watched expressions (" . count($probe->getWatchedExpressions()) . "):");
+					foreach ($probe->getWatchedExpressions() as $expr) {
+						$outputLine("        - " . $expr->getAttribute('coverage__nodeId'));
+					}
+				}
 			}
 		}
 	}
