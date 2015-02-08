@@ -60,7 +60,7 @@ class CoverageCommand extends BaseCommand {
 
 		$dataSet = $this->performDynamicAnalysis($analysisResult, $projectConfig);
 
-		$this->generateCoverageReport($dataSet, $projectConfig);
+		$this->generateCoverageReport($dataSet, $projectConfig, $output);
 
 		return NULL;
 	}

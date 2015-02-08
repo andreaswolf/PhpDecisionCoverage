@@ -19,6 +19,7 @@ use AndreasWolf\DecisionCoverage\StaticAnalysis\ResultSet;
 use Psr\Log\LoggerInterface;
 use Symfony\Component\Console\Command\Command;
 use Symfony\Component\Console\Input\InputOption;
+use Symfony\Component\Console\Output\OutputInterface;
 use Symfony\Component\EventDispatcher\EventDispatcher;
 use Symfony\Component\EventDispatcher\EventDispatcherInterface;
 use Symfony\Component\Filesystem\Filesystem;
@@ -30,6 +31,12 @@ class BaseCommand extends Command {
 	 * @var LoggerInterface
 	 */
 	protected $logger;
+
+	/**
+	 * @var OutputInterface
+	 */
+	protected $output;
+
 
 	/**
 	 * Adds options that all commands should support (output verbosity, configuration file, …)
@@ -150,10 +157,12 @@ class BaseCommand extends Command {
 	/**
 	 * @param CoverageDataSet $dataSet
 	 * @param ProjectConfig $projectConfig
+	 * @param OutputInterface $output
 	 */
-	protected function generateCoverageReport(CoverageDataSet $dataSet, ProjectConfig $projectConfig) {
+	protected function generateCoverageReport(CoverageDataSet $dataSet, ProjectConfig $projectConfig,
+	                                          OutputInterface $output) {
 		$coverageSet = new CoverageSet($dataSet);
-		$director = new CoverageCalculationDirector($coverageSet, NULL, NULL, NULL, $this->logger);
+		$director = new CoverageCalculationDirector($coverageSet, $output, NULL, NULL, NULL, $this->logger);
 		$director->build($dataSet);
 
 		$outputDir = $projectConfig->getReportConfig()->getOutputDirectory();

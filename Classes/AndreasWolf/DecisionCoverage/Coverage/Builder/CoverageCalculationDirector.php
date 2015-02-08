@@ -1,7 +1,10 @@
 <?php
 namespace AndreasWolf\DecisionCoverage\Coverage\Builder;
 
+use AndreasWolf\DecisionCoverage\Coverage\CoverageBuildProgressReporter;
 use AndreasWolf\DecisionCoverage\Coverage\CoverageSet;
+use AndreasWolf\DecisionCoverage\Coverage\Event\CoverageDataSetEvent;
+use AndreasWolf\DecisionCoverage\Coverage\Event\CoverageEvent;
 use AndreasWolf\DecisionCoverage\Coverage\Event\SampleEvent;
 use AndreasWolf\DecisionCoverage\Coverage\FileCoverage;
 use AndreasWolf\DecisionCoverage\Coverage\MethodCoverage;
@@ -13,6 +16,7 @@ use AndreasWolf\DecisionCoverage\StaticAnalysis\SyntaxTree\SyntaxTreeStack;
 use PhpParser\Node;
 use Psr\Log\LoggerInterface;
 use Psr\Log\NullLogger;
+use Symfony\Component\Console\Output\OutputInterface;
 use Symfony\Component\EventDispatcher\EventDispatcher;
 use Symfony\Component\EventDispatcher\EventDispatcherInterface;
 
@@ -50,14 +54,15 @@ class CoverageCalculationDirector {
 
 	/**
 	 * @param CoverageSet $coverageSet The coverage data set to insert the generated coverage into
+	 * @param OutputInterface $output
 	 * @param CoverageBuilderFactory $factory
 	 * @param ExpressionService $expressionService
 	 * @param EventDispatcherInterface $eventDispatcher The event dispatcher to use. Optional because the events used
 	 *   here don't necessarily need to be handled globally
 	 * @param LoggerInterface $log
 	 */
-	public function __construct(CoverageSet $coverageSet, CoverageBuilderFactory $factory = NULL,
-	                            ExpressionService $expressionService = NULL,
+	public function __construct(CoverageSet $coverageSet, OutputInterface $output,
+	                            CoverageBuilderFactory $factory = NULL, ExpressionService $expressionService = NULL,
 	                            EventDispatcherInterface $eventDispatcher = NULL, LoggerInterface $log = NULL) {
 		if (!$eventDispatcher) {
 			$eventDispatcher = new EventDispatcher();
@@ -78,16 +83,25 @@ class CoverageCalculationDirector {
 		$this->eventDispatcher = $eventDispatcher;
 		$this->expressionService = $expressionService;
 		$this->log = $log;
+
+		if ($output->getVerbosity() >= OutputInterface::VERBOSITY_NORMAL) {
+			$this->eventDispatcher->addSubscriber(new CoverageBuildProgressReporter($output));
+		}
 	}
 
 	/**
 	 */
 	public function build() {
-		$this->createCoverageBuildersForDataSet($this->coverageSet->getDataSet());
+		$dataSet = $this->coverageSet->getDataSet();
+		$this->createCoverageBuildersForDataSet($dataSet);
+		$this->eventDispatcher->dispatch('coverage.build.start', new CoverageDataSetEvent($dataSet));
 
-		foreach ($this->coverageSet->getDataSet()->getSamples() as $dataSample) {
+		$samples = $dataSet->getSamples();
+		foreach ($samples as $dataSample) {
 			$this->eventDispatcher->dispatch('coverage.sample.received', new SampleEvent($dataSample));
 		}
+
+		$this->eventDispatcher->dispatch('coverage.build.end', new CoverageDataSetEvent($dataSet));
 	}
 
 	/**

@@ -35,7 +35,7 @@ class BuildCoverageCommand extends BaseCommand {
 		$eventDispatcher = new EventDispatcher();
 
 		$dataSet = $this->loadCoverageData($projectConfig);
-		$this->generateCoverageReport($dataSet, $projectConfig);
+		$this->generateCoverageReport($dataSet, $projectConfig, $output);
 	}
 
 	/**
