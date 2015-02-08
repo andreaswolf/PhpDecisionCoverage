@@ -48,19 +48,17 @@ class CoverageCommand extends BaseCommand {
 		$eventDispatcher = new EventDispatcher();
 
 
+		$output->writeln('<info>Starting static analysis</info>');
 		$analysisResult = $this->performStaticAnalysis($eventDispatcher, $projectConfig);
+		$output->writeln('<info>Static analysis finished</info>');
 
-		// And this, kids, is the story of how PHP f*cked up my brain… Without this line, doing the next step (test running)
-		// may fail with very weird symptoms–I had the debugger engine stream reach EOF before the first command
-		// was issued by us. It took a few hours of continuous debugging to get to this point.
-		// My best bet for now is that PHP’s garbage collection is a bit too aggressive here and removes parts of the
-		// analysis object which hold a reference to the debugger engine stream. Another guess is a bug in the internal
-		// resource reference system of PHP, but that’s really an uneducated and wild guess.
-		//$analysisResult = unserialize(serialize($analysisResult));
-
+		$output->writeln('<info>Starting dynamic analysis</info>');
 		$dataSet = $this->performDynamicAnalysis($analysisResult, $projectConfig, $output);
+		$output->writeln('<info>Dynamic analysis finished</info>');
 
+		$output->writeln('<info>Starting coverage reporting</info>');
 		$this->generateCoverageReport($dataSet, $projectConfig, $output);
+		$output->writeln('<info>Coverage reporting finished</info>');
 
 		return NULL;
 	}
