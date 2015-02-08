@@ -36,7 +36,7 @@ class SyntaxTreePrinter implements EventSubscriberInterface {
 		$line = $currentItem->getType();
 
 		if (in_array('name', $currentItem->getSubnodeNames())) {
-			$line .= " [" . $currentItem->name . "]";
+			$line .= " [" . $this->printName($currentItem) . "]";
 		}
 		if ($currentItem->hasAttribute('coverage__nodeId')) {
 			$line .= " – node ID: " . $currentItem->getAttribute('coverage__nodeId');
@@ -64,6 +64,17 @@ class SyntaxTreePrinter implements EventSubscriberInterface {
 		return array(
 			'iteration.next' => 'treeNodeHandler'
 		);
+	}
+
+	/**
+	 * @param $currentItem
+	 * @return mixed
+	 */
+	protected function printName($currentItem) {
+		if ($currentItem->name instanceof Node\Expr\Variable) {
+			return $this->printName($currentItem->name);
+		}
+		return $currentItem->name;
 	}
 
 
