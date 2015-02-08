@@ -39,7 +39,7 @@ class RunTestsCommand extends BaseCommand {
 		$this->logger = $this->initLog($configuration, $input->getOption('debug'));
 
 		$analysisResult = $this->loadStaticAnalysisData($projectConfig);
-		$dataSet = $this->performDynamicAnalysis($analysisResult, $projectConfig);
+		$dataSet = $this->performDynamicAnalysis($analysisResult, $projectConfig, $output);
 
 		return NULL;
 	}

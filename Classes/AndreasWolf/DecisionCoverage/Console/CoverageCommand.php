@@ -58,7 +58,7 @@ class CoverageCommand extends BaseCommand {
 		// resource reference system of PHP, but that’s really an uneducated and wild guess.
 		//$analysisResult = unserialize(serialize($analysisResult));
 
-		$dataSet = $this->performDynamicAnalysis($analysisResult, $projectConfig);
+		$dataSet = $this->performDynamicAnalysis($analysisResult, $projectConfig, $output);
 
 		$this->generateCoverageReport($dataSet, $projectConfig, $output);
 

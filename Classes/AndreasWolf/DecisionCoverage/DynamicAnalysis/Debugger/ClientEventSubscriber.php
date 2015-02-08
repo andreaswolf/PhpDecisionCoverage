@@ -7,9 +7,11 @@ use AndreasWolf\DebuggerClient\Session\DebugSession;
 use AndreasWolf\DecisionCoverage\DynamicAnalysis\Data\CoverageDataSet;
 use AndreasWolf\DecisionCoverage\DynamicAnalysis\PhpUnit\ProcessTestRunner;
 use AndreasWolf\DecisionCoverage\DynamicAnalysis\PhpUnit\TestEventHandler;
+use AndreasWolf\DecisionCoverage\DynamicAnalysis\TestProgressReporter;
 use AndreasWolf\DecisionCoverage\StaticAnalysis\ResultSet;
 use Psr\Log\LoggerInterface;
 use Psr\Log\NullLogger;
+use Symfony\Component\Console\Output\OutputInterface;
 use Symfony\Component\EventDispatcher\Event;
 use Symfony\Component\EventDispatcher\EventSubscriberInterface;
 
@@ -49,7 +51,8 @@ class ClientEventSubscriber implements EventSubscriberInterface {
 	protected $logger;
 
 
-	public function __construct(Client $client, CoverageDataSet $coverageDataSet, LoggerInterface $logger = NULL) {
+	public function __construct(Client $client, CoverageDataSet $coverageDataSet, OutputInterface $output,
+	                            LoggerInterface $logger = NULL) {
 		if (!$logger) {
 			$logger = new NullLogger();
 		}
@@ -58,6 +61,10 @@ class ClientEventSubscriber implements EventSubscriberInterface {
 		$this->logger = $logger;
 
 		$this->testRunner = new ProcessTestRunner($this->logger);
+
+		if ($output->getVerbosity() >= OutputInterface::VERBOSITY_NORMAL) {
+			$client->addSubscriber(new TestProgressReporter($output));
+		}
 	}
 
 	/**

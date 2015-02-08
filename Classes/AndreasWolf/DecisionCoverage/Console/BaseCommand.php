@@ -11,6 +11,7 @@ use AndreasWolf\DecisionCoverage\Coverage\Builder\CoverageCalculationDirector;
 use AndreasWolf\DecisionCoverage\Coverage\CoverageSet;
 use AndreasWolf\DecisionCoverage\DynamicAnalysis\Data\CoverageDataSet;
 use AndreasWolf\DecisionCoverage\DynamicAnalysis\Debugger\ClientEventSubscriber;
+use AndreasWolf\DecisionCoverage\DynamicAnalysis\TestProgressReporter;
 use AndreasWolf\DecisionCoverage\Report\Generator;
 use AndreasWolf\DecisionCoverage\Report\Html\HtmlWriter;
 use AndreasWolf\DecisionCoverage\StaticAnalysis\FileAnalyzer;
@@ -108,9 +109,11 @@ class BaseCommand extends Command {
 	/**
 	 * @param ResultSet $analysisResult
 	 * @param ProjectConfig $projectConfig
+	 * @param OutputInterface $output
 	 * @return CoverageDataSet
 	 */
-	protected function performDynamicAnalysis($analysisResult, $projectConfig) {
+	protected function performDynamicAnalysis(ResultSet $analysisResult, ProjectConfig $projectConfig,
+	                                          OutputInterface $output) {
 		$debuggerEventDispatcher = new EventDispatcher();
 		// TODO we should pass this to the client instance instead once the debugger client does not use the bootstrap
 		// dispatcher anymore
@@ -121,7 +124,7 @@ class BaseCommand extends Command {
 		$debuggerClient->quitAfterCurrentSession();
 
 		$dataSet = new CoverageDataSet($analysisResult);
-		$this->createAndAttachEventSubscriber($projectConfig, $debuggerClient, $dataSet, $analysisResult);
+		$this->createAndAttachEventSubscriber($projectConfig, $debuggerClient, $dataSet, $analysisResult, $output);
 
 		$debuggerClient->run();
 
@@ -135,10 +138,12 @@ class BaseCommand extends Command {
 	 * @param Client $debuggerClient
 	 * @param CoverageDataSet $dataSet
 	 * @param ResultSet $staticAnalysisResults
+	 * @param OutputInterface $output
 	 */
 	protected function createAndAttachEventSubscriber(ProjectConfig $projectConfig, Client $debuggerClient,
-	                                                  CoverageDataSet $dataSet, ResultSet $staticAnalysisResults) {
-		$clientEventSubscriber = new ClientEventSubscriber($debuggerClient, $dataSet, $this->logger);
+	                                                  CoverageDataSet $dataSet, ResultSet $staticAnalysisResults,
+	                                                  OutputInterface $output) {
+		$clientEventSubscriber = new ClientEventSubscriber($debuggerClient, $dataSet, $output, $this->logger);
 		$clientEventSubscriber->setStaticAnalysisResults($staticAnalysisResults);
 		$clientEventSubscriber->setPhpUnitArguments($projectConfig->getPhpUnitArguments());
 
