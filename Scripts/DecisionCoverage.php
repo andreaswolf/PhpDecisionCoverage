@@ -11,6 +11,7 @@ $application->addCommands(array(
 	new \AndreasWolf\DecisionCoverage\Console\RunTestsCommand(),
 	new \AndreasWolf\DecisionCoverage\Console\AnalyzeCommand(),
 	new \AndreasWolf\DecisionCoverage\Console\BuildCoverageCommand(),
+	new \AndreasWolf\DecisionCoverage\Console\CoverageCommand(),
 	new \AndreasWolf\DecisionCoverage\Console\DumpStaticAnalysisCommand(),
 ));
 $application->run();

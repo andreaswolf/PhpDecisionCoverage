@@ -1,10 +1,6 @@
 <?php
 namespace AndreasWolf\DecisionCoverage\Console;
 
-use AndreasWolf\DecisionCoverage\StaticAnalysis\FileAnalyzer;
-use Monolog\Handler\StreamHandler;
-use Monolog\Logger;
-use Symfony\Component\Console\Command\Command;
 use Symfony\Component\Console\Input\InputArgument;
 use Symfony\Component\Console\Input\InputInterface;
 use Symfony\Component\Console\Input\InputOption;
@@ -17,7 +13,7 @@ use Symfony\Component\EventDispatcher\EventDispatcher;
  *
  * @author Andreas Wolf <aw@foundata.net>
  */
-class AnalyzeCommand extends Command {
+class AnalyzeCommand extends BaseCommand {
 
 	/**
 	 * @var InputInterface
@@ -38,9 +34,11 @@ class AnalyzeCommand extends Command {
 	protected function configure() {
 		$this->setName('analyze')
 			->setDescription('Analyzes source code and saves the result')
-			->addArgument('base', InputArgument::REQUIRED, 'The folder that should be analyzed.')
+			->addArgument('base', InputArgument::OPTIONAL, 'The folder that should be analyzed.')
 			->addOption('output', null, InputOption::VALUE_OPTIONAL, 'The file or directory to use for outputting the results. If a directory is given, the filename is automatically determined')
 			->addOption('project', null, InputOption::VALUE_OPTIONAL, 'The project that is analyzed.', null);
+
+		$this->addGenericOptions();
 	}
 
 	/**
@@ -49,39 +47,13 @@ class AnalyzeCommand extends Command {
 	 * @return null|int
 	 */
 	protected function execute(InputInterface $input, OutputInterface $output) {
-		$this->basePath = realpath($input->getArgument('base'));
-		$this->project = $input->getOption('project') ?: str_replace(DIRECTORY_SEPARATOR, '_', ltrim($this->basePath, '/'));
-		$this->input = $input;
+		$configuration = $this->loadConfiguration($input->getOption('config'));
+		$projectConfig = $configuration->getProjectConfig();
+		$this->logger = $this->initLog($configuration, $input->getOption('debug'));
 
-		$log = new Logger('Analyze');
-		$log->pushHandler(new StreamHandler(STDOUT));
+		$eventDispatcher = new EventDispatcher();
 
-		$analyzer = new FileAnalyzer(new EventDispatcher(), $log);
-		$analysisResult = $analyzer->analyzeFolder($this->basePath);
-
-		$analyzer->writeAnalysisResultsToFile($this->getOutputFilePath(), $analysisResult);
-	}
-
-	/**
-	 * Generates the file path for the output file, either for a user-defined or a default path.
-	 *
-	 * @return string
-	 */
-	protected function getOutputFilePath() {
-		$outputPath = $this->input->getOption('output');
-		if (!$outputPath) {
-			// default output dir
-			$outputPath = realpath(__DIR__ . '/../../../../Output');
-		}
-		if (is_dir($outputPath)) {
-			$outputPath = rtrim($outputPath, '/') . '/';
-
-			if (is_dir($outputPath)) {
-				$outputPath .= sprintf('%s_%s.out', date('Y-m-d_H-i'), $this->project);
-			}
-		}
-
-		return $outputPath;
+		$this->performStaticAnalysis($eventDispatcher, $projectConfig);
 	}
 
 }

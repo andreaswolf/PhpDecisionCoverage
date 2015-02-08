@@ -2,19 +2,11 @@
 namespace AndreasWolf\DecisionCoverage\Console;
 
 use AndreasWolf\DebuggerClient\Core\Bootstrap;
-use AndreasWolf\DebuggerClient\Core\Client;
+use AndreasWolf\DecisionCoverage\Config\ProjectConfig;
 use AndreasWolf\DecisionCoverage\DynamicAnalysis\Data\CoverageDataSet;
-use AndreasWolf\DecisionCoverage\DynamicAnalysis\Debugger\ClientEventSubscriber;
 use AndreasWolf\DecisionCoverage\DynamicAnalysis\Persistence\SerializedObjectMapper as DynamicSerializedObjectMapper;
 use AndreasWolf\DecisionCoverage\StaticAnalysis\Persistence\SerializedObjectMapper as StaticSerializedObjectMapper;
-use AndreasWolf\DecisionCoverage\StaticAnalysis\ResultSet;
-use Monolog\Handler\StreamHandler;
-use Monolog\Logger;
-use Psr\Log\LoggerInterface;
-use Symfony\Component\Console\Command\Command;
-use Symfony\Component\Console\Input\InputArgument;
 use Symfony\Component\Console\Input\InputInterface;
-use Symfony\Component\Console\Input\InputOption;
 use Symfony\Component\Console\Output\OutputInterface;
 
 
@@ -23,12 +15,7 @@ use Symfony\Component\Console\Output\OutputInterface;
  *
  * @author Andreas Wolf <aw@foundata.net>
  */
-class RunTestsCommand extends Command {
-
-	/**
-	 * @var LoggerInterface
-	 */
-	protected $logger;
+class RunTestsCommand extends BaseCommand {
 
 	/**
 	 */
@@ -36,10 +23,9 @@ class RunTestsCommand extends Command {
 		Bootstrap::getInstance()->run();
 
 		$this->setName('run')
-			->setDescription('Runs PHPUnit tests.')
-			->addArgument('analysis-file', InputArgument::REQUIRED, 'The analysis file to use.')
-			->addOption('phpunit-arguments', null, InputOption::VALUE_REQUIRED, 'Options for invoking PHPUnit.')
-			->addOption('output', null, InputOption::VALUE_REQUIRED, 'The file to use for data gathered from the tests.');
+			->setDescription('Runs PHPUnit tests.');
+
+		$this->addGenericOptions();
 	}
 
 	/**
@@ -48,22 +34,12 @@ class RunTestsCommand extends Command {
 	 * @return null|int
 	 */
 	protected function execute(InputInterface $input, OutputInterface $output) {
-		$this->assertOptionHasValue($input, 'phpunit-arguments');
-		$this->assertOptionHasValue($input, 'output');
+		$configuration = $this->loadConfiguration($input->getOption('config'));
+		$projectConfig = $configuration->getProjectConfig();
+		$this->logger = $this->initLog($configuration, $input->getOption('debug'));
 
-		$this->logger = new Logger('RunTests', [new StreamHandler('/tmp/debug.log')]);
-
-		$debuggerClient = new Client();
-		// we only need one session, not continuous listening
-		$debuggerClient->quitAfterCurrentSession();
-
-		$staticAnalysisResults = $this->loadStaticAnalysisData($input->getArgument('analysis-file'));
-		$dataSet = new CoverageDataSet($staticAnalysisResults);
-		$this->createAndAttachEventSubscriber($input, $debuggerClient, $dataSet, $staticAnalysisResults);
-
-		$debuggerClient->run();
-
-		$this->storeCoverageDataSet($input->getOption('output'), $dataSet);
+		$analysisResult = $this->loadStaticAnalysisData($projectConfig);
+		$dataSet = $this->performDynamicAnalysis($analysisResult, $projectConfig);
 
 		return NULL;
 	}
@@ -79,39 +55,15 @@ class RunTestsCommand extends Command {
 	}
 
 	/**
-	 * @param string $analysisFile
+	 * @param ProjectConfig $projectConfig
 	 * @return \AndreasWolf\DecisionCoverage\StaticAnalysis\ResultSet
 	 */
-	protected function loadStaticAnalysisData($analysisFile) {
+	protected function loadStaticAnalysisData(ProjectConfig $projectConfig) {
 		$analysisDataMapper = new StaticSerializedObjectMapper();
+		$analysisFile = $projectConfig->getWorkingDirectory() . '/coverage-analysis.bin';
 		$staticAnalysisResults = $analysisDataMapper->loadFromFile($analysisFile);
 
 		return $staticAnalysisResults;
-	}
-
-	/**
-	 * @param string $filePath
-	 * @param CoverageDataSet $results
-	 */
-	protected function storeCoverageDataSet($filePath, CoverageDataSet $results) {
-		$dynamicDataMapper = new DynamicSerializedObjectMapper();
-
-		$dynamicDataMapper->writeToFile($filePath, $results);
-	}
-
-	/**
-	 * @param InputInterface $input
-	 * @param Client $debuggerClient
-	 * @param CoverageDataSet $dataSet
-	 * @param ResultSet $staticAnalysisResults
-	 */
-	protected function createAndAttachEventSubscriber(InputInterface $input, Client $debuggerClient,
-	                                                  CoverageDataSet $dataSet, ResultSet $staticAnalysisResults) {
-		$clientEventSubscriber = new ClientEventSubscriber($debuggerClient, $dataSet, $this->logger);
-		$clientEventSubscriber->setStaticAnalysisResults($staticAnalysisResults);
-		$clientEventSubscriber->setPhpUnitArguments($input->getOption('phpunit-arguments'));
-
-		$debuggerClient->addSubscriber($clientEventSubscriber);
 	}
 
 }
