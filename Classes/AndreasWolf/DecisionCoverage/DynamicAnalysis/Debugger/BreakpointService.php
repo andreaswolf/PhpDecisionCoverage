@@ -76,7 +76,6 @@ class BreakpointService implements EventSubscriberInterface {
 
 		$probesByLine = $this->arrangeProbesByLine($probes);
 
-		echo "[DEBUG] Setting breakpoints for ", count($probesByLine), "\n";
 		/** @var int $lineNumber  @var Probe[] $probes */
 		foreach ($probesByLine as $lineNumber => $probes) {
 			$debuggerBreakpoint = new LineBreakpoint($filePath, $lineNumber);

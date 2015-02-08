@@ -50,6 +50,9 @@ class ClientEventSubscriber implements EventSubscriberInterface {
 	/** @var LoggerInterface */
 	protected $logger;
 
+	/** @var OutputInterface */
+	protected $output;
+
 
 	public function __construct(Client $client, CoverageDataSet $coverageDataSet, OutputInterface $output,
 	                            LoggerInterface $logger = NULL) {
@@ -59,11 +62,12 @@ class ClientEventSubscriber implements EventSubscriberInterface {
 		$this->client = $client;
 		$this->dataSet = $coverageDataSet;
 		$this->logger = $logger;
+		$this->output = $output;
 
 		$this->testRunner = new ProcessTestRunner($this->logger);
 
-		if ($output->getVerbosity() >= OutputInterface::VERBOSITY_NORMAL) {
-			$client->addSubscriber(new TestProgressReporter($output));
+		if ($this->output->getVerbosity() >= OutputInterface::VERBOSITY_NORMAL) {
+			$client->addSubscriber(new TestProgressReporter($this->output));
 		}
 	}
 
@@ -93,11 +97,11 @@ class ClientEventSubscriber implements EventSubscriberInterface {
 	 * @param Event $event
 	 */
 	public function listenerReadyHandler(Event $event) {
-		echo "Client ready\n";
+		$this->output->writeln("<info>Client ready</info>");
 
 		$this->testRunner->run($this->client);
 
-		echo "Started running tests\n";
+		$this->output->writeln("<info>Started running tests</info>");
 	}
 
 	/**
@@ -120,10 +124,10 @@ class ClientEventSubscriber implements EventSubscriberInterface {
 		}
 
 		\React\Promise\all($promises)->then(function() use ($session) {
-			echo "All breakpoints set\n";
+			$this->output->writeln("<info>All breakpoints set</info>");
 			$session->run();
 		}, function() {
-			echo "Setting breakpoints failed\n";
+			$this->output->writeln("<error>Setting (some) breakpoints failed</error>");
 		});
 
 		$this->client->addListener('session.status.changed', function(SessionEvent $e) use ($session, $breakpointService) {
@@ -144,21 +148,7 @@ class ClientEventSubscriber implements EventSubscriberInterface {
 	/**
 	 * Returns an array of event names this subscriber wants to listen to.
 	 *
-	 * The array keys are event names and the value can be:
-	 *
-	 *  * The method name to call (priority defaults to 0)
-	 *  * An array composed of the method name to call and the priority
-	 *  * An array of arrays composed of the method names to call and respective
-	 *    priorities, or 0 if unset
-	 *
-	 * For instance:
-	 *
-	 *  * array('eventName' => 'methodName')
-	 *  * array('eventName' => array('methodName', $priority))
-	 *  * array('eventName' => array(array('methodName1', $priority), array('methodName2'))
-	 *
 	 * @return array The event names to listen to
-	 *
 	 * @api
 	 */
 	public static function getSubscribedEvents() {
