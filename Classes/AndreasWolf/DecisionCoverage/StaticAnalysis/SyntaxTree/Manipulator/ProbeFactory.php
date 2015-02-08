@@ -57,21 +57,22 @@ class ProbeFactory extends AbstractProbeFactory {
 	 * @param Node $rootNode
 	 */
 	protected function addWatchExpressionsToBreakpoint(DataCollectionProbe $probe, Node $rootNode) {
-		$nodeIterator = new \RecursiveIteratorIterator(
-			new SyntaxTreeIterator(array($rootNode), TRUE), \RecursiveIteratorIterator::SELF_FIRST
-		);
+		$watchStack = [$rootNode];
 
-		/** @var Node\Expr $node */
-		foreach ($nodeIterator as $node) {
-			if (!$node instanceof Node\Expr) {
-				continue;
-			}
+		$rootNode->setAttribute('coverage__cover', TRUE);
+		$probe->addWatchedExpression($rootNode);
 
-			if ($this->expressionService->isDecisionExpression($node) || $this->expressionService->isRelationalExpression($node)) {
-				$node->setAttribute('coverage__cover', TRUE);
-				$probe->addWatchedExpression($node);
+		while (count($watchStack) > 0) {
+			$currentNode = array_shift($watchStack);
+
+			if ($this->expressionService->isDecisionExpression($currentNode)) {
+				$watchStack[] = $currentNode->left;
+				$watchStack[] = $currentNode->right;
+			} else {
+				// the node is a condition
+				$currentNode->setAttribute('coverage__cover', TRUE);
+				$probe->addWatchedExpression($currentNode);
 			}
-			// TODO check if we want to cover single variables?
 		}
 	}
 
