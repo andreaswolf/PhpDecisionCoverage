@@ -90,6 +90,10 @@ class DataSample implements Sample {
 	public function getValueFor($nodeIdOrExpression) {
 		$this->ensureNodeId($nodeIdOrExpression);
 
+		if (!isset($this->values[$nodeIdOrExpression])) {
+			throw new \InvalidArgumentException('Could not find value for expression ' . $nodeIdOrExpression);
+		}
+
 		return $this->values[$nodeIdOrExpression];
 	}
 

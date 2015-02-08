@@ -71,7 +71,12 @@ class DecisionCoverageBuilder implements EventSubscriberInterface, CoverageBuild
 		// TODO create in constructor and add as an object property
 		$inputSampleBuilder = new DecisionEvaluationDirector($this->coverage->getExpression());
 
-		$decisionSample = $inputSampleBuilder->evaluate($sample);
+		try {
+			$decisionSample = $inputSampleBuilder->evaluate($sample);
+		} catch (\Exception $e) {
+			throw new \RuntimeException('Could not evaluate input sample for decision '
+				. $this->coverage->getExpression()->getAttribute('coverage__nodeId'), 0, $e);
+		}
 
 		$this->coverage->addSample($decisionSample);
 	}
