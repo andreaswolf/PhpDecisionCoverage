@@ -37,7 +37,7 @@ class SyntaxTreeStack implements EventSubscriberInterface {
 	/**
 	 * @param SyntaxTreeIteratorEvent $event
 	 */
-	public function levelEnteredHandler(SyntaxTreeIteratorEvent $event) {
+	public function levelEnterHandler(SyntaxTreeIteratorEvent $event) {
 		$newElement = $event->getIterator()->current();
 
 		$this->stack[] = $newElement;
@@ -83,7 +83,7 @@ class SyntaxTreeStack implements EventSubscriberInterface {
 	 */
 	public static function getSubscribedEvents() {
 		return array(
-			'syntaxtree.level.entered' => 'levelEnteredHandler',
+			'syntaxtree.level.enter' => 'levelEnterHandler',
 			'syntaxtree.level.left' => 'levelLeftHandler'
 		);
 	}

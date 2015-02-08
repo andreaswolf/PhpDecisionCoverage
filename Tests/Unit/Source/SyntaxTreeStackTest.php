@@ -37,7 +37,7 @@ class SyntaxTreeStackTest extends UnitTestCase {
 		$event = new SyntaxTreeIteratorEvent($mockedIterator);
 
 		$subject = new SyntaxTreeStack($mockedDispatcher);
-		$subject->levelEnteredHandler($event);
+		$subject->levelEnterHandler($event);
 	}
 
 	/**
@@ -51,7 +51,7 @@ class SyntaxTreeStackTest extends UnitTestCase {
 		$event = new SyntaxTreeIteratorEvent($mockedIterator);
 
 		$subject = new SyntaxTreeStack($mockedDispatcher);
-		$subject->levelEnteredHandler($event);
+		$subject->levelEnterHandler($event);
 		$subject->levelLeftHandler($event);
 	}
 
