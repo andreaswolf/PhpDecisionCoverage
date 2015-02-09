@@ -2,17 +2,17 @@
 namespace AndreasWolf\DecisionCoverage\Coverage;
 
 use AndreasWolf\DebuggerClient\Protocol\Response\ExpressionValue;
+use AndreasWolf\DecisionCoverage\Coverage\MCDC\DecisionCoverage;
 
 
 /**
  * Coverage for a method, either within a class or in the global scope.
  *
- * This aggregates the coverage of all statements within the class. In the future, it might also hold special coverage
- * objects for the entry/exit points.
+ * This aggregates the coverage of all statements within the method.
  *
  * @author Andreas Wolf <aw@foundata.net>
  */
-class MethodCoverage implements CoverageAggregate, Coverage {
+class MethodCoverage implements CoverageAggregate {
 
 	/**
 	 * @var string
@@ -30,9 +30,9 @@ class MethodCoverage implements CoverageAggregate, Coverage {
 	protected $entryPointCoverage;
 
 	/**
-	 * @var Coverage[]
+	 * @var DecisionCoverage[]
 	 */
-	protected $coverages = array();
+	protected $decisionCoverages = array();
 
 
 	public function __construct($methodName, $methodNodeId) {
@@ -57,17 +57,39 @@ class MethodCoverage implements CoverageAggregate, Coverage {
 	}
 
 	/**
-	 * @param Coverage $coverage
+	 * @param DecisionCoverage $coverage
 	 */
-	public function addCoverage(Coverage $coverage) {
-		$this->coverages[] = $coverage;
+	public function addDecisionCoverage(DecisionCoverage $coverage) {
+		$this->decisionCoverages[] = $coverage;
 	}
 
 	/**
-	 * @return Coverage[]
+	 * @return int
 	 */
-	public function getCoverages() {
-		return $this->coverages;
+	public function countFeasibleDecisionInputs() {
+		$inputCount = 0;
+		foreach ($this->decisionCoverages as $coverage) {
+			$inputCount += $coverage->countFeasibleInputs();
+		}
+		return $inputCount;
+	}
+
+	/**
+	 * @return int
+	 */
+	public function countCoveredDecisionInputs() {
+		$inputCount = 0;
+		foreach ($this->decisionCoverages as $coverage) {
+			$inputCount += $coverage->countUniqueCoveredInputs();
+		}
+		return $inputCount;
+	}
+
+	/**
+	 * @return float
+	 */
+	public function getDecisionCoverage() {
+		// TODO implement
 	}
 
 	/**
@@ -82,22 +104,6 @@ class MethodCoverage implements CoverageAggregate, Coverage {
 	 */
 	public function getEntryPointCoverage() {
 		return $this->entryPointCoverage->getCoverage();
-	}
-
-	/**
-	 * @param ExpressionValue $value
-	 * @return boolean The expression value for the given input data set
-	 * TODO move this to a derived interface, e.g. ValueCoverage
-	 */
-	public function recordCoveredValue(ExpressionValue $value) {
-		throw new \BadMethodCallException('Not implemented');
-	}
-
-	/**
-	 * @return float The coverage as a value between 0 and 1.
-	 */
-	public function getCoverage() {
-		throw new \BadMethodCallException('Not implemented');
 	}
 
 }

@@ -1,6 +1,9 @@
 <?php
 namespace AndreasWolf\DecisionCoverage\Coverage;
 
+use AndreasWolf\DecisionCoverage\Coverage\MCDC\DecisionCoverage;
+
+
 /**
  * An aggregate of several coverages
  *
@@ -8,14 +11,19 @@ namespace AndreasWolf\DecisionCoverage\Coverage;
  */
 interface CoverageAggregate {
 
-	public function addCoverage(Coverage $coverage);
+	/**
+	 * @return int
+	 */
+	public function countFeasibleDecisionInputs();
 
 	/**
-	 * Returns all the
-	 *
-	 * @return mixed
-	 * TODO rename this when we have found a name for the parts of an aggregate
+	 * @return int
 	 */
-	public function getCoverages();
+	public function countCoveredDecisionInputs();
+
+	/**
+	 * @return float
+	 */
+	public function getDecisionCoverage();
 
 }

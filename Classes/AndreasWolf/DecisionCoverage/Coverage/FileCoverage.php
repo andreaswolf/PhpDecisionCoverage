@@ -1,15 +1,12 @@
 <?php
 namespace AndreasWolf\DecisionCoverage\Coverage;
-
-use AndreasWolf\DecisionCoverage\Source\SourceFile;
+use AndreasWolf\DecisionCoverage\Coverage\MCDC\DecisionCoverage;
 
 
 /**
  *
  *
  * @author Andreas Wolf <aw@foundata.net>
- *
- * TODO make Coverage interface usable for this
  */
 class FileCoverage implements CoverageAggregate {
 
@@ -19,7 +16,7 @@ class FileCoverage implements CoverageAggregate {
 	protected $filePath;
 
 	/**
-	 * @var Coverage[]
+	 * @var CoverageAggregate[]
 	 */
 	protected $coverages = [];
 
@@ -35,7 +32,7 @@ class FileCoverage implements CoverageAggregate {
 		return $this->filePath;
 	}
 
-	public function addCoverage(Coverage $coverage) {
+	public function addCoverage(CoverageAggregate $coverage) {
 		$this->coverages[] = $coverage;
 	}
 
@@ -51,6 +48,27 @@ class FileCoverage implements CoverageAggregate {
 	 */
 	public function getCoverage() {
 		// TODO: Implement getCoverage() method.
+	}
+
+	/**
+	 * @return int
+	 */
+	public function countFeasibleDecisionInputs() {
+		// TODO: Implement countFeasibleDecisionInputs() method.
+	}
+
+	/**
+	 * @return int
+	 */
+	public function countCoveredDecisionInputs() {
+		// TODO: Implement countCoveredDecisionInputs() method.
+	}
+
+	/**
+	 * @return float
+	 */
+	public function getDecisionCoverage() {
+		// TODO: Implement getDecisionCoverage() method.
 	}
 
 }

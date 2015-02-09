@@ -1,6 +1,7 @@
 <?php
 namespace AndreasWolf\DecisionCoverage\Report;
 
+use AndreasWolf\DecisionCoverage\Coverage\ClassCoverage;
 use AndreasWolf\DecisionCoverage\Coverage\Coverage;
 use AndreasWolf\DecisionCoverage\Coverage\CoverageAggregate;
 use AndreasWolf\DecisionCoverage\Coverage\CoverageSet;
