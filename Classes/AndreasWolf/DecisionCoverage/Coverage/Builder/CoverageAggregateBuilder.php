@@ -74,8 +74,9 @@ class CoverageAggregateBuilder implements EventSubscriberInterface {
 
 	public function classEnteredHandler(SyntaxTreeIteratorEvent $event) {
 		$classNode = $event->getIterator()->current();
+		/** @var Node\Stmt\Class_ $classNode */
 		$this->logger->debug('Entered class ' . $classNode->name);
-		$this->currentClassCoverage = new ClassCoverage($classNode->name);
+		$this->currentClassCoverage = new ClassCoverage($classNode);
 		$this->currentFileCoverage->addCoverage($this->currentClassCoverage);
 	}
 

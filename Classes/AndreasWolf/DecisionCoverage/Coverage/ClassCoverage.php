@@ -2,17 +2,42 @@
 namespace AndreasWolf\DecisionCoverage\Coverage;
 
 
+use PhpParser\Node\Stmt\Class_;
+
+
 class ClassCoverage implements CoverageAggregate {
 
+	/** @var Class_ */
+	protected $classNode;
+
 	/** @var string */
-	protected $name;
+	protected $className;
+
+	/** @var string */
+	protected $id;
 
 	/** @var MethodCoverage[] */
 	protected $methodCoverages = [];
 
 
-	public function __construct($name) {
-		$this->name = $name;
+	public function __construct(Class_ $classStatement) {
+		$this->classNode = $classStatement;
+		$this->className = $classStatement->name;
+		$this->id = $classStatement->getAttribute('coverage__nodeId');
+	}
+
+	/**
+	 * @return string
+	 */
+	public function getClassName() {
+		return $this->className;
+	}
+
+	/**
+	 * @return string
+	 */
+	public function getId() {
+		return $this->id;
 	}
 
 	public function addMethodCoverage(MethodCoverage $coverage) {
