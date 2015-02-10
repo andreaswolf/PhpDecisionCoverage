@@ -1,16 +1,12 @@
 <?php
 namespace AndreasWolf\DecisionCoverage\Report;
 
-use AndreasWolf\DecisionCoverage\Coverage\ClassCoverage;
-use AndreasWolf\DecisionCoverage\Coverage\Coverage;
-use AndreasWolf\DecisionCoverage\Coverage\CoverageAggregate;
 use AndreasWolf\DecisionCoverage\Coverage\CoverageSet;
 use AndreasWolf\DecisionCoverage\Coverage\FileCoverage;
-use AndreasWolf\DecisionCoverage\Coverage\MCDC\DecisionCoverage;
-use AndreasWolf\DecisionCoverage\Coverage\MethodCoverage;
-use AndreasWolf\DecisionCoverage\Report\Annotation\DecisionCoverageAnnotation;
 use AndreasWolf\DecisionCoverage\Report\Html\SourceFile;
 use AndreasWolf\DecisionCoverage\Report\Html\SourceFileTokenizer;
+use PhpParser\Node;
+use PhpParser\Node\Expr;
 use Psr\Log\LoggerInterface;
 use Psr\Log\NullLogger;
 
@@ -30,6 +26,7 @@ class Generator {
 
 	/**
 	 * @param Writer[] $writers
+	 * @param LoggerInterface $log
 	 */
 	public function __construct($writers = array(), LoggerInterface $log = NULL) {
 		$this->writers = $writers;
@@ -48,11 +45,14 @@ class Generator {
 	 */
 	public function generateCoverageReport(CoverageSet $coverageSet) {
 		$this->log->debug('Started generating coverage report');
+
+		$enricher = new SourceFileAnnotationEnricher();
+
 		foreach ($coverageSet->getAll() as $fileCoverage) {
 			$this->log->debug('Generating coverage report for ' . $fileCoverage->getFilePath());
 			$sourceFile = $this->generateSourceFile($fileCoverage);
 
-			$this->attachCoverageAnnotationsToSourceFile($fileCoverage, $sourceFile);
+			$enricher->attachCoverageAnnotationsToSourceFile($fileCoverage, $sourceFile);
 
 			foreach ($this->writers as $writer) {
 				$writer->writeReportForSourceFile($sourceFile);
@@ -76,39 +76,6 @@ class Generator {
 		$sourceFile = SourceFile::createFromTokenizationResult($tokenizedFile);
 
 		return $sourceFile;
-	}
-
-	/**
-	 * Attaches coverage annotations to source lines where appropriate.
-	 *
-	 * These annotations are later on transformed into XML fragment nodes and will be rendered specially in the final
-	 * report.
-	 *
-	 * @param Coverage|CoverageAggregate $coverage
-	 * @param SourceFile $sourceFile
-	 */
-	protected function attachCoverageAnnotationsToSourceFile($coverage, SourceFile $sourceFile) {
-		if ($coverage instanceof MethodCoverage) {
-			$sourceFile->addCoverage($coverage->getId(), $coverage);
-		}
-
-		if ($coverage instanceof CoverageAggregate) {
-			foreach ($coverage->getCoverages() as $subcoverage) {
-				$this->attachCoverageAnnotationsToSourceFile($subcoverage, $sourceFile);
-			}
-		}
-
-		if ($coverage instanceof DecisionCoverage) {
-			$sourceFile->addCoverage($coverage->getId(), $coverage);
-
-			$expression = $coverage->getExpression();
-			$startPosition = $expression->getAttribute('startFilePos');
-			$endPosition = $expression->getAttribute('endFilePos');
-			$annotation = new DecisionCoverageAnnotation($coverage);
-
-			$line = $sourceFile->getLineByCharacterOffset($startPosition);
-			$line->annotate($startPosition, $endPosition, $annotation);
-		}
 	}
 
 }
