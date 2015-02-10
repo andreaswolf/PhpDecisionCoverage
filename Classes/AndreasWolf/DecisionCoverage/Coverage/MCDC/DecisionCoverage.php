@@ -4,10 +4,11 @@ namespace AndreasWolf\DecisionCoverage\Coverage\MCDC;
 use AndreasWolf\DecisionCoverage\Coverage\Evaluation\DecisionSample;
 use AndreasWolf\DecisionCoverage\Coverage\ExpressionCoverage;
 use AndreasWolf\DecisionCoverage\Coverage\Input\DecisionInput;
+use AndreasWolf\DecisionCoverage\Coverage\InputCoverage;
 use PhpParser\Node\Expr;
 
 
-class DecisionCoverage extends ExpressionCoverage {
+class DecisionCoverage extends ExpressionCoverage implements InputCoverage {
 
 	/**
 	 * @var Expr\BinaryOp

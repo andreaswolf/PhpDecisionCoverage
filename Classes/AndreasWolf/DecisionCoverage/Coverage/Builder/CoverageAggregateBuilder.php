@@ -84,10 +84,10 @@ class CoverageAggregateBuilder implements EventSubscriberInterface {
 	}
 
 	public function methodEnteredHandler(SyntaxTreeIteratorEvent $event) {
-		$this->logger->debug('Entered method');
 		/** @var Node\Stmt\ClassMethod $node */
 		$node = $event->getIterator()->current();
-		$this->currentMethodCoverage = new MethodCoverage($node->name, $node->getAttribute('coverage__nodeId'));
+		$this->logger->debug('Entered method ' . $node->name);
+		$this->currentMethodCoverage = new MethodCoverage($node);
 
 		$this->currentClassCoverage->addMethodCoverage($this->currentMethodCoverage);
 
@@ -118,7 +118,7 @@ class CoverageAggregateBuilder implements EventSubscriberInterface {
 		if ($syntaxTreeNode instanceof Node\Stmt\If_) {
 			$builder = $this->createBuilderForNode($syntaxTreeNode->cond);
 			if (isset($this->currentMethodCoverage)) {
-				$this->currentMethodCoverage->addDecisionCoverage($builder->getCoverage());
+				$this->currentMethodCoverage->addInputCoverage($builder->getCoverage());
 			} else {
 				$this->currentFileCoverage->addCoverage($builder->getCoverage());
 			}

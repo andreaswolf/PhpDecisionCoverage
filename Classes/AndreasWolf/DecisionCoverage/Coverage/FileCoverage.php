@@ -32,6 +32,10 @@ class FileCoverage implements CoverageAggregate {
 		return $this->filePath;
 	}
 
+	public function addInputCoverage(InputCoverage $coverage) {
+		$this->coverages[] = $coverage;
+	}
+
 	public function addCoverage(CoverageAggregate $coverage) {
 		$this->coverages[] = $coverage;
 	}

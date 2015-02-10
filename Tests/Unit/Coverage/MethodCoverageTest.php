@@ -12,8 +12,8 @@ class MethodCoverageTest extends UnitTestCase {
 	 * @test
 	 */
 	public function feasibleInputsOfOneDecisionAreCorrectlyAggregated() {
-		$subject = new MethodCoverage('SomeMethod', 'foo');
-		$subject->addDecisionCoverage($this->mockDecisionCoverage(2, 1));
+		$subject = $this->createSubject();
+		$subject->addInputCoverage($this->mockDecisionCoverage(2, 1));
 
 		$this->assertEquals(2, $subject->countFeasibleDecisionInputs());
 	}
@@ -22,8 +22,8 @@ class MethodCoverageTest extends UnitTestCase {
 	 * @test
 	 */
 	public function coveredInputsOfOneDecisionAreCorrectlyAggregated() {
-		$subject = new MethodCoverage('SomeMethod', 'foo');
-		$subject->addDecisionCoverage($this->mockDecisionCoverage(2, 1));
+		$subject = $this->createSubject();
+		$subject->addInputCoverage($this->mockDecisionCoverage(2, 1));
 
 		$this->assertEquals(1, $subject->countCoveredDecisionInputs());
 	}
@@ -33,8 +33,8 @@ class MethodCoverageTest extends UnitTestCase {
 	 */
 	public function coverageOfOneDecisionIsCorrectlyAggregated() {
 		$this->markTestSkipped();
-		$subject = new MethodCoverage('SomeMethod', 'foo');
-		$subject->addDecisionCoverage($this->mockDecisionCoverage(2, 1));
+		$subject = $this->createSubject();
+		$subject->addInputCoverage($this->mockDecisionCoverage(2, 1));
 
 		$this->assertEquals(0.5, $subject->getDecisionCoverage());
 	}
@@ -43,9 +43,9 @@ class MethodCoverageTest extends UnitTestCase {
 	 * @test
 	 */
 	public function feasibleInputsOfTwoDecisionsAreCorrectlyAggregated() {
-		$subject = new MethodCoverage('SomeMethod', 'foo');
-		$subject->addDecisionCoverage($this->mockDecisionCoverage(2, 1));
-		$subject->addDecisionCoverage($this->mockDecisionCoverage(4, 3));
+		$subject = $this->createSubject();
+		$subject->addInputCoverage($this->mockDecisionCoverage(2, 1));
+		$subject->addInputCoverage($this->mockDecisionCoverage(4, 3));
 
 		$this->assertEquals(6, $subject->countFeasibleDecisionInputs());
 	}
@@ -54,9 +54,9 @@ class MethodCoverageTest extends UnitTestCase {
 	 * @test
 	 */
 	public function coveredInputsOfOfTwoDecisionsAreCorrectlyAggregated() {
-		$subject = new MethodCoverage('SomeMethod', 'foo');
-		$subject->addDecisionCoverage($this->mockDecisionCoverage(2, 1));
-		$subject->addDecisionCoverage($this->mockDecisionCoverage(4, 3));
+		$subject = $this->createSubject();
+		$subject->addInputCoverage($this->mockDecisionCoverage(2, 1));
+		$subject->addInputCoverage($this->mockDecisionCoverage(4, 3));
 
 		$this->assertEquals(4, $subject->countCoveredDecisionInputs());
 	}
@@ -66,14 +66,18 @@ class MethodCoverageTest extends UnitTestCase {
 	 */
 	public function coverageOfTwoDecisionsIsCorrectlyAggregated() {
 		$this->markTestSkipped();
-		$subject = new MethodCoverage('SomeMethod', 'foo');
-		$subject->addDecisionCoverage($this->mockDecisionCoverage(2, 1));
-		$subject->addDecisionCoverage($this->mockDecisionCoverage(4, 3));
+		$subject = $this->createSubject();
+		$subject->addInputCoverage($this->mockDecisionCoverage(2, 1));
+		$subject->addInputCoverage($this->mockDecisionCoverage(4, 3));
 
 		$this->assertEquals(0.66, $subject->getDecisionCoverage());
 	}
 
 
+	protected function createSubject() {
+		$stmtMock = $this->getMockBuilder('PhpParser\Node\Stmt')->disableOriginalConstructor()->getMock();
+		return new MethodCoverage($stmtMock);
+	}
 
 	/**
 	 * @param int $feasibleInputs

@@ -12,7 +12,15 @@ use PhpParser\Node\Expr;
  *
  * @author Andreas Wolf <aw@foundata.net>
  */
-class SingleConditionCoverage extends ExpressionCoverage {
+class SingleConditionCoverage extends ExpressionCoverage implements InputCoverage {
+
+	public function countFeasibleInputs() {
+		return 2;
+	}
+
+	public function countUniqueCoveredInputs() {
+		return (int)($this->getCoverage() * 2);
+	}
 
 	/**
 	 * Returns the coverage for this condition as a float.

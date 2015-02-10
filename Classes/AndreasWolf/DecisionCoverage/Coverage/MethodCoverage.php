@@ -3,6 +3,7 @@ namespace AndreasWolf\DecisionCoverage\Coverage;
 
 use AndreasWolf\DebuggerClient\Protocol\Response\ExpressionValue;
 use AndreasWolf\DecisionCoverage\Coverage\MCDC\DecisionCoverage;
+use PhpParser\Node\Stmt;
 
 
 /**
@@ -24,6 +25,9 @@ class MethodCoverage implements CoverageAggregate {
 	 */
 	protected $id;
 
+	/** @var Stmt\ClassMethod|Stmt\Function_ */
+	protected $methodNode;
+
 	/**
 	 * @var InvocationCoverage
 	 */
@@ -35,11 +39,17 @@ class MethodCoverage implements CoverageAggregate {
 	protected $decisionCoverages = array();
 
 
-	public function __construct($methodName, $methodNodeId) {
-		$this->methodName = $methodName;
-		$this->id = $methodNodeId;
+	public function __construct(Stmt $methodStatement) {
+		/** @var Stmt\ClassMethod|Stmt\Function_ $methodStatement */
+		$this->methodNode = $methodStatement;
+		$this->methodName = $methodStatement->name;
+		$this->id = $methodStatement->getAttribute('coverage__nodeId');
 
 		$this->entryPointCoverage = new InvocationCoverage();
+	}
+
+	public function getNode() {
+		return $this->methodNode;
 	}
 
 	/**
@@ -57,10 +67,14 @@ class MethodCoverage implements CoverageAggregate {
 	}
 
 	/**
-	 * @param DecisionCoverage $coverage
+	 * @param InputCoverage $coverage
 	 */
-	public function addDecisionCoverage(DecisionCoverage $coverage) {
+	public function addInputCoverage(InputCoverage $coverage) {
 		$this->decisionCoverages[] = $coverage;
+	}
+
+	public function getDecisionCoverages() {
+		return $this->decisionCoverages;
 	}
 
 	/**
