@@ -138,8 +138,10 @@ class ReportFileXmlBuilder {
 		if ($coverage instanceof MethodCoverage) {
 			$coverageNode = $this->coverageNode->appendElement('coverage');
 			$coverageNode->setAttribute('type', 'method');
-			$coverageNode->setAttribute('id', 'methodCoverageFIXME');
+			$coverageNode->setAttribute('id', $coverage->getId());
 			$coverageNode->setAttribute('method', $coverage->getMethodName());
+			$coverageNode->setAttribute('feasibleDecisionInputs', $coverage->countFeasibleDecisionInputs());
+			$coverageNode->setAttribute('coveredDecisionInputs', $coverage->countCoveredDecisionInputs());
 
 			$entryPointNode = $coverageNode->appendElement('entry-point');
 			$entryPointNode->setAttribute('covered', $coverage->getEntryPointCoverage() === 1.0 ? 'true' : 'false');
