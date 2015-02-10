@@ -5,7 +5,9 @@ use AndreasWolf\DecisionCoverage\Coverage\Coverage;
 use AndreasWolf\DecisionCoverage\Coverage\CoverageAggregate;
 use AndreasWolf\DecisionCoverage\Coverage\MCDC\DecisionCoverage;
 use AndreasWolf\DecisionCoverage\Coverage\MethodCoverage;
+use AndreasWolf\DecisionCoverage\Report\Annotation\ClassCoverageAnnotation;
 use AndreasWolf\DecisionCoverage\Report\Annotation\DecisionCoverageAnnotation;
+use AndreasWolf\DecisionCoverage\Report\Annotation\MethodCoverageAnnotation;
 use Psr\Log\LoggerInterface;
 use Psr\Log\NullLogger;
 use TheSeer\fDOM\fDOMDocument;
@@ -164,14 +166,22 @@ class ReportFileXmlBuilder {
 		$fragmentContentNode = $this->document->createCDATASection($this->prepareCodeForHtmlFile($contents));
 
 		if (is_object($annotation)) {
-			if ($annotation instanceof DecisionCoverageAnnotation) {
-				$coverage = $annotation->getCoverage();
-				$annotationNode = $fragmentNode->appendElement('annotation');
-				$annotationNode->setAttribute('type', 'coverage');
-				$annotationNode->setAttribute('coverage', $coverage->getId());
+			switch (TRUE) {
+				case $annotation instanceof DecisionCoverageAnnotation:
+				case $annotation instanceof MethodCoverageAnnotation:
+				case $annotation instanceof ClassCoverageAnnotation:
 
-				$contentsNode = $fragmentNode->appendElement('contents');
-				$contentsNode->appendChild($fragmentContentNode);
+					$coverage = $annotation->getCoverage();
+					$annotationNode = $fragmentNode->appendElement('annotation');
+					$annotationNode->setAttribute('type', 'coverage');
+					$annotationNode->setAttribute('coverage', $coverage->getId());
+
+					$contentsNode = $fragmentNode->appendElement('contents');
+					$contentsNode->appendChild($fragmentContentNode);
+				break;
+
+				default:
+					throw new \RuntimeException('Unknown fragment annotation type ' . get_class($annotation));
 			}
 		} else {
 			$fragmentNode->appendChild($fragmentContentNode);
