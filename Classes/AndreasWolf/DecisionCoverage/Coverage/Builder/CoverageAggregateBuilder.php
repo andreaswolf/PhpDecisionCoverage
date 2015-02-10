@@ -109,7 +109,7 @@ class CoverageAggregateBuilder implements EventSubscriberInterface {
 		$this->currentMethodCoverage = NULL;
 	}
 
-	public function nodeHandled(SyntaxTreeIteratorEvent $event) {
+	public function nodeHandler(SyntaxTreeIteratorEvent $event) {
 		$syntaxTreeNode = $event->getIterator()->current();
 
 		if (!$syntaxTreeNode instanceof Node\Stmt) {
@@ -149,6 +149,7 @@ class CoverageAggregateBuilder implements EventSubscriberInterface {
 			'syntaxtree.class.left' => 'classLeftHandler',
 			'syntaxtree.classmethod.entered' => 'methodEnteredHandler',
 			'syntaxtree.classmethod.left' => 'methodLeftHandler',
+			'syntaxtree.node' => 'nodeHandler',
 		);
 	}
 

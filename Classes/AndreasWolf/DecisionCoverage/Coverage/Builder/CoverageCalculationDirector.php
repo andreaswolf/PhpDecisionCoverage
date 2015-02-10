@@ -7,6 +7,7 @@ use AndreasWolf\DecisionCoverage\Coverage\Event\CoverageDataSetEvent;
 use AndreasWolf\DecisionCoverage\Coverage\Event\FileCoverageEvent;
 use AndreasWolf\DecisionCoverage\Coverage\Event\SampleEvent;
 use AndreasWolf\DecisionCoverage\Coverage\FileCoverage;
+use AndreasWolf\DecisionCoverage\Event\SyntaxTreeIteratorEvent;
 use AndreasWolf\DecisionCoverage\Service\ExpressionService;
 use AndreasWolf\DecisionCoverage\Source\RecursiveSyntaxTreeIterator;
 use AndreasWolf\DecisionCoverage\Source\SyntaxTreeIterator;
@@ -129,7 +130,11 @@ class CoverageCalculationDirector {
 
 		$this->eventDispatcher->dispatch('syntaxtree.file.entered', new FileCoverageEvent($fileCoverage));
 
-		foreach ($this->createFileIterator($file) as $syntaxTreeNode) {
+		$fileIterator = $this->createFileIterator($file);
+		foreach ($fileIterator as $_) {
+			$this->eventDispatcher->dispatch('syntaxtree.node',
+				new SyntaxTreeIteratorEvent($fileIterator->getInnerIterator())
+			);
 		}
 
 		$this->eventDispatcher->dispatch('syntaxtree.file.left', new FileCoverageEvent($fileCoverage));
