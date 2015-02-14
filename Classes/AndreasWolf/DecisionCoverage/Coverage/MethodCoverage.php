@@ -103,7 +103,10 @@ class MethodCoverage implements CoverageAggregate {
 	 * @return float
 	 */
 	public function getDecisionCoverage() {
-		// TODO implement
+		if ($this->countFeasibleDecisionInputs() == 0) {
+			return 0;
+		}
+		return $this->countCoveredDecisionInputs() / $this->countFeasibleDecisionInputs();
 	}
 
 	/**

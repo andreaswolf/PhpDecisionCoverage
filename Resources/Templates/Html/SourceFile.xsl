@@ -107,20 +107,55 @@
 		<xsl:choose>
 			<xsl:when test="@type='coverage'">
 				<xsl:variable name="coverageId" select="@coverage" />
-				<xsl:variable name="inputs-total" select="count(//coverages/coverage[@id=$coverageId]/inputs/input)" />
-				<xsl:variable name="inputs-covered" select="count(//coverages/coverage[@id=$coverageId]/inputs/input[@covered='true'])" />
-				<xsl:variable name="coverage" select="format-number($inputs-covered div $inputs-total * 100, '0.##')" />
-				<div class="coverage-value">Coverage: <xsl:value-of select="$coverage" /> % (<xsl:value-of
-						select="$inputs-covered" /> of <xsl:value-of select="$inputs-total" /> inputs)</div>
-				<xsl:if test="$inputs-covered > 0"><div class="coverage-tests">Covered by these tests:
-				<ul>
-					<!-- make the list of test names unique; see <https://stackoverflow.com/questions/2199676/finding-unique-nodes-with-xslt> -->
-					<xsl:for-each select="//coverages/coverage[@id=$coverageId]//covered-by[generate-id() = generate-id(key('test-id', @test)[1]) = true()]">
-						<li><xsl:value-of select="@test" /></li>
-					</xsl:for-each>
-				</ul>
-				</div></xsl:if>
+				<xsl:variable name="coverage-type" select="//coverages/coverage[@id=$coverageId]/@type" />
+				<xsl:choose>
+					<xsl:when test="$coverage-type='method'">
+						<xsl:call-template name="annotation-method-coverage">
+							<xsl:with-param name="coverageId" select="$coverageId" />
+						</xsl:call-template>
+					</xsl:when>
+					<xsl:when test="$coverage-type='decision'">
+						<xsl:call-template name="annotation-decision-coverage">
+							<xsl:with-param name="coverageId" select="$coverageId" />
+						</xsl:call-template>
+					</xsl:when>
+				</xsl:choose>
 			</xsl:when>
 		</xsl:choose>
+	</xsl:template>
+
+	<xsl:template name="annotation-method-coverage">
+		<xsl:param name="coverageId" />
+
+		<xsl:variable name="covered-entry-points" select="count(//coverages/coverage[@id=$coverageId]/entry-point[@covered='true'])" />
+		<xsl:variable name="total-entry-points" select="count(//coverages/coverage[@id=$coverageId]/entry-point)" />
+		<xsl:variable name="inputs-total" select="//coverages/coverage[@id=$coverageId]/@feasibleDecisionInputs" />
+		<xsl:variable name="inputs-covered" select="//coverages/coverage[@id=$coverageId]/@coveredDecisionInputs" />
+		<xsl:variable name="input-coverage" select="format-number(//coverages/coverage[@id=$coverageId]/@inputCoverage * 100, '0.##')" />
+
+		<ul>
+			<li>Input coverage: <xsl:value-of select="$input-coverage" /> % (Covered inputs: <xsl:value-of select="$inputs-covered" />/<xsl:value-of select="$inputs-total" />)</li>
+			<li>Entry points: <xsl:value-of select="$total-entry-points" /></li>
+			<li>Covered entry points: <xsl:value-of select="$covered-entry-points" /></li>
+		</ul>
+	</xsl:template>
+
+	<xsl:template name="annotation-decision-coverage">
+		<xsl:param name="coverageId" />
+
+		<xsl:variable name="inputs-total" select="count(//coverages/coverage[@id=$coverageId]/inputs/input)" />
+		<xsl:variable name="inputs-covered" select="count(//coverages/coverage[@id=$coverageId]/inputs/input[@covered='true'])" />
+		<xsl:variable name="coverage" select="format-number($inputs-covered div $inputs-total * 100 + 0, '0.##')" />
+
+		<div class="coverage-value">Coverage for decision: <xsl:value-of select="$coverage" /> % (<xsl:value-of
+				select="$inputs-covered" /> of <xsl:value-of select="$inputs-total" /> inputs)</div>
+		<xsl:if test="$inputs-covered > 0"><div class="coverage-tests">Covered by these tests:
+		<ul>
+			<!-- make the list of test names unique; see <https://stackoverflow.com/questions/2199676/finding-unique-nodes-with-xslt> -->
+			<xsl:for-each select="//coverages/coverage[@id=$coverageId]//covered-by[generate-id() = generate-id(key('test-id', @test)[1]) = true()]">
+				<li><xsl:value-of select="@test" /></li>
+			</xsl:for-each>
+		</ul>
+		</div></xsl:if>
 	</xsl:template>
 </xsl:stylesheet>

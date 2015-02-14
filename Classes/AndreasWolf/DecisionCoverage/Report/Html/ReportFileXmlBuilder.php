@@ -114,6 +114,7 @@ class ReportFileXmlBuilder {
 				$coverageNode = $this->coverageNode->appendElement('coverage');
 				$coverageNode->setAttribute('type', 'decision');
 				$coverageNode->setAttribute('id', $coverage->getId());
+				$coverageNode->setAttribute('inputCoverage', $coverage->getCoverage());
 
 				$inputNodes = $coverageNode->appendElement('inputs');
 
@@ -144,6 +145,7 @@ class ReportFileXmlBuilder {
 			$coverageNode->setAttribute('method', $coverage->getMethodName());
 			$coverageNode->setAttribute('feasibleDecisionInputs', $coverage->countFeasibleDecisionInputs());
 			$coverageNode->setAttribute('coveredDecisionInputs', $coverage->countCoveredDecisionInputs());
+			$coverageNode->setAttribute('inputCoverage', $coverage->getDecisionCoverage());
 
 			$entryPointNode = $coverageNode->appendElement('entry-point');
 			$entryPointNode->setAttribute('covered', $coverage->getEntryPointCoverage() === 1.0 ? 'true' : 'false');
