@@ -36,6 +36,16 @@ class CoverageBuildProgressReporter implements EventSubscriberInterface {
 		}
 	}
 
+	public function buildFinishedHandler() {
+		// Finish previous line
+		$this->output->writeln('');
+
+		$this->output->writeln(sprintf(
+			'<info>Distributed %d samples for coverage building</info>',
+			$this->currentSample
+		));
+	}
+
 	/**
 	 * Returns an array of event names this subscriber wants to listen to.
 	 *
@@ -58,7 +68,8 @@ class CoverageBuildProgressReporter implements EventSubscriberInterface {
 	 */
 	public static function getSubscribedEvents() {
 		return array(
-			'coverage.sample.received' => 'sampleReceivedHandler'
+			'coverage.sample.received' => 'sampleReceivedHandler',
+			'coverage.build.end' => 'buildFinishedHandler',
 		);
 	}
 
