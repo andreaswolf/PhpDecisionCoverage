@@ -60,7 +60,7 @@ class RunTestsCommand extends BaseCommand {
 	 */
 	protected function loadStaticAnalysisData(ProjectConfig $projectConfig) {
 		$analysisDataMapper = new StaticSerializedObjectMapper();
-		$analysisFile = $projectConfig->getWorkingDirectory() . '/coverage-analysis.bin';
+		$analysisFile = $projectConfig->getWorkingDirectory() . '/static-analysis.bin';
 		$staticAnalysisResults = $analysisDataMapper->loadFromFile($analysisFile);
 
 		return $staticAnalysisResults;
