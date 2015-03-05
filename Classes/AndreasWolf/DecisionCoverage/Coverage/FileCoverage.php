@@ -58,14 +58,33 @@ class FileCoverage implements CoverageAggregate {
 	 * @return int
 	 */
 	public function countFeasibleDecisionInputs() {
-		// TODO: Implement countFeasibleDecisionInputs() method.
+		$totalInputs = 0;
+		foreach ($this->getCoverages() as $coverage) {
+			if ($coverage instanceof CoverageAggregate) {
+				$totalInputs += $coverage->countFeasibleDecisionInputs();
+			} elseif ($coverage instanceof InputCoverage) {
+				$totalInputs += $coverage->countFeasibleInputs();
+			}
+		}
+
+		return $totalInputs;
 	}
 
 	/**
 	 * @return int
 	 */
 	public function countCoveredDecisionInputs() {
-		// TODO: Implement countCoveredDecisionInputs() method.
+		$coveredInputs = 0;
+		foreach ($this->getCoverages() as $coverage) {
+			if ($coverage instanceof CoverageAggregate) {
+				$coveredInputs += $coverage->countCoveredDecisionInputs();
+			} elseif ($coverage instanceof InputCoverage) {
+				$coveredInputs += $coverage->countUniqueCoveredInputs();
+			}
+
+		}
+
+		return $coveredInputs;
 	}
 
 	/**

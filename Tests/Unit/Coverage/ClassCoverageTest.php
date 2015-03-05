@@ -85,5 +85,5 @@ class ClassCoverageTest extends UnitTestCase {
 
 		return $mockedDecisionCoverage;
 	}
-	
+
 }
