@@ -23,16 +23,24 @@ class SingleConditionCoverage extends ExpressionCoverage implements InputCoverag
 	}
 
 	/**
+	 * @param bool $value
+	 * @return bool
+	 */
+	public function isValueCovered($value) {
+		return in_array($value, $this->coveredValues);
+	}
+
+	/**
 	 * Returns the coverage for this condition as a float.
 	 *
 	 * @return float The coverage as a percentage (0…1.0)
 	 */
 	public function getCoverage() {
 		$coverage = 0.0;
-		if (in_array(TRUE, $this->coveredValues)) {
+		if ($this->isValueCovered(TRUE)) {
 			$coverage += 0.5;
 		}
-		if (in_array(FALSE, $this->coveredValues)) {
+		if ($this->isValueCovered(FALSE)) {
 			$coverage += 0.5;
 		}
 

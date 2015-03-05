@@ -6,7 +6,7 @@ use AndreasWolf\DecisionCoverage\Coverage\FileCoverage;
 use AndreasWolf\DecisionCoverage\Coverage\InputCoverage;
 use AndreasWolf\DecisionCoverage\Coverage\MCDC\DecisionCoverage;
 use AndreasWolf\DecisionCoverage\Coverage\MethodCoverage;
-use AndreasWolf\DecisionCoverage\Report\Annotation\DecisionCoverageAnnotation;
+use AndreasWolf\DecisionCoverage\Report\Annotation\InputCoverageAnnotation;
 use AndreasWolf\DecisionCoverage\Report\Annotation\MethodCoverageAnnotation;
 use AndreasWolf\DecisionCoverage\Report\Html\SourceFile;
 use PhpParser\Node;
@@ -75,7 +75,7 @@ class SourceFileAnnotationEnricher {
 			$annotation = new MethodCoverageAnnotation($coverage);
 			$this->addAnnotation($sourceFile, $annotation, $coverage->getNode());
 
-			foreach ($coverage->getDecisionCoverages() as $subCoverage) {
+			foreach ($coverage->getInputCoverages() as $subCoverage) {
 				$this->attachInputCoverageAnnotation($subCoverage, $sourceFile);
 			}
 		}
@@ -85,15 +85,11 @@ class SourceFileAnnotationEnricher {
 		 * @param SourceFile $sourceFile
 		 */
 		protected function attachInputCoverageAnnotation(InputCoverage $coverage, SourceFile $sourceFile) {
-			if (!$coverage instanceof DecisionCoverage) {
-				// TODO implement support for SingleConditionCoverage
-				return;
-			}
 			$this->log->debug('Attaching decision coverage for ' . $coverage->getId());
 
 			$sourceFile->addCoverage($coverage->getId(), $coverage);
 
-			$annotation = new DecisionCoverageAnnotation($coverage);
+			$annotation = new InputCoverageAnnotation($coverage);
 			$this->addAnnotation($sourceFile, $annotation, $coverage->getExpression());
 		}
 

@@ -5,8 +5,9 @@ use AndreasWolf\DecisionCoverage\Coverage\Coverage;
 use AndreasWolf\DecisionCoverage\Coverage\CoverageAggregate;
 use AndreasWolf\DecisionCoverage\Coverage\MCDC\DecisionCoverage;
 use AndreasWolf\DecisionCoverage\Coverage\MethodCoverage;
+use AndreasWolf\DecisionCoverage\Coverage\SingleConditionCoverage;
 use AndreasWolf\DecisionCoverage\Report\Annotation\ClassCoverageAnnotation;
-use AndreasWolf\DecisionCoverage\Report\Annotation\DecisionCoverageAnnotation;
+use AndreasWolf\DecisionCoverage\Report\Annotation\InputCoverageAnnotation;
 use AndreasWolf\DecisionCoverage\Report\Annotation\MethodCoverageAnnotation;
 use Psr\Log\LoggerInterface;
 use Psr\Log\NullLogger;
@@ -111,15 +112,16 @@ class ReportFileXmlBuilder {
 			if ($coverage instanceof CoverageAggregate) {
 				$this->createCoverageNodesForAggregate($coverage);
 			} elseif ($coverage instanceof DecisionCoverage) {
+				// TODO unify this with the handler for single conditions
 				$coverageNode = $this->coverageNode->appendElement('coverage');
 				$coverageNode->setAttribute('type', 'decision');
 				$coverageNode->setAttribute('id', $coverage->getId());
 				$coverageNode->setAttribute('inputCoverage', $coverage->getCoverage());
 
-				$inputNodes = $coverageNode->appendElement('inputs');
+				$inputsNode = $coverageNode->appendElement('inputs');
 
 				foreach ($coverage->getFeasibleInputs() as $input) {
-					$inputNode = $inputNodes->appendElement('input');
+					$inputNode = $inputsNode->appendElement('input');
 					$inputNode->setAttribute('covered', $coverage->isCovered($input) ? 'true' : 'false');
 
 					foreach ($coverage->getSamplesForInput($input) as $sample) {
@@ -127,6 +129,20 @@ class ReportFileXmlBuilder {
 						$coveredByNode->setAttribute('test', $sample->getTest());
 					}
 				}
+			} elseif ($coverage instanceof SingleConditionCoverage) {
+				$coverageNode = $this->coverageNode->appendElement('coverage');
+				$coverageNode->setAttribute('type', 'condition');
+				$coverageNode->setAttribute('id', $coverage->getId());
+				$coverageNode->setAttribute('inputCoverage', $coverage->getCoverage());
+
+				$inputsNode = $coverageNode->appendElement('inputs');
+
+				$inputNode = $inputsNode->appendElement('input');
+				$inputNode->setAttribute('value', 'true');
+				$inputNode->setAttribute('covered', $coverage->isValueCovered(TRUE) ? 'true' : 'false');
+				$inputNode = $inputsNode->appendElement('input');
+				$inputNode->setAttribute('value', 'false');
+				$inputNode->setAttribute('covered', $coverage->isValueCovered(FALSE) ? 'true' : 'false');
 			} else {
 				// ignore unknown types like SingleConditionCoverage for now
 				//throw new \RuntimeException('Unsupported coverage type ' . get_class($coverage));
@@ -169,7 +185,7 @@ class ReportFileXmlBuilder {
 
 		if (is_object($annotation)) {
 			switch (TRUE) {
-				case $annotation instanceof DecisionCoverageAnnotation:
+				case $annotation instanceof InputCoverageAnnotation:
 				case $annotation instanceof MethodCoverageAnnotation:
 				case $annotation instanceof ClassCoverageAnnotation:
 
@@ -217,7 +233,7 @@ class ReportFileXmlBuilder {
 		});
 
 		$lastOffset = $startOffset;
-		/** @var DecisionCoverageAnnotation $annotation */
+		/** @var InputCoverageAnnotation $annotation */
 		foreach ($annotations as $annotation) {
 			$currentOffset = $annotation['start'];
 			if ($lastOffset < $currentOffset) {

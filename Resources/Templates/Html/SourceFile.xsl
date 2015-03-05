@@ -114,8 +114,14 @@
 							<xsl:with-param name="coverageId" select="$coverageId" />
 						</xsl:call-template>
 					</xsl:when>
+					<!-- TODO unify the next two templates -->
 					<xsl:when test="$coverage-type='decision'">
 						<xsl:call-template name="annotation-decision-coverage">
+							<xsl:with-param name="coverageId" select="$coverageId" />
+						</xsl:call-template>
+					</xsl:when>
+					<xsl:when test="$coverage-type='condition'">
+						<xsl:call-template name="annotation-condition-coverage">
 							<xsl:with-param name="coverageId" select="$coverageId" />
 						</xsl:call-template>
 					</xsl:when>
@@ -140,6 +146,7 @@
 		</ul>
 	</xsl:template>
 
+	<!-- TODO unify this and the next template -->
 	<xsl:template name="annotation-decision-coverage">
 		<xsl:param name="coverageId" />
 
@@ -157,5 +164,23 @@
 			</xsl:for-each>
 		</ul>
 		</div></xsl:if>
+	</xsl:template>
+	<xsl:template name="annotation-condition-coverage">
+		<xsl:param name="coverageId" />
+
+		<xsl:variable name="inputs-total" select="count(//coverages/coverage[@id=$coverageId]/inputs/input)" />
+		<xsl:variable name="inputs-covered" select="count(//coverages/coverage[@id=$coverageId]/inputs/input[@covered='true'])" />
+		<xsl:variable name="coverage" select="format-number($inputs-covered div $inputs-total * 100 + 0, '0.##')" />
+
+		<div class="coverage-value">Coverage for condition: <xsl:value-of select="$coverage" /> % (<xsl:value-of
+				select="$inputs-covered" /> of <xsl:value-of select="$inputs-total" /> inputs)</div>
+		<!--xsl:if test="$inputs-covered > 0"><div class="coverage-tests">Covered by these tests:
+		<ul>
+			<!- - make the list of test names unique; see <https://stackoverflow.com/questions/2199676/finding-unique-nodes-with-xslt> - ->
+			<xsl:for-each select="//coverages/coverage[@id=$coverageId]//covered-by[generate-id() = generate-id(key('test-id', @test)[1]) = true()]">
+				<li><xsl:value-of select="@test" /></li>
+			</xsl:for-each>
+		</ul>
+		</div></xsl:if-->
 	</xsl:template>
 </xsl:stylesheet>

@@ -34,9 +34,9 @@ class MethodCoverage implements CoverageAggregate {
 	protected $entryPointCoverage;
 
 	/**
-	 * @var DecisionCoverage[]
+	 * @var InputCoverage[]
 	 */
-	protected $decisionCoverages = array();
+	protected $inputCoverages = array();
 
 
 	public function __construct(Stmt $methodStatement) {
@@ -70,11 +70,15 @@ class MethodCoverage implements CoverageAggregate {
 	 * @param InputCoverage $coverage
 	 */
 	public function addInputCoverage(InputCoverage $coverage) {
-		$this->decisionCoverages[] = $coverage;
+		$this->inputCoverages[] = $coverage;
 	}
 
 	public function getDecisionCoverages() {
-		return $this->decisionCoverages;
+		return $this->inputCoverages;
+	}
+
+	public function getInputCoverages() {
+		return $this->inputCoverages;
 	}
 
 	/**
@@ -82,7 +86,7 @@ class MethodCoverage implements CoverageAggregate {
 	 */
 	public function countFeasibleDecisionInputs() {
 		$inputCount = 0;
-		foreach ($this->decisionCoverages as $coverage) {
+		foreach ($this->inputCoverages as $coverage) {
 			$inputCount += $coverage->countFeasibleInputs();
 		}
 		return $inputCount;
@@ -93,7 +97,7 @@ class MethodCoverage implements CoverageAggregate {
 	 */
 	public function countCoveredDecisionInputs() {
 		$inputCount = 0;
-		foreach ($this->decisionCoverages as $coverage) {
+		foreach ($this->inputCoverages as $coverage) {
 			$inputCount += $coverage->countUniqueCoveredInputs();
 		}
 		return $inputCount;
