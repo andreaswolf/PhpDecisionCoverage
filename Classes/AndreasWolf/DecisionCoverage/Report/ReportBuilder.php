@@ -1,11 +1,24 @@
 <?php
 namespace AndreasWolf\DecisionCoverage\Report;
 
-use AndreasWolf\DecisionCoverage\Coverage\FileCoverage;
+use AndreasWolf\DecisionCoverage\Coverage\CoverageSet;
 
 
 interface ReportBuilder {
 
-	public function handleFileCoverage(FileCoverage $coverage);
+	/**
+	 * Builds a report for the given coverage set
+	 *
+	 * @param CoverageSet $set
+	 * @return void
+	 */
+	public function build(CoverageSet $set);
+
+	/**
+	 * Finishes and saves the generated report
+	 *
+	 * @return void
+	 */
+	public function finish();
 
 }

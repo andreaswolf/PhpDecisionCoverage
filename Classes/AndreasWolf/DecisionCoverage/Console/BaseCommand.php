@@ -183,8 +183,6 @@ class BaseCommand extends Command {
 
 		$reportGenerator = new Generator($writers, $reportBuilders, $this->logger);
 		$reportGenerator->generateCoverageReport($coverageSet);
-
-		$projectReportBuilder->writeReport();
 	}
 
 }

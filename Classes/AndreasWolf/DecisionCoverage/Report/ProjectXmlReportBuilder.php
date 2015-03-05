@@ -4,6 +4,7 @@ namespace AndreasWolf\DecisionCoverage\Report;
 use AndreasWolf\DecisionCoverage\Coverage\ClassCoverage;
 use AndreasWolf\DecisionCoverage\Coverage\Coverage;
 use AndreasWolf\DecisionCoverage\Coverage\CoverageAggregate;
+use AndreasWolf\DecisionCoverage\Coverage\CoverageSet;
 use AndreasWolf\DecisionCoverage\Coverage\FileCoverage;
 use AndreasWolf\DecisionCoverage\Coverage\InputCoverage;
 use AndreasWolf\DecisionCoverage\Coverage\MethodCoverage;
@@ -72,11 +73,22 @@ class ProjectXmlReportBuilder implements ReportBuilder {
 	}
 
 	/**
+	 * Builds a report for the given coverage set
+	 *
+	 * @param CoverageSet $set
+	 * @return void
+	 */
+	public function build(CoverageSet $set) {
+		$this->handleCoverageSet($set);
+	}
+
+
+	/**
 	 * Writes the report to an XML file in the base path given to this class.
 	 *
 	 * @throws \TheSeer\fDOM\fDOMException
 	 */
-	public function writeReport() {
+	public function finish() {
 		$reportFile = $this->basePath->getPathname() . '/' . '_project.xml';
 		$contents = $this->document->saveXML();
 
@@ -126,7 +138,17 @@ class ProjectXmlReportBuilder implements ReportBuilder {
 		return array_pop($this->nodeStack);
 	}
 
-	public function handleFileCoverage(FileCoverage $coverage) {
+	protected function handleCoverageSet(CoverageSet $set) {
+		$node = $this->stackCurrent()->appendElement('project');
+
+		$this->addInputCoverageNodes($node, $set->countFeasibleDecisionInputs(), $set->countCoveredDecisionInputs());
+
+		$this->handleSubcoveragesOfNode($node, $set->getAll());
+
+		return $node;
+	}
+
+	protected function handleFileCoverage(FileCoverage $coverage) {
 		$node = $this->stackCurrent()->appendElement('file');
 		$node->setAttribute('path', $coverage->getFilePath());
 

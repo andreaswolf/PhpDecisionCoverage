@@ -3,8 +3,10 @@ namespace AndreasWolf\DecisionCoverage\Tests\Functional\Report;
 
 use AndreasWolf\DebuggerClient\Tests\Functional\FunctionalTestCase;
 use AndreasWolf\DecisionCoverage\Coverage\ClassCoverage;
+use AndreasWolf\DecisionCoverage\Coverage\CoverageSet;
 use AndreasWolf\DecisionCoverage\Coverage\FileCoverage;
 use AndreasWolf\DecisionCoverage\Coverage\MethodCoverage;
+use AndreasWolf\DecisionCoverage\DynamicAnalysis\Data\CoverageDataSet;
 use AndreasWolf\DecisionCoverage\Report\ProjectXmlReportBuilder;
 use PhpParser\Node\Stmt\Class_;
 use PhpParser\Node\Stmt\ClassMethod;
@@ -19,21 +21,26 @@ class ProjectXmlReportBuilderTest extends FunctionalTestCase {
 	public function fileWithSingleEmptyClassCoverageYieldsCorrectXmlStructure() {
 		$fileCoverage = $this->createFileCoverage('');
 		$fileCoverage->addCoverage($this->createClassCoverage('ClassA'));
+		$coverageSet = $this->createCoverageSet();
+		$coverageSet->add($fileCoverage);
 
 		$subject = new ProjectXmlReportBuilder(new \SplFileInfo('/tmp'));
-		$subject->handleFileCoverage($fileCoverage);
+		$subject->build($coverageSet);
 		$reportXml = $subject->getXmlDocument();
 
 		$this->assertEqualXMLStructure(
 			$reportXml->documentElement,
 			dom_import_simplexml(simplexml_load_string(
 				'<coverage>
-					<file>
+					<project>
 						<input-coverage />
-						<class>
+						<file>
 							<input-coverage />
-						</class>
-					</file>
+							<class>
+								<input-coverage />
+							</class>
+						</file>
+					</project>
 				</coverage>'
 			))
 		);
@@ -48,9 +55,11 @@ class ProjectXmlReportBuilderTest extends FunctionalTestCase {
 		$classCoverage->addMethodCoverage($methodCoverage);
 		$fileCoverage = $this->createFileCoverage('/path/to/some/file.php');
 		$fileCoverage->addCoverage($classCoverage);
+		$coverageSet = $this->createCoverageSet();
+		$coverageSet->add($fileCoverage);
 
 		$subject = new ProjectXmlReportBuilder(new \SplFileInfo('/tmp'));
-		$subject->handleFileCoverage($fileCoverage);
+		$subject->build($coverageSet);
 		$reportXml = $subject->getXmlDocument();
 
 		$this->assertEquals('/path/to/some/file.php', $this->queryXpath('//file[1]/@path', $reportXml)->item(0)->nodeValue);
@@ -66,24 +75,29 @@ class ProjectXmlReportBuilderTest extends FunctionalTestCase {
 		$classCoverage->addMethodCoverage($this->createMethodCoverage('methodB'));
 		$fileCoverage = $this->createFileCoverage();
 		$fileCoverage->addCoverage($classCoverage);
+		$coverageSet = $this->createCoverageSet();
+		$coverageSet->add($fileCoverage);
 
 		$subject = new ProjectXmlReportBuilder(new \SplFileInfo('/tmp'));
-		$subject->handleFileCoverage($fileCoverage);
+		$subject->build($coverageSet);
 		$reportXml = $subject->getXmlDocument();
 
 		$this->assertEqualXMLStructure(
 			$reportXml->documentElement,
 			dom_import_simplexml(simplexml_load_string(
 				'<coverage>
-					<file>
+					<project>
 						<input-coverage />
-						<class>
+						<file>
 							<input-coverage />
-							<method>
+							<class>
 								<input-coverage />
-							</method>
-						</class>
-					</file>
+								<method>
+									<input-coverage />
+								</method>
+							</class>
+						</file>
+					</project>
 				</coverage>'
 			))
 		);
@@ -101,33 +115,38 @@ class ProjectXmlReportBuilderTest extends FunctionalTestCase {
 		$fileCoverage = $this->createFileCoverage();
 		$fileCoverage->addCoverage($classCoverageA);
 		$fileCoverage->addCoverage($classCoverageB);
+		$coverageSet = $this->createCoverageSet();
+		$coverageSet->add($fileCoverage);
 
 		$subject = new ProjectXmlReportBuilder(new \SplFileInfo('/tmp'));
-		$subject->handleFileCoverage($fileCoverage);
+		$subject->build($coverageSet);
 		$reportXml = $subject->getXmlDocument();
 
 		$this->assertEqualXMLStructure(
 			$reportXml->documentElement,
 			dom_import_simplexml(simplexml_load_string(
 				'<coverage>
-					<file>
+					<project>
 						<input-coverage />
-						<class>
+						<file>
 							<input-coverage />
-							<method>
+							<class>
 								<input-coverage />
-							</method>
-							<method>
+								<method>
+									<input-coverage />
+								</method>
+								<method>
+									<input-coverage />
+								</method>
+							</class>
+							<class>
 								<input-coverage />
-							</method>
-						</class>
-						<class>
-							<input-coverage />
-							<method>
-								<input-coverage />
-							</method>
-						</class>
-					</file>
+								<method>
+									<input-coverage />
+								</method>
+							</class>
+						</file>
+					</project>
 				</coverage>'
 			))
 		);
@@ -187,6 +206,13 @@ class ProjectXmlReportBuilderTest extends FunctionalTestCase {
 		}
 
 		return new FileCoverage($filePath);
+	}
+
+	/**
+	 * @return CoverageSet
+	 */
+	protected function createCoverageSet() {
+		return new CoverageSet($this->getMockBuilder(CoverageDataSet::class)->disableOriginalConstructor()->getMock());
 	}
 
 }

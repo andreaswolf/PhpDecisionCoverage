@@ -11,7 +11,7 @@ use VirtualFileSystem\Structure\File;
  *
  * @author Andreas Wolf <aw@foundata.net>
  */
-class CoverageSet {
+class CoverageSet implements CoverageAggregate {
 
 	/**
 	 * @var CoverageDataSet
@@ -19,7 +19,7 @@ class CoverageSet {
 	protected $dataSet;
 
 	/**
-	 * @var Coverage[]
+	 * @var FileCoverage[]
 	 */
 	protected $coveredFiles = array();
 
@@ -64,6 +64,35 @@ class CoverageSet {
 	 */
 	public function getAll() {
 		return $this->coveredFiles;
+	}
+
+	/**
+	 * @return int
+	 */
+	public function countFeasibleDecisionInputs() {
+		$inputs = 0;
+		foreach ($this->coveredFiles as $fileCoverage) {
+			$inputs += $fileCoverage->countFeasibleDecisionInputs();
+		}
+		return $inputs;
+	}
+
+	/**
+	 * @return int
+	 */
+	public function countCoveredDecisionInputs() {
+		$inputs = 0;
+		foreach ($this->coveredFiles as $fileCoverage) {
+			$inputs += $fileCoverage->countCoveredDecisionInputs();
+		}
+		return $inputs;
+	}
+
+	/**
+	 * @return float
+	 */
+	public function getDecisionCoverage() {
+		// TODO: Implement getDecisionCoverage() method.
 	}
 
 }

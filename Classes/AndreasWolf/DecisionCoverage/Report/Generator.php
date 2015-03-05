@@ -55,6 +55,9 @@ class Generator {
 		$this->log->debug('Started generating coverage report');
 
 		$enricher = new SourceFileAnnotationEnricher();
+		foreach ($this->reportBuilders as $builder) {
+			$builder->build($coverageSet);
+		}
 
 		foreach ($coverageSet->getAll() as $fileCoverage) {
 			$this->log->debug('Generating coverage report for ' . $fileCoverage->getFilePath());
@@ -62,13 +65,13 @@ class Generator {
 
 			$enricher->attachCoverageAnnotationsToSourceFile($fileCoverage, $sourceFile);
 
-			// TODO unify these interfaces if possible, or replace them with something more clever
-			foreach ($this->reportBuilders as $builder) {
-				$builder->handleFileCoverage($fileCoverage);
-			}
 			foreach ($this->writers as $writer) {
 				$writer->writeReportForSourceFile($sourceFile);
 			}
+		}
+
+		foreach ($this->reportBuilders as $builder) {
+			$builder->finish();
 		}
 	}
 
