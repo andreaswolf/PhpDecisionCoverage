@@ -19,6 +19,11 @@ class Generator {
 	protected $writers;
 
 	/**
+	 * @var ReportBuilder[]
+	 */
+	protected $reportBuilders;
+
+	/**
 	 * @var LoggerInterface
 	 */
 	protected $log;
@@ -26,10 +31,13 @@ class Generator {
 
 	/**
 	 * @param Writer[] $writers
+	 * @param ReportBuilder[] $reporterBuilders
 	 * @param LoggerInterface $log
 	 */
-	public function __construct($writers = array(), LoggerInterface $log = NULL) {
+	public function __construct($writers, $reporterBuilders, LoggerInterface $log = NULL) {
 		$this->writers = $writers;
+		$this->reportBuilders = $reporterBuilders;
+
 		$this->log = $log !== NULL ? $log : new NullLogger();
 	}
 
@@ -54,6 +62,10 @@ class Generator {
 
 			$enricher->attachCoverageAnnotationsToSourceFile($fileCoverage, $sourceFile);
 
+			// TODO unify these interfaces if possible, or replace them with something more clever
+			foreach ($this->reportBuilders as $builder) {
+				$builder->handleFileCoverage($fileCoverage);
+			}
 			foreach ($this->writers as $writer) {
 				$writer->writeReportForSourceFile($sourceFile);
 			}

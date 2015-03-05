@@ -15,7 +15,7 @@ use TheSeer\fDOM\fDOMElement;
 
 
 /**
- *
+ * Builder for a single source file coverage report.
  *
  * @author Andreas Wolf <aw@foundata.net>
  */

@@ -12,7 +12,7 @@ class ResultSet {
 	 *
 	 * @var FileResult[]
 	 */
-	protected $fileResults;
+	protected $fileResults = array();
 
 
 	/**

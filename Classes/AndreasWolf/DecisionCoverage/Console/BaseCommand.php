@@ -14,6 +14,8 @@ use AndreasWolf\DecisionCoverage\DynamicAnalysis\Debugger\ClientEventSubscriber;
 use AndreasWolf\DecisionCoverage\DynamicAnalysis\TestProgressReporter;
 use AndreasWolf\DecisionCoverage\Report\Generator;
 use AndreasWolf\DecisionCoverage\Report\Html\HtmlWriter;
+use AndreasWolf\DecisionCoverage\Report\Html\ReportFileXmlBuilder;
+use AndreasWolf\DecisionCoverage\Report\ProjectXmlReportBuilder;
 use AndreasWolf\DecisionCoverage\StaticAnalysis\FileAnalyzer;
 use AndreasWolf\DecisionCoverage\StaticAnalysis\Persistence\SerializedObjectMapper;
 use AndreasWolf\DecisionCoverage\StaticAnalysis\ResultSet;
@@ -171,10 +173,18 @@ class BaseCommand extends Command {
 		$director->build($dataSet);
 
 		$outputDir = $projectConfig->getReportConfig()->getOutputDirectory();
-		$writers = array(new HtmlWriter($outputDir, $this->logger));
+		$projectReportBuilder = new ProjectXmlReportBuilder($outputDir, $this->logger);
+		$reportBuilders = array(
+			$projectReportBuilder,
+		);
+		$writers = array(
+			new HtmlWriter($outputDir, $this->logger),
+		);
 
-		$reportGenerator = new Generator($writers, $this->logger);
+		$reportGenerator = new Generator($writers, $reportBuilders, $this->logger);
 		$reportGenerator->generateCoverageReport($coverageSet);
+
+		$projectReportBuilder->writeReport();
 	}
 
 }
