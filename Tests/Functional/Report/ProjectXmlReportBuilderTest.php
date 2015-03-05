@@ -5,10 +5,10 @@ use AndreasWolf\DebuggerClient\Tests\Functional\FunctionalTestCase;
 use AndreasWolf\DecisionCoverage\Coverage\ClassCoverage;
 use AndreasWolf\DecisionCoverage\Coverage\FileCoverage;
 use AndreasWolf\DecisionCoverage\Coverage\MethodCoverage;
-use AndreasWolf\DecisionCoverage\Report\Html\SourceFile;
 use AndreasWolf\DecisionCoverage\Report\ProjectXmlReportBuilder;
 use PhpParser\Node\Stmt\Class_;
 use PhpParser\Node\Stmt\ClassMethod;
+use TheSeer\fDOM\fDOMDocument;
 
 
 class ProjectXmlReportBuilderTest extends FunctionalTestCase {
@@ -37,6 +37,25 @@ class ProjectXmlReportBuilderTest extends FunctionalTestCase {
 				</coverage>'
 			))
 		);
+	}
+
+	/**
+	 * @test
+	 */
+	public function filePathsAndClassAndMethodNamesAreAddedAsNodeAttributes() {
+		$methodCoverage = $this->createMethodCoverage('methodA');
+		$classCoverage = $this->createClassCoverage('ClassA');
+		$classCoverage->addMethodCoverage($methodCoverage);
+		$fileCoverage = $this->createFileCoverage('/path/to/some/file.php');
+		$fileCoverage->addCoverage($classCoverage);
+
+		$subject = new ProjectXmlReportBuilder(new \SplFileInfo('/tmp'));
+		$subject->handleFileCoverage($fileCoverage);
+		$reportXml = $subject->getXmlDocument();
+
+		$this->assertEquals('/path/to/some/file.php', $this->queryXpath('//file[1]/@path', $reportXml)->item(0)->nodeValue);
+		$this->assertEquals('ClassA', $this->queryXpath('//file[1]/class[1]/@name', $reportXml)->item(0)->nodeValue);
+		$this->assertEquals('methodA', $this->queryXpath('//file[1]/class[1]/method[1]/@name', $reportXml)->item(0)->nodeValue);
 	}
 
 	/**
@@ -114,14 +133,19 @@ class ProjectXmlReportBuilderTest extends FunctionalTestCase {
 		);
 	}
 
+	protected function queryXpath($xpath, fDOMDocument $dom, \DOMNode $context = NULL) {
+		$xpathObj = new \DOMXPath($dom);
+		$context = $context === NULL ? $dom->documentElement : $context;
+		return $xpathObj->query($xpath, $context);
+	}
+
 	/**
 	 * @param string
 	 * @return Class_
 	 */
 	protected function mockClass($name) {
 		/** @var Class_ $mock */
-		$mock = $this->getMockBuilder(Class_::class)->disableOriginalConstructor()->getMock();
-		$mock->name = $name;
+		$mock = new Class_($name);
 
 		return $mock;
 	}
@@ -132,8 +156,7 @@ class ProjectXmlReportBuilderTest extends FunctionalTestCase {
 	 */
 	protected function mockClassMethod($name) {
 		/** @var ClassMethod $mock */
-		$mock = $this->getMockBuilder(ClassMethod::class)->disableOriginalConstructor()->getMock();
-		$mock->name = $name;
+		$mock = new ClassMethod($name);
 
 		return $mock;
 	}
@@ -155,10 +178,15 @@ class ProjectXmlReportBuilderTest extends FunctionalTestCase {
 	}
 
 	/**
+	 * @param string $filePath
 	 * @return FileCoverage
 	 */
-	protected function createFileCoverage() {
-		return new FileCoverage('/tmp/' . uniqid());
+	protected function createFileCoverage($filePath = '') {
+		if ($filePath == '') {
+			$filePath = '/tmp/' . uniqid();
+		}
+
+		return new FileCoverage($filePath);
 	}
 
 }

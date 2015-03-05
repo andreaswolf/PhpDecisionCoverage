@@ -128,6 +128,7 @@ class ProjectXmlReportBuilder implements ReportBuilder {
 
 	public function handleFileCoverage(FileCoverage $coverage) {
 		$node = $this->stackCurrent()->appendElement('file');
+		$node->setAttribute('path', $coverage->getFilePath());
 
 		$this->addInputCoverageNodes($node, $coverage->countFeasibleDecisionInputs(), $coverage->countCoveredDecisionInputs());
 		$this->handleSubcoveragesOfNode($node, $coverage->getCoverages());
@@ -137,6 +138,7 @@ class ProjectXmlReportBuilder implements ReportBuilder {
 
 	protected function handleClassCoverage(ClassCoverage $coverage) {
 		$node = $this->stackCurrent()->appendElement('class');
+		$node->setAttribute('name', $coverage->getClassName());
 
 		$this->addInputCoverageNodes($node, $coverage->countFeasibleDecisionInputs(), $coverage->countCoveredDecisionInputs());
 		$this->handleSubcoveragesOfNode($node, $coverage->getMethodCoverages());
@@ -146,6 +148,7 @@ class ProjectXmlReportBuilder implements ReportBuilder {
 
 	protected function handleMethodCoverage(MethodCoverage $coverage) {
 		$node = $this->stackCurrent()->appendElement('method');
+		$node->setAttribute('name', $coverage->getMethodName());
 
 		$this->addInputCoverageNodes($node, $coverage->countFeasibleDecisionInputs(), $coverage->countCoveredDecisionInputs());
 	}
