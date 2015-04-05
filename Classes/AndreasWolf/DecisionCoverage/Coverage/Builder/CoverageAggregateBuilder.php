@@ -7,6 +7,7 @@ use AndreasWolf\DecisionCoverage\Coverage\Event\FileCoverageEvent;
 use AndreasWolf\DecisionCoverage\Coverage\FileCoverage;
 use AndreasWolf\DecisionCoverage\Coverage\MethodCoverage;
 use AndreasWolf\DecisionCoverage\Event\SyntaxTreeIteratorEvent;
+use AndreasWolf\DecisionCoverage\StaticAnalysis\CounterProbe;
 use PhpParser\Node;
 use Psr\Log\LoggerInterface;
 use Psr\Log\NullLogger;
@@ -100,8 +101,12 @@ class CoverageAggregateBuilder implements EventSubscriberInterface {
 		if (count($methodNode->stmts) == 0) {
 			return;
 		}
+		/** @var Node\Stmt $firstStatement */
+		$firstStatement = $methodNode->stmts[0];
 
-		$entryBuilder = new MethodEntryCoverageBuilder($methodCoverage, $this->logger);
+		$probe = $this->getCounterProbeFromStatementNode($firstStatement);
+
+		$entryBuilder = new MethodEntryCoverageBuilder($methodCoverage, $probe, $this->logger);
 		$this->eventDispatcher->addSubscriber($entryBuilder);
 		$this->logger->debug('Added coverage builder for method entry of method ' . $methodNode->name);
 	}
@@ -152,6 +157,32 @@ class CoverageAggregateBuilder implements EventSubscriberInterface {
 			'syntaxtree.classmethod.left' => 'methodLeftHandler',
 			'syntaxtree.node' => 'nodeHandler',
 		);
+	}
+
+	/**
+	 * @param Node\Stmt $statement
+	 * @return CounterProbe
+	 */
+	protected function getCounterProbeFromStatementNode($statement) {
+		$probes = $statement->getAttribute('coverage__probe');
+		if ($probes === NULL) {
+			throw new \RuntimeException('Could not find a probe for method entry at first statement.');
+		}
+		$probe = NULL;
+		if (is_object($probes)) {
+			$entryProbe = $probes;
+		} else {
+			foreach ($probes as $probe) {
+				if ($probe instanceof CounterProbe) {
+					$entryProbe = $probe;
+				}
+			}
+		}
+		if (!$entryProbe || !$entryProbe instanceof CounterProbe) {
+			throw new \RuntimeException('None of the probes for the first statement was a counter probe.');
+		}
+
+		return $entryProbe;
 	}
 
 

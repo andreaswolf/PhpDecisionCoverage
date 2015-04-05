@@ -5,6 +5,7 @@ use AndreasWolf\DecisionCoverage\Coverage\Coverage;
 use AndreasWolf\DecisionCoverage\Coverage\Event\SampleEvent;
 use AndreasWolf\DecisionCoverage\Coverage\MethodCoverage;
 use AndreasWolf\DecisionCoverage\DynamicAnalysis\Data\InvocationSample;
+use AndreasWolf\DecisionCoverage\StaticAnalysis\CounterProbe;
 use Psr\Log\LoggerInterface;
 use Psr\Log\NullLogger;
 use Symfony\Component\EventDispatcher\EventSubscriberInterface;
@@ -29,14 +30,20 @@ class MethodEntryCoverageBuilder implements EventSubscriberInterface, CoverageBu
 	 */
 	protected $coverage;
 
+	/**
+	 * @var CounterProbe
+	 */
+	protected $probe;
 
-	public function __construct(MethodCoverage $coverage, LoggerInterface $logger = NULL) {
+
+	public function __construct(MethodCoverage $coverage, CounterProbe $probe, LoggerInterface $logger = NULL) {
 		if (!$logger) {
 			$logger = new NullLogger();
 		}
 
 		$this->coverage = $coverage;
 		$this->logger = $logger;
+		$this->probe = $probe;
 	}
 
 	/**
@@ -52,7 +59,15 @@ class MethodEntryCoverageBuilder implements EventSubscriberInterface, CoverageBu
 		if (!$event->getSample() instanceof InvocationSample) {
 			return;
 		}
-		$this->logger->debug('Invocation sample for method entry encountered');
+		/** @var InvocationSample $sample */
+		$sample = $event->getSample();
+		$probe = $sample->getProbe();
+
+		if ($probe != $this->probe) {
+			return;
+		}
+
+		$this->logger->debug('Invocation sample for method entry encountered: ' . $this->coverage->getMethodName());
 
 		$this->coverage->recordMethodEntry();
 	}
