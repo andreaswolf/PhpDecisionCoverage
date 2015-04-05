@@ -142,6 +142,7 @@ class ProjectXmlReportBuilder implements ReportBuilder {
 		$node = $this->stackCurrent()->appendElement('project');
 
 		$this->addInputCoverageNodes($node, $set->countFeasibleDecisionInputs(), $set->countCoveredDecisionInputs());
+		$this->addEntryPointCoverageNode($node, $set->countTotalEntryPoints(), $set->countCoveredEntryPoints());
 
 		$this->handleSubcoveragesOfNode($node, $set->getAll());
 
@@ -153,6 +154,7 @@ class ProjectXmlReportBuilder implements ReportBuilder {
 		$node->setAttribute('path', $coverage->getFilePath());
 
 		$this->addInputCoverageNodes($node, $coverage->countFeasibleDecisionInputs(), $coverage->countCoveredDecisionInputs());
+		$this->addEntryPointCoverageNode($node, $coverage->countTotalEntryPoints(), $coverage->countCoveredEntryPoints());
 		$this->handleSubcoveragesOfNode($node, $coverage->getCoverages());
 
 		return $node;
@@ -163,6 +165,7 @@ class ProjectXmlReportBuilder implements ReportBuilder {
 		$node->setAttribute('name', $coverage->getClassName());
 
 		$this->addInputCoverageNodes($node, $coverage->countFeasibleDecisionInputs(), $coverage->countCoveredDecisionInputs());
+		$this->addEntryPointCoverageNode($node, $coverage->countTotalEntryPoints(), $coverage->countCoveredEntryPoints());
 		$this->handleSubcoveragesOfNode($node, $coverage->getMethodCoverages());
 
 		return $node;
@@ -173,12 +176,19 @@ class ProjectXmlReportBuilder implements ReportBuilder {
 		$node->setAttribute('name', $coverage->getMethodName());
 
 		$this->addInputCoverageNodes($node, $coverage->countFeasibleDecisionInputs(), $coverage->countCoveredDecisionInputs());
+		$this->addEntryPointCoverageNode($node, 1, (int)$coverage->getEntryPointCoverage());
 	}
 
 	protected function addInputCoverageNodes(fDOMElement $node, $feasibleInputs, $coveredInputs) {
 		$inputNode = $node->appendElement('input-coverage');
 		$inputNode->setAttribute('feasibleDecisionInputs', $feasibleInputs);
 		$inputNode->setAttribute('coveredDecisionInputs', $coveredInputs);
+	}
+
+	protected function addEntryPointCoverageNode(fDOMElement $node, $totalEntryPoints, $coveredEntryPoints) {
+		$inputNode = $node->appendElement('entry-coverage');
+		$inputNode->setAttribute('totalEntryPoints', $totalEntryPoints);
+		$inputNode->setAttribute('coveredEntryPoints', $coveredEntryPoints);
 	}
 
 	/**

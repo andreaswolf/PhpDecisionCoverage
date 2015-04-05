@@ -71,6 +71,30 @@ class ClassCoverage implements CoverageAggregate {
 	}
 
 	/**
+	 * Returns the total number of (method) entry points, i.e. the method count.
+	 *
+	 * @return int
+	 */
+	public function countTotalEntryPoints() {
+		// we cannot simply count the methods, as some methods might be excluded from the coverage (in the future)
+		return count($this->methodCoverages);
+	}
+
+	/**
+	 * Returns the number of (method) entry points in the class that were covered.
+	 *
+	 * @return int
+	 */
+	public function countCoveredEntryPoints() {
+		$methodCoveragesWithCoveredEntryPoint = array_filter($this->methodCoverages, function($methodCoverage) {
+			/** @var MethodCoverage $methodCoverage */
+			return $methodCoverage->getEntryPointCoverage() > 0;
+		});
+
+		return count($methodCoveragesWithCoveredEntryPoint);
+	}
+
+	/**
 	 * @return float
 	 */
 	public function getDecisionCoverage() {

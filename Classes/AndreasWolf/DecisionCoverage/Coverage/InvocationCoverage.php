@@ -19,6 +19,10 @@ class InvocationCoverage {
 		++$this->invocations;
 	}
 
+	public function countInvocations(){
+		return $this->invocations;
+	}
+
 	/**
 	 * @return float The coverage as a value between 0 and 1.
 	 */

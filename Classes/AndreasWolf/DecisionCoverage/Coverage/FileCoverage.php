@@ -88,6 +88,34 @@ class FileCoverage implements CoverageAggregate {
 	}
 
 	/**
+	 * Returns the total number of (method) entry points, i.e. the method count.
+	 *
+	 * @return int
+	 */
+	public function countTotalEntryPoints() {
+		return array_reduce($this->coverages, function($count, $currentItem) {
+			if ($currentItem instanceof CoverageAggregate) {
+				$count += $currentItem->countTotalEntryPoints();
+			}
+			return $count;
+		});
+	}
+
+	/**
+	 * Returns the number of (method) entry points in the class that were covered.
+	 *
+	 * @return int
+	 */
+	public function countCoveredEntryPoints() {
+		return array_reduce($this->coverages, function($count, $currentItem) {
+			if ($currentItem instanceof CoverageAggregate) {
+				$count += $currentItem->countCoveredEntryPoints();
+			}
+			return $count;
+		});
+	}
+
+	/**
 	 * @return float
 	 */
 	public function getDecisionCoverage() {

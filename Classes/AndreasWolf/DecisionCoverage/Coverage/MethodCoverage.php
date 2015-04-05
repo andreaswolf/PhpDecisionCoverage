@@ -127,4 +127,19 @@ class MethodCoverage implements CoverageAggregate {
 		return $this->entryPointCoverage->getCoverage();
 	}
 
+	/**
+	 * @return int
+	 */
+	public function countTotalEntryPoints() {
+		return 1;
+	}
+
+	/**
+	 * @return int
+	 */
+	public function countCoveredEntryPoints() {
+		// Just check if the entry point was invoked at least once
+		return $this->entryPointCoverage->countInvocations() > 0;
+	}
+
 }

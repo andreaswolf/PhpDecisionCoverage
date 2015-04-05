@@ -26,4 +26,14 @@ interface CoverageAggregate {
 	 */
 	public function getDecisionCoverage();
 
+	/**
+	 * @return int
+	 */
+	public function countTotalEntryPoints();
+
+	/**
+	 * @return int
+	 */
+	public function countCoveredEntryPoints();
+
 }
